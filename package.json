@@ -1,0 +1,38 @@
+{
+  "name": "ziti-sdk-nodejs",
+  "description": "A NodeJS-based SDK for delivering secure applications over a Ziti Network",
+  "version": "0.1.0",
+  "main": "main.js",
+  "scripts": {
+    "build": "node-gyp clean configure --debug build --debug -g --mmacosx-version-min=10.13",
+    "clean": "node-gyp clean",
+    "configure": "node-gyp configure --debug",
+    "start": "node main.js ./config/identity.json chapel-hill"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/netfoundry/ziti-sdk-nodejs.git"
+  },
+  "license": "Apache-2.0",
+  "licenses": [
+    {
+      "type": "Apache-2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0"
+    }
+  ],
+  "keywords": [
+    "ziti",
+    "nodejs"
+  ],
+  "engines": {
+    "node": ">=11.0.0"
+  },
+  "author": {
+    "name": "NetFoundry",
+    "url": "http://netfoundry.io"
+  },
+  "devDependencies": {
+    "electron-rebuild": "^1.8.8"
+  },
+  "dependencies": {}
+}
