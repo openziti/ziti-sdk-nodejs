@@ -6,7 +6,7 @@
   "scripts": {
     "build": "npm run build:init; npm run build:c-sdk; npm run build:nodejs",
     "build:init": "git submodule update --init --recursive",
-    "build:c-sdk": "cd deps/ziti-sdk-c; mkdir build; cd build; cmake -DCMAKE_BUILD_TYPE=debug ..; make",
+    "build:c-sdk": "cd deps/ziti-sdk-c; mkdir build; cd build; cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=debug ..; make",
     "build:nodejs": "node-gyp clean configure --debug build --debug -g --mmacosx-version-min=10.13",
     "clean": "node-gyp clean; rm -rf build; cd deps/ziti-sdk-c/build && make clean",
     "test": "echo \"Error: no test specified\"",
