@@ -79,6 +79,8 @@
 
         ['OS == "linux"', {
 
+          "cflags": ["-w", "-fpermissive", "-fPIC"]
+
         }]
 
       ]

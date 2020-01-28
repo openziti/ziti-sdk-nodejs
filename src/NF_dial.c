@@ -16,6 +16,7 @@ limitations under the License.
 
 #include <nf/ziti-nodejs.h>
 #include <unistd.h>
+#include <string.h>
 
 /**
  * This function is responsible for calling the JavaScript 'connect' callback function 

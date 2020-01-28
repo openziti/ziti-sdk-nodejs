@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 #include <nf/ziti-nodejs.h>
+#include <string.h>
 
 
 // An item that will be generated here and passed into the JavaScript write callback
