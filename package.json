@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "main": "main.js",
   "scripts": {
-    "build": "cross-env npm run build:init; cross-env npm run build:c-sdk; cross-env npm run build:nodejs",
+    "build": "npm run build:init; npm run build:c-sdk; npm run build:nodejs",
     "build:init": "git submodule update --init --recursive",
     "build:c-sdk": "cd deps/ziti-sdk-c; mkdir build; cd build; cmake -DCMAKE_BUILD_TYPE=debug ..; make",
     "build:nodejs": "node-gyp clean configure --debug build --debug -g --mmacosx-version-min=10.13",
@@ -36,7 +36,6 @@
     "url": "http://netfoundry.io"
   },
   "devDependencies": {
-    "cross-env": "^7.0.0"
   },
   "dependencies": {}
 }
