@@ -31,28 +31,29 @@ matrix:
 
      # Linux
      - os: linux
-       dist: trusty
-       compiler: clang
+       dist: bionic
+       compiler: gcc
        env: NODE_VERSION="13"
        addons:
          apt:
-            sources: [ 'ubuntu-toolchain-r-test','llvm-toolchain-precise-3.5', 'gcc-multilib', 'g++-multilib' ]
-            packages: [ 'clang-3.5', 'libstdc++-4.9-dev']
+          packages:
+            - ninja-build
      - os: linux
-       dist: trusty
-       compiler: clang
+       dist: bionic
+       compiler: gcc
        env: NODE_VERSION="12"
        addons:
          apt:
-            sources: [ 'ubuntu-toolchain-r-test','llvm-toolchain-precise-3.5', 'gcc-multilib', 'g++-multilib' ]
-            packages: [ 'clang-3.5', 'libstdc++-4.9-dev']
+          packages:
+            - ninja-build
      - os: linux
-       compiler: clang
+       dist: bionic
+       compiler: gcc
        env: NODE_VERSION="11"
        addons:
          apt:
-            sources: [ 'ubuntu-toolchain-r-test','llvm-toolchain-precise-3.5', 'gcc-multilib', 'g++-multilib' ]
-            packages: [ 'clang-3.5', 'libstdc++-4.9-dev']
+          packages:
+            - ninja-build
 
 env:
   global:
