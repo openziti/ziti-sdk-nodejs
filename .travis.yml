@@ -65,6 +65,11 @@ before_install:
 install:
 # put node-pre-gyp on path
 - export PATH=./node_modules/.bin/:$PATH
+# build Ziti C-SDK
+- npm run build:init
+- npm run build:c-sdk
+# build Ziti NodeJS-SDK
+- npm run build:nodejs
 # ensure source install works
 - npm install --build-from-source --clang=1
 # test our module
