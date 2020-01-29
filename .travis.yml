@@ -32,28 +32,31 @@ matrix:
      # Linux
      - os: linux
        dist: bionic
-       compiler: gcc
+       compiler: clang
        env: NODE_VERSION="13"
        addons:
          apt:
           packages:
-            - ninja-build
+            - clang-3.5
+            - libstdc++-4.9-dev
      - os: linux
        dist: bionic
-       compiler: gcc
+       compiler: clang
        env: NODE_VERSION="12"
        addons:
          apt:
           packages:
-            - ninja-build
+            - clang-3.5
+            - libstdc++-4.9-dev
      - os: linux
        dist: bionic
-       compiler: gcc
+       compiler: clang
        env: NODE_VERSION="11"
        addons:
          apt:
           packages:
-            - ninja-build
+            - clang-3.5
+            - libstdc++-4.9-dev
 
 env:
   global:
