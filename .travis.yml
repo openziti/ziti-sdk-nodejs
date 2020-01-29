@@ -2,12 +2,11 @@ language: cpp
  
 os:
 - linux
-- osx
+# - osx
  
 env:
   matrix:
     - NODE_VERSION="12"
-
 
 addons:
   apt:
@@ -17,9 +16,6 @@ addons:
     packages:
      - clang-3.5
 
-cache:
-  npm
-
 env:
   global:
    - secure: "Lp5Ylq2MKqwgl8mtJjMpilnZiRXC7kw4dBlXaMcjFyzPxOjr25TN2E88RnFhT2mMW9Bt1OyrXz1Rn/5slHcMcxSNbvRgx5LfrbIYJgTICZFudcSERegxVXxoJqSAYqxuKyPTRWG9dlGSnMd7Lkcd6q1USY7DaNdiNOiLTNvrplFBdZjtAz/3nrG8E62xct8IF+fTytIjZ31e0HndWhxeZWRX9cwQPldLSvF/0J8em0Sv5KFvx02PsLEiXk2QZ+JbO7nxZNgWCmFEfHZVkTy3kfXC0TlXpMFv75uX0lsOyEqcBIuDR4iOQ00xOcL0isOymcY1BvQKjJUoI8K79ygVJW5diaihTd9BAHXPeOa4CjWu1XOrOWRHaes4RZo4rPie2VHh2maHQpkEyj+X5Er0q1nMh8vnc5eEqaRUdce9PHSdUBKQS9uXoRIwqu/TI37XZKLCRSEfN3euAk2bwyOtq7dKNeRye2hsNVNP8Mr9pcrZgrMP3ck2adou7IHZl5+yBRoj1uB6RbqWxuR/ge5+yYYMZWN7wIkCDfPTBEn/RR+Zdv5UdpXK2XnAv1gWD7s8Q/1r5SnfEbUfCayReLqBt046ChJGevhL6ENj5ep09sy16nSkL6NzXkl0Yj7KfcOWhArwJnKQ6/AvGHN9iAdODPGVGEasax34xFEp6soR/Ew="
@@ -28,6 +24,7 @@ env:
 before_install:
 - rm -rf ~/.nvm/ && git clone --depth 1 https://github.com/creationix/nvm.git ~/.nvm
 - source ~/.nvm/nvm.sh
+- echo $NODE_VERSION
 - nvm install $NODE_VERSION
 - nvm use $NODE_VERSION
 - if [[ $(uname -s) == 'Linux' ]]; then
