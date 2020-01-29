@@ -57,6 +57,7 @@ extern pthread_mutex_t nf_init_lock;
 
 extern void set_signal_handler();
 
+extern void expose_NF_hello(napi_env env, napi_value exports);
 extern void expose_NF_init(napi_env env, napi_value exports);
 extern void expose_NF_shutdown(napi_env env, napi_value exports);
 extern void expose_NF_dial(napi_env env, napi_value exports);

@@ -22,6 +22,7 @@ napi_value Init(napi_env env, napi_value exports) {
   set_signal_handler();
 
   // Expose some Ziti SDK functions to JavaScript
+  expose_NF_hello(env, exports);
   expose_NF_init(env, exports);
   expose_NF_shutdown(env, exports);
   expose_NF_dial(env, exports);

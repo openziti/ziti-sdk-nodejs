@@ -1,7 +1,7 @@
 {
   "name": "ziti-sdk-nodejs",
   "description": "A NodeJS-based SDK for delivering secure applications over a Ziti Network",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "main.js",
   "scripts": {
     "build": "npm run build:init; npm run build:c-sdk; npm run build:nodejs",
@@ -11,11 +11,19 @@
     "clean": "node-gyp clean; rm -rf build; cd deps/ziti-sdk-c/build && make clean",
     "test": "echo \"Error: no test specified\"",
     "configure": "node-gyp configure --debug",
-    "start": "node main.js ./config/identity.json chapel-hill"
+    "start": "node main.js ./config/identity.json chapel-hill",
+    "install": "node-pre-gyp install --fallback-to-build"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/netfoundry/ziti-sdk-nodejs.git"
+  },
+  "binary": {
+    "module_name": "ziti_sdk_nodejs",
+    "module_path": "./build/{configuration}/{node_abi}-{platform}-{arch}/",
+    "remote_path": "./{module_name}/v{version}/{configuration}/",
+    "package_name": "{module_name}-v{version}-{node_abi}-{platform}-{arch}.tar.gz",
+    "host": "https://ziti-npm.s3-us-east-1.amazonaws.com"
   },
   "license": "Apache-2.0",
   "licenses": [
@@ -36,6 +44,9 @@
     "url": "http://netfoundry.io"
   },
   "devDependencies": {
+    "aws-sdk": "^2.610.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "node-pre-gyp": "^0.14.0"
+  }
 }

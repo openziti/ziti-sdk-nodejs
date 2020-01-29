@@ -1,11 +1,14 @@
 {
   "targets": [
     {
-      "target_name": "ziti",
+      "target_name": "<(module_name)",
+
+      "product_dir": "<(module_path)",
 
       "sources": [ 
         "./src/ziti-add-on.c",
         "./src/stack_traces.c",
+        "./src/NF_hello.c",
         "./src/NF_init.c",
         "./src/NF_dial.c",
         "./src/NF_shutdown.c",
