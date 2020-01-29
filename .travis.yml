@@ -6,14 +6,6 @@ dist: precise
 
 git:
   depth: 10
-
-addons:
-  apt:
-    sources:
-    - ubuntu-toolchain-r-test
-    - llvm-toolchain-precise-3.5
-    packages:
-     - clang-3.5
  
 matrix:
   include:
@@ -32,28 +24,28 @@ matrix:
      # Linux
      - os: linux
        dist: bionic
-       compiler: clang
+       compiler: gcc
        env: NODE_VERSION="13"
        addons:
          apt:
           packages:
-            - clang-3.9
+            - ninja-build
      - os: linux
        dist: bionic
-       compiler: clang
+       compiler: gcc
        env: NODE_VERSION="12"
        addons:
          apt:
           packages:
-            - clang-3.9
+            - ninja-build
      - os: linux
        dist: bionic
-       compiler: clang
+       compiler: gcc
        env: NODE_VERSION="11"
        addons:
          apt:
           packages:
-            - clang-3.9
+            - ninja-build
 
 env:
   global:
