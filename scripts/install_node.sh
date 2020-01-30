@@ -23,7 +23,8 @@ do_win_node_install() {
 
     # Install the selected version of Node.js using NVS.
     ${LOCALAPPDATA}/nvs/nvs.cmd add ${NODE_VERSION}
-    ${LOCALAPPDATA}/nvs/nvs.cmd use ${NODE_VERSION}
+    ${LOCALAPPDATA}/nvs/nvs.cmd use node/${NODE_VERSION}/x64
+    PATH += ${LOCALAPPDATA}/nvs/node/${NODE_VERSION}/x64
 
     node --version
     npm --version

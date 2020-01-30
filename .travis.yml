@@ -68,7 +68,7 @@ matrix:
      # Windows
      - os: windows
        compiler: gcc
-       env: NODE_VERSION="12"
+       env: NODE_VERSION="12.14.1"
        install:
         - choco install ninja
 
