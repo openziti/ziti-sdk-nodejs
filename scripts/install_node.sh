@@ -25,7 +25,7 @@ do_win_node_install() {
     ${LOCALAPPDATA}/nvs/nvs.cmd add ${NODE_VERSION}
     ${LOCALAPPDATA}/nvs/nvs.cmd use node/${NODE_VERSION}/x64
 
-    refreshenv
+    SET PATH=%PATH%;%LOCALAPPDATA%\nvs\node\12.14.1\x64
 
     node --version
     npm --version
