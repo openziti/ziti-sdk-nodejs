@@ -44,7 +44,6 @@ matrix:
        compiler: gcc
        env: 
          - NODE_VERSION="13"
-         - MATRIX_EVAL="CC=gcc && CXX=g++"
        addons:
          apt:
           packages:
@@ -73,13 +72,13 @@ env:
    - secure: "MHQvBh5E4ElQnUIwTFLfPOp9nHKFzOwhzkFRXcX8uQidmUbX2JcR1GDuDPl/S0beb+HUBftUEwkdmb0fqS/2OxmqckzijJrhJd6x6QuYVXI740hyynzaB6EbRLMG6X1AvMQ2JYygrVEhGYbFTFRC55Ssb70+W+s0+JJLqH+s/3ySYrhpbbGEGgVZx2u7FiQrfA5Ye/4yP3ezQiMxyvCi3w9ovUDag1hPXHsmeGetN5J8AZ0TGDSBneb/8LOPUuaajLkQ2vG4n1LDudu5buePaSZo9x31ZSaVWf387ilAjquTWOSGQNiQBDJ+iCGGjiv6XXWdol6e9bHEz2ySyT1wmzA3fd+LspdHFpXc3fR9tOqxLyMurla5OUZ3uvgbEyknXoutxbwRy4oUkzXE9Kp8dUEZ+TKmaBD1nU+L06I6TscLy8mpOsElq7EK6y5ec3ZSW9iC2k25Y9b76UmWIuTD+4ppOe32AERgk7CXyymQ1zBFP15nVltJzGMlh7YdUyHgffvZWAnvPBSyEoXjBTifd+rDRHdsucBrYcagDw14NESvOvUNJK9R+fjIBw5DhOZFfWMd1oTkCnG1Lqo2VQtQDO1jfUfUq7lGxwSNTTi2ScZQ+H1dlLMEj2fQDmtZidvlOWIJhNHlwj09VRaY+pQtcmrbUdi9WZYwJzEPqYVflMg="
 
 before_install:
-- if [[ $(uname -s) == 'Linux' ]]; then
-    export CXX="clang++-3.5";
-    export CC="clang-3.5";
-    export PYTHONPATH=$(pwd)/py-local/lib/python2.7/site-packages;
-  else
-    export PYTHONPATH=$(pwd)/py-local/lib/python/site-packages;
-  fi;
+# - if [[ $(uname -s) == 'Linux' ]]; then
+#     export CXX="clang++-3.5";
+#     export CC="clang-3.5";
+#     export PYTHONPATH=$(pwd)/py-local/lib/python2.7/site-packages;
+#   else
+#     export PYTHONPATH=$(pwd)/py-local/lib/python/site-packages;
+#   fi;
 - scripts/validate_tag.sh
 - source ./scripts/install_node.sh ${NODE_VERSION}
 # get commit message
