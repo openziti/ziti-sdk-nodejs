@@ -29,6 +29,10 @@ do_win_node_install() {
 
     echo "after nvs, PATH is now: $PATH"
 
+    PATH=$PATH;${LOCALAPPDATA}/nvs/node/${NODE_VERSION}/x64
+
+    echo "after manual update, PATH is now: $PATH"
+
     node --version
     npm --version
 }
