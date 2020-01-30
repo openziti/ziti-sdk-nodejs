@@ -20,8 +20,9 @@ do_win_node_install() {
     choco install nvs
 
     # Install the selected version of Node.js using NVS.
-    nvs add ${NODE_VERSION}
-    nvs use ${NODE_VERSION}
+    ${LOCALAPPDATA}/nvs add ${NODE_VERSION}
+    ${LOCALAPPDATA}/nvs use ${NODE_VERSION}
+    
     node --version
     npm --version
 }
