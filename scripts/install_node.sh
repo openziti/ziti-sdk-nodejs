@@ -10,22 +10,26 @@ NODE_VERSION=$1
 echo "OSTYPE is: $OSTYPE"
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
-        # ...
+    echo "OSTYPE is supported";
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-        # Mac OSX
+    echo "OSTYPE is supported";
 elif [[ "$OSTYPE" == "cygwin" ]]; then
-        # POSIX compatibility layer and Linux environment emulation for Windows
-        exit 0
+    # POSIX compatibility layer and Linux environment emulation for Windows
+    echo "OSTYPE is unsupported";
+    exit 0
 elif [[ "$OSTYPE" == "msys" ]]; then
-        # Lightweight shell and GNU utilities compiled for Windows (part of MinGW)
-        exit 0
+    # Lightweight shell and GNU utilities compiled for Windows (part of MinGW)
+    echo "OSTYPE is unsupported";
+    exit 0
 elif [[ "$OSTYPE" == "win32" ]]; then
-        # I'm not sure this can happen.
-        exit 0
+    # I'm not sure this can happen.
+    echo "OSTYPE is unsupported";
+    exit 0
 elif [[ "$OSTYPE" == "freebsd"* ]]; then
-        # ...
+    echo "OSTYPE is supported";
 else
-        # Unknown.
+    echo "OSTYPE is unsupported";
+    exit 0
 fi
 
 
