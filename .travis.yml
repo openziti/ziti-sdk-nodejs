@@ -81,6 +81,8 @@ env:
 before_install:
 - scripts/validate_tag.sh
 - source ./scripts/install_node.sh ${NODE_VERSION}
+- node --version
+- npm --version
 # get commit message
 - COMMIT_MESSAGE=$(git show -s --format=%B $TRAVIS_COMMIT | tr -d '\n')
 # put local node-pre-gyp on PATH

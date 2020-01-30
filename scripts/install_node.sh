@@ -10,8 +10,8 @@ do_node_install() {
     source ./__nvm/nvm.sh
     nvm install ${NODE_VERSION}
     nvm use --delete-prefix ${NODE_VERSION}
-    node --version
-    npm --version
+    # node --version
+    # npm --version
     which node
 }
 
@@ -24,17 +24,19 @@ do_win_node_install() {
     echo "PATH is currently: $PATH"
 
     # Install the selected version of Node.js using NVS.
-    ${LOCALAPPDATA}/nvs/nvs.cmd add ${NODE_VERSION}
-    ${LOCALAPPDATA}/nvs/nvs.cmd use node/${NODE_VERSION}/x64
+    ${LOCALAPPDATA}/nvs/nvs.cmd add  ${NODE_VERSION}
+    ${LOCALAPPDATA}/nvs/nvs.cmd use  ${NODE_VERSION}
+    ${LOCALAPPDATA}/nvs/nvs.cmd link ${NODE_VERSION}
+    # ${LOCALAPPDATA}/nvs/nvs.cmd use node/${NODE_VERSION}/x64
 
     echo "after nvs, PATH is now: $PATH"
 
-    PATH=$PATH:${LOCALAPPDATA}/nvs/node/${NODE_VERSION}/x64
+    # PATH=$PATH:${LOCALAPPDATA}/nvs/node/${NODE_VERSION}/x64
 
-    echo "after manual update, PATH is now: $PATH"
+    # echo "after manual update, PATH is now: $PATH"
 
-    node --version
-    npm --version
+    # node --version
+    # npm --version
 }
 
 if [[ ${1:-false} == 'false' ]]; then
