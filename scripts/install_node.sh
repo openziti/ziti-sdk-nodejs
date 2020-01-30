@@ -29,6 +29,8 @@ do_win_node_install() {
     ${LOCALAPPDATA}/nvs/nvs.cmd link ${NODE_VERSION}
     # ${LOCALAPPDATA}/nvs/nvs.cmd use node/${NODE_VERSION}/x64
 
+    export PATH=${LOCALAPPDATA}\nvs\default/:$PATH
+
     echo "after nvs, PATH is now: $PATH"
 
     # PATH=$PATH:${LOCALAPPDATA}/nvs/node/${NODE_VERSION}/x64
