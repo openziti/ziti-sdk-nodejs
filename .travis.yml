@@ -70,7 +70,7 @@ matrix:
        compiler: gcc
        env: NODE_VERSION="12"
        install:
-        - choco install ninja
+        - choco install ninja nvs
 
 env:
   global:

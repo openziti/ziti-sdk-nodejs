@@ -15,6 +15,14 @@ do_node_install() {
     which node
 }
 
+do_win_node_install() {
+    # Install the selected version of Node.js using NVS.
+    nvs add ${NODE_VERSION}
+    nvs use ${NODE_VERSION}
+    node --version
+    npm --version
+}
+
 if [[ ${1:-false} == 'false' ]]; then
     echo "Error: pass node version as first argument"
     exit 1
@@ -32,10 +40,12 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     do_node_install;
 elif [[ "$OSTYPE" == "cygwin" ]]; then
     # POSIX compatibility layer and Linux environment emulation for Windows
-    echo "OSTYPE is unsupported";
+    echo "OSTYPE is supported";
+    do_win_node_install
 elif [[ "$OSTYPE" == "msys" ]]; then
     # Lightweight shell and GNU utilities compiled for Windows (part of MinGW)
-    echo "OSTYPE is unsupported";
+    echo "OSTYPE is supported";
+    do_win_node_install
 elif [[ "$OSTYPE" == "win32" ]]; then
     # I'm not sure this can happen.
     echo "OSTYPE is unsupported";
