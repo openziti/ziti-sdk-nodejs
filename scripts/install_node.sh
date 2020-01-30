@@ -16,6 +16,9 @@ do_node_install() {
 }
 
 do_win_node_install() {
+    # install NVS
+    choco install nvs
+
     # Install the selected version of Node.js using NVS.
     nvs add ${NODE_VERSION}
     nvs use ${NODE_VERSION}
