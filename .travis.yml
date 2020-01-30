@@ -1,8 +1,5 @@
-sudo: false
 
-language: generic
-
-dist: precise
+language: c
 
 git:
   depth: 10
@@ -21,11 +18,21 @@ matrix:
        env: NODE_VERSION="13" # node abi 79
        
      - os: osx
-       compiler: clang
+       osx_image: xcode11.2
+       compiler: gcc
+       addons:
+        homebrew:
+          packages:
+            - ninja
        env: NODE_VERSION="12" # node abi 72
 
      - os: osx
-       compiler: clang
+       osx_image: xcode11.2
+       compiler: gcc
+       addons:
+        homebrew:
+          packages:
+            - ninja
        env: NODE_VERSION="11" # node abi 67
 
      # Linux
@@ -37,8 +44,6 @@ matrix:
          apt:
           packages:
             - ninja-build
-            - gcc 
-            - g++
      - os: linux
        dist: bionic
        compiler: gcc
