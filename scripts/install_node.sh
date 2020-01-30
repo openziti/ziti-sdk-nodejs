@@ -21,17 +21,16 @@ do_win_node_install() {
 
     ls -l ${LOCALAPPDATA}/nvs
 
-    echo "PATH is currently: $PATH"
-
     # Install the selected version of Node.js using NVS.
     ${LOCALAPPDATA}/nvs/nvs.cmd add  ${NODE_VERSION}
     ${LOCALAPPDATA}/nvs/nvs.cmd use  ${NODE_VERSION}
     ${LOCALAPPDATA}/nvs/nvs.cmd link ${NODE_VERSION}
-    # ${LOCALAPPDATA}/nvs/nvs.cmd use node/${NODE_VERSION}/x64
 
     export PATH=${LOCALAPPDATA}/nvs/default/:$PATH
 
     echo "after nvs, PATH is now: $PATH"
+
+    ls -l ${LOCALAPPDATA}/nvs/default/node_modules/npm/bin
 
     # PATH=$PATH:${LOCALAPPDATA}/nvs/node/${NODE_VERSION}/x64
 
