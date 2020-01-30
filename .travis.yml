@@ -1,6 +1,9 @@
 
 language: c
 
+compiler:
+  - gcc
+
 git:
   depth: 10
  
@@ -39,7 +42,9 @@ matrix:
      - os: linux
        dist: bionic
        compiler: gcc
-       env: NODE_VERSION="13"
+       env: 
+         - NODE_VERSION="13"
+         - MATRIX_EVAL="CC=gcc && CXX=g++"
        addons:
          apt:
           packages:
