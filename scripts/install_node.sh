@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -u
+
 do_node_install() {
     # if an existing nvm is already installed we need to unload it
     nvm unload || true
@@ -19,14 +21,14 @@ do_win_node_install() {
     # # install NVS
     # choco install nvs
     # Install NVS.
-    - git clone --branch v$NVS_VERSION --depth 1 https://github.com/jasongin/nvs ~/.nvs
-    - . ~/.nvs/nvs.sh
-    - nvs --version
+    git clone --branch v$NVS_VERSION --depth 1 https://github.com/jasongin/nvs ~/.nvs
+    . ~/.nvs/nvs.sh
+    nvs --version
 
-    - nvs add node/$NODEJS_VERSION
-    - nvs use node/$NODEJS_VERSION
-    - node --version
-    - npm --version
+    nvs add node/$NODEJS_VERSION
+    nvs use node/$NODEJS_VERSION
+    node --version
+    npm --version
 
 
     # ls -l ${LOCALAPPDATA}/nvs
