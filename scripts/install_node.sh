@@ -22,6 +22,7 @@ do_win_node_install() {
     # Install NVS.
     export NVS_HOME="$HOME/.nvs"
     git clone https://github.com/jasongin/nvs "$NVS_HOME"
+    export NVS_EXECUTE=1
     . "$NVS_HOME/nvs.sh" install
     nvs --version
 
