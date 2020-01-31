@@ -12,8 +12,6 @@ do_node_install() {
     source ./__nvm/nvm.sh
     nvm install ${NODE_VERSION}
     nvm use --delete-prefix ${NODE_VERSION}
-    # node --version
-    # npm --version
     which node
 }
 
@@ -21,12 +19,12 @@ do_win_node_install() {
     # # install NVS
     # choco install nvs
     # Install NVS.
-    git clone --branch v$NVS_VERSION --depth 1 https://github.com/jasongin/nvs ~/.nvs
+    git clone --branch v${NVS_VERSION} --depth 1 https://github.com/jasongin/nvs ~/.nvs
     . ~/.nvs/nvs.sh
     nvs --version
 
-    nvs add node/$NODEJS_VERSION
-    nvs use node/$NODEJS_VERSION
+    nvs add node/${NODE_VERSION}
+    nvs use node/${NODE_VERSION}
     node --version
     npm --version
 
