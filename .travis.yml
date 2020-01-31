@@ -7,6 +7,10 @@ compiler:
 git:
   depth: 10
  
+env:
+  global:
+  - NVS_VERSION=1.5.2
+
 matrix:
   include:
 
@@ -68,7 +72,7 @@ matrix:
      # Windows
      - os: windows
        compiler: gcc
-       env: NODE_VERSION="12.14.1"
+       env: NODE_VERSION="12"
        install:
         - choco install ninja
 

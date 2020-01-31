@@ -16,28 +16,32 @@ do_node_install() {
 }
 
 do_win_node_install() {
-    # install NVS
-    choco install nvs
+    # # install NVS
+    # choco install nvs
+    # Install NVS.
+    - git clone --branch v$NVS_VERSION --depth 1 https://github.com/jasongin/nvs ~/.nvs
+    - . ~/.nvs/nvs.sh
+    - nvs --version
 
-    ls -l ${LOCALAPPDATA}/nvs
+    - nvs add node/$NODEJS_VERSION
+    - nvs use node/$NODEJS_VERSION
+    - node --version
+    - npm --version
 
-    # Install the selected version of Node.js using NVS.
-    ${LOCALAPPDATA}/nvs/nvs.cmd add  ${NODE_VERSION}
-    ${LOCALAPPDATA}/nvs/nvs.cmd use  ${NODE_VERSION}
-    ${LOCALAPPDATA}/nvs/nvs.cmd link ${NODE_VERSION}
 
-    export PATH=${LOCALAPPDATA}/nvs/default/:$PATH
+    # ls -l ${LOCALAPPDATA}/nvs
 
-    echo "after nvs, PATH is now: $PATH"
+    # # Install the selected version of Node.js using NVS.
+    # ${LOCALAPPDATA}/nvs/nvs.cmd add  ${NODE_VERSION}
+    # ${LOCALAPPDATA}/nvs/nvs.cmd use  ${NODE_VERSION}
+    # ${LOCALAPPDATA}/nvs/nvs.cmd link ${NODE_VERSION}
 
-    ls -l ${LOCALAPPDATA}/nvs/default/node_modules/npm/bin
+    # export PATH=${LOCALAPPDATA}/nvs/default/:$PATH
 
-    # PATH=$PATH:${LOCALAPPDATA}/nvs/node/${NODE_VERSION}/x64
+    # echo "after nvs, PATH is now: $PATH"
 
-    # echo "after manual update, PATH is now: $PATH"
+    # ls -l ${LOCALAPPDATA}/nvs/default/node_modules/npm/bin
 
-    # node --version
-    # npm --version
 }
 
 if [[ ${1:-false} == 'false' ]]; then
