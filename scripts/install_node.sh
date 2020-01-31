@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -u
-
 do_node_install() {
     # if an existing nvm is already installed we need to unload it
     nvm unload || true
@@ -27,7 +25,8 @@ do_win_node_install() {
     nvs --version
 
     nvs add node/${NODE_VERSION}
-    nvs use node/${NODE_VERSION}
+    "$NVS_HOME/nvs.sh"  use node/${NODE_VERSION}
+
     node --version
     npm --version
 
