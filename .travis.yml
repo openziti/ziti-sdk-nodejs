@@ -69,13 +69,11 @@ matrix:
      - os: windows
        compiler: gcc
        env: NODE_VERSION="12"
-       env: NVS_VERSION="1.5.2"
        install:
         - choco install ninja
 
 env:
   global:
-   - JOBS: "8"
    - secure: "Lp5Ylq2MKqwgl8mtJjMpilnZiRXC7kw4dBlXaMcjFyzPxOjr25TN2E88RnFhT2mMW9Bt1OyrXz1Rn/5slHcMcxSNbvRgx5LfrbIYJgTICZFudcSERegxVXxoJqSAYqxuKyPTRWG9dlGSnMd7Lkcd6q1USY7DaNdiNOiLTNvrplFBdZjtAz/3nrG8E62xct8IF+fTytIjZ31e0HndWhxeZWRX9cwQPldLSvF/0J8em0Sv5KFvx02PsLEiXk2QZ+JbO7nxZNgWCmFEfHZVkTy3kfXC0TlXpMFv75uX0lsOyEqcBIuDR4iOQ00xOcL0isOymcY1BvQKjJUoI8K79ygVJW5diaihTd9BAHXPeOa4CjWu1XOrOWRHaes4RZo4rPie2VHh2maHQpkEyj+X5Er0q1nMh8vnc5eEqaRUdce9PHSdUBKQS9uXoRIwqu/TI37XZKLCRSEfN3euAk2bwyOtq7dKNeRye2hsNVNP8Mr9pcrZgrMP3ck2adou7IHZl5+yBRoj1uB6RbqWxuR/ge5+yYYMZWN7wIkCDfPTBEn/RR+Zdv5UdpXK2XnAv1gWD7s8Q/1r5SnfEbUfCayReLqBt046ChJGevhL6ENj5ep09sy16nSkL6NzXkl0Yj7KfcOWhArwJnKQ6/AvGHN9iAdODPGVGEasax34xFEp6soR/Ew="
    - secure: "MHQvBh5E4ElQnUIwTFLfPOp9nHKFzOwhzkFRXcX8uQidmUbX2JcR1GDuDPl/S0beb+HUBftUEwkdmb0fqS/2OxmqckzijJrhJd6x6QuYVXI740hyynzaB6EbRLMG6X1AvMQ2JYygrVEhGYbFTFRC55Ssb70+W+s0+JJLqH+s/3ySYrhpbbGEGgVZx2u7FiQrfA5Ye/4yP3ezQiMxyvCi3w9ovUDag1hPXHsmeGetN5J8AZ0TGDSBneb/8LOPUuaajLkQ2vG4n1LDudu5buePaSZo9x31ZSaVWf387ilAjquTWOSGQNiQBDJ+iCGGjiv6XXWdol6e9bHEz2ySyT1wmzA3fd+LspdHFpXc3fR9tOqxLyMurla5OUZ3uvgbEyknXoutxbwRy4oUkzXE9Kp8dUEZ+TKmaBD1nU+L06I6TscLy8mpOsElq7EK6y5ec3ZSW9iC2k25Y9b76UmWIuTD+4ppOe32AERgk7CXyymQ1zBFP15nVltJzGMlh7YdUyHgffvZWAnvPBSyEoXjBTifd+rDRHdsucBrYcagDw14NESvOvUNJK9R+fjIBw5DhOZFfWMd1oTkCnG1Lqo2VQtQDO1jfUfUq7lGxwSNTTi2ScZQ+H1dlLMEj2fQDmtZidvlOWIJhNHlwj09VRaY+pQtcmrbUdi9WZYwJzEPqYVflMg="
 

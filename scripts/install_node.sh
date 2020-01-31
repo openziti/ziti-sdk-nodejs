@@ -18,10 +18,15 @@ do_node_install() {
 do_win_node_install() {
     # # install NVS
     # choco install nvs
+
     # Install NVS.
-    git clone --branch v${NVS_VERSION} --depth 1 https://github.com/jasongin/nvs ~/.nvs
+    echo "do_win_node_install 1"
+    git clone --branch v1.5.4 --depth 1 https://github.com/jasongin/nvs ~/.nvs
+    echo "do_win_node_install 2"
     . ~/.nvs/nvs.sh
+    echo "do_win_node_install 3"
     nvs --version
+    echo "do_win_node_install 4"
 
     nvs add node/${NODE_VERSION}
     nvs use node/${NODE_VERSION}
