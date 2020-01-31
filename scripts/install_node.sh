@@ -25,7 +25,11 @@ do_win_node_install() {
     nvs --version
 
     nvs add node/${NODE_VERSION}
+    
     "$NVS_HOME/nvs.sh"  use node/${NODE_VERSION}
+
+    "$NVS_HOME/nvs.sh"  link node/${NODE_VERSION}
+    # ${LOCALAPPDATA}/nvs/nvs.cmd link ${NODE_VERSION}
 
     node --version
     npm --version
