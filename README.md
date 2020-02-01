@@ -5,6 +5,10 @@ A NodeJS-based SDK for delivering secure applications over a [Ziti Network](http
 
 ## Status 
 [![Build Status](https://travis-ci.org/netfoundry/ziti-sdk-nodejs.svg?branch=master)](https://travis-ci.org/netfoundry/ziti-sdk-nodejs)
+[![npm](https://img.shields.io/npm/v/ziti-sdk-nodejs.svg)](https://www.npmjs.com/package/ziti-sdk-nodejs)
+[![npm](https://img.shields.io/npm/l/ziti-sdk-nodejs.svg)](https://www.npmjs.com/package/ziti-sdk-nodejs)
+[![npm](https://img.shields.io/npm/dm/ziti-sdk-nodejs.svg)](https://www.npmjs.com/package/ziti-sdk-nodejs)
+
 
 ## Supported platforms
 
