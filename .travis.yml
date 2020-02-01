@@ -18,8 +18,9 @@ matrix:
         homebrew:
           packages:
             - ninja
-       env: NODE_VERSION="13" # node abi 79
-       env: DO_NPM_PUBLISH=true
+       env:
+        - NODE_VERSION="13" # node abi 79
+        - DO_NPM_PUBLISH=true # only attempt 'npm publish' from one job in the matrix
        
      - os: osx
        osx_image: xcode11.2
