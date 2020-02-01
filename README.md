@@ -1,5 +1,83 @@
 # ziti-sdk-nodejs
-A NodeJS-based SDK for delivering secure applications over a Ziti Network
+A NodeJS-based SDK for delivering secure applications over a [Ziti Network](https://ziti.dev)
+
+[![NPM](https://nodei.co/npm/ziti-sdk-nodejs.png?downloads=true&downloadRank=true)](https://nodei.co/npm/ziti-sdk-nodejs/)
+
+## Status 
+[![Build Status](https://travis-ci.org/netfoundry/ziti-sdk-nodejs.svg?branch=master)](https://travis-ci.org/netfoundry/ziti-sdk-nodejs)
+
+## Supported platforms
+
+The `ziti-sdk-nodejs` module works with Node.js v11.x, v12.x.
+
+Binaries for most Node versions and platforms are provided by default via [node-pre-gyp](https://github.com/mapbox/node-pre-gyp).
+
+# Usage
+
+**Note:** the module must be [installed](#installing) before use.
+
+``` js
+var ziti = require('ziti-sdk-nodejs');
+
+const NF_init = async (identity) => {
+    return new Promise((resolve) => {
+        ziti.NF_init(identity, () => {
+            resolve();
+        });
+    });
+};
+
+const NF_service_available = (service) => {
+    return new Promise((resolve) => {
+        ziti.NF_service_available(service, (status) => {
+            resolve(status);
+        });
+    });
+};
+
+function NF_dial(service) {
+    return new Promise((resolve, reject) => {
+        ziti.NF_dial(
+            service,
+            (conn) => {
+                resolve(conn);
+            },
+            (data) => {
+                // Do something with data...
+            },
+        );
+    });
+}
+
+const NF_write = (conn, data) => {
+    return new Promise((resolve) => {
+        ziti.NF_write(conn, data, () => {
+            resolve();
+        });
+    });
+};
+
+(async () => {
+
+    await NF_init(LOCATION_OF_IDENTITY_FILE);
+
+    let status = await NF_service_available(YOUR_SERVICE_NAME);
+
+    if (status === 0) {
+
+        const conn = await NF_dial(YOUR_SERVICE_NAME);
+
+        let data = SOME_KIND_OF_DATA;
+
+        let buffer = Buffer.from(data);
+
+        await NF_write(conn, buffer);
+
+        ...etc
+    }
+
+})();
+```
 
 
 # Ziti NodeJS SDK - Setup for Development
@@ -8,8 +86,6 @@ The following steps should get your NodeJS SDK for Ziti building. The Ziti NodeJ
 and is written in C. C development is specific to your operating system and tool chain used. These steps should work 
 properly for you but if your OS has variations you may need to adapt these steps accordingly.
 
-## Status 
-[![Build Status](https://travis-ci.org/netfoundry/ziti-sdk-nodejs.svg?branch=master)](https://travis-ci.org/netfoundry/ziti-sdk-nodejs)
 
 ## Prerequisites
 

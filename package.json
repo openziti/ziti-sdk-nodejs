@@ -1,10 +1,10 @@
 {
   "name": "ziti-sdk-nodejs",
   "description": "A NodeJS-based SDK for delivering secure applications over a Ziti Network",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "main": "./lib/ziti",
   "scripts": {
-    "build": "npm run build:init; npm run build:c-sdk; npm run build:nodejs",
+    "build": "npm run build:init; npm run build:c-sdk; npm install --build-from-source --clang=1",
     "build:init": "git submodule update --init --recursive",
     "build:c-sdk": "cd deps/ziti-sdk-c; mkdir build; cd build; cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=debug ..; make",
     "build:nodejs": "node-gyp clean configure --debug build --debug -g --mmacosx-version-min=10.13",
