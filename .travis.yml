@@ -19,6 +19,7 @@ matrix:
           packages:
             - ninja
        env: NODE_VERSION="13" # node abi 79
+       env: DO_NPM_PUBLISH=true
        
      - os: osx
        osx_image: xcode11.2
@@ -133,3 +134,4 @@ deploy:
   on:
     tags: true
     branch: master
+    condition: $DO_NPM_PUBLISH = true
