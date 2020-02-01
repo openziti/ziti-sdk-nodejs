@@ -102,7 +102,7 @@ install:
 # build Ziti NodeJS-SDK
 - npm install --build-from-source --clang=1
 # test our module
-- node test.js
+- node tests/hello.js
 
 before_script:
 # if publishing, do it
