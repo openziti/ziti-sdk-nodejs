@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <nf/ziti-nodejs.h>
+#include "nf/ziti-nodejs.h"
 
 nf_context nf;
 uv_loop_t *loop = NULL;

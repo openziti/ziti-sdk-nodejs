@@ -28,7 +28,7 @@ on windows: gcc -g stack_traces.c -limagehlp
 #include <stdint.h>
 #include <stdbool.h>
 #include <errno.h>
-#include <pthread.h>
+// #include <pthread.h>
 #include <node_api.h>
 
 #ifdef _WIN32
