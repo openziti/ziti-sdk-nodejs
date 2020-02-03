@@ -92,8 +92,15 @@ IF DEFINED needs_patch CALL npm install --prefix %npm_in_nodejs_dir% node-gyp@6.
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 ECHO ===== conditional node-gyp upgrade END ============
 
-CALL npm install --build-from-source --msvs_version=%msvs_version% %TOOLSET_ARGS% --loglevel=http
+:: build Ziti C-SDK
+CALL npm run build:init
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
+CALL npm run build:c-sdk
+IF %ERRORLEVEL% NEQ 0 GOTO ERROR
+
+:: build Ziti NodeJS-SDK
+CALL npm install --build-from-source --msvs_version=%msvs_version% %TOOLSET_ARGS% --loglevel=http
+
 
 FOR /F "tokens=*" %%i in ('"CALL node_modules\.bin\node-pre-gyp reveal module %TOOLSET_ARGS% --silent"') DO SET MODULE=%%i
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
@@ -112,8 +119,8 @@ IF "%NODE_RUNTIME%"=="electron" GOTO CHECK_ELECTRON_TEST_ERRORLEVEL
 ::@springmeyer: how to proceed?
 IF NOT "%nodejs_version%"=="1.8.1" IF NOT "%nodejs_version%"=="2.0.0" GOTO CHECK_NPM_TEST_ERRORLEVEL
 
-ECHO calling npm test
-CALL npm test
+ECHO test our module
+CALL node tests/hello.js
 ECHO ==========================================
 ECHO ==========================================
 ECHO ==========================================
