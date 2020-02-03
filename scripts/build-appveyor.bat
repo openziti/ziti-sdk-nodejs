@@ -113,10 +113,11 @@ IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 CALL cd ..
 CALL cd ..
 CALL cd ..
+ECHO ===== after cd ../../.. dir contains... ============
+CALL dir
 
 :: build Ziti NodeJS-SDK
-CALL npm install --build-from-source --msvs_version=%msvs_version% %TOOLSET_ARGS% --loglevel=http --clang=1
-
+CALL npm install --build-from-source --clang=1 --msvs_version=%msvs_version% %TOOLSET_ARGS%
 
 FOR /F "tokens=*" %%i in ('"CALL node_modules\.bin\node-pre-gyp reveal module %TOOLSET_ARGS% --silent"') DO SET MODULE=%%i
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
