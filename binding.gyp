@@ -1,4 +1,8 @@
 {
+  "include_dirs": [ 
+    "includes",
+  ],
+
   "targets": [
     {
       "target_name": "<(module_name)",

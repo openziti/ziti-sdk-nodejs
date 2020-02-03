@@ -12,7 +12,7 @@
     "test": "echo \"Error: no test specified\"",
     "configure": "node-gyp configure --debug",
     "start": "node main.js ./config/identity.json chapel-hill",
-    "install": "node-pre-gyp install --fallback-to-build"
+    "install": "node-pre-gyp install --fallback-to-build --build-from-source"
   },
   "repository": {
     "type": "git",
