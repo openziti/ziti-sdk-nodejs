@@ -19,17 +19,6 @@
         "./src/NF_close.c",
       ],
 
-      "libraries": [ 
-        "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libhttp-parser.a",
-        "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/crypto/library/libmbedcrypto.a",
-        "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/libmbedtls.a",
-        "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/libmbedx509.a",
-        "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv/libuv_a.a",
-        "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv_link.a",
-        "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/libuv_mbed.a",
-        "$(PWD)/deps/ziti-sdk-c/build/library/libziti.a",        
-      ],
-
       "include_dirs": [
           "deps/ziti-sdk-c/includes",
           "deps/ziti-sdk-c/deps/uv-mbed/include",
@@ -38,6 +27,18 @@
       "conditions": [
 
         ["OS=='mac'", {
+
+          "libraries": [ 
+            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libhttp-parser.a",
+            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/crypto/library/libmbedcrypto.a",
+            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/libmbedtls.a",
+            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/libmbedx509.a",
+            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv/libuv_a.a",
+            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv_link.a",
+            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/libuv_mbed.a",
+            "$(PWD)/deps/ziti-sdk-c/build/library/libziti.a",        
+          ],
+
           "xcode_settings": {
             "ALWAYS_SEARCH_USER_PATHS": "NO",
             "GCC_CW_ASM_SYNTAX": "NO",                # No -fasm-blocks
@@ -86,13 +87,23 @@
             "deps/ziti-sdk-c/build/deps/uv-mbed/deps/uv_link.lib",
             "deps/ziti-sdk-c/build/deps/uv-mbed/uv_mbed.lib",
             "deps/ziti-sdk-c/build/library/ziti.lib",        
-          ],
-
+          ]
 
         }],
 
 
         ['OS == "linux"', {
+
+          "libraries": [ 
+            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libhttp-parser.a",
+            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/crypto/library/libmbedcrypto.a",
+            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/libmbedtls.a",
+            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/libmbedx509.a",
+            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv/libuv_a.a",
+            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv_link.a",
+            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/libuv_mbed.a",
+            "$(PWD)/deps/ziti-sdk-c/build/library/libziti.a",        
+          ],
 
           "cflags": ["-w", "-fpermissive", "-fPIC"]
 
