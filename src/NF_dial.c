@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 #include "ziti-nodejs.h"
-#include <unistd.h>
+// #include <unistd.h>
 #include <string.h>
 
 /**

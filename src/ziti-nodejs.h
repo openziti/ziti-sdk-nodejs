@@ -53,7 +53,7 @@ extern "C" {
 
 extern nf_context nf;
 
-extern pthread_mutex_t nf_init_lock;
+// extern pthread_mutex_t nf_init_lock;
 
 extern void set_signal_handler();
 
