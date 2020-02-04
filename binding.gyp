@@ -77,6 +77,18 @@
             'deps\ziti-sdk-c\deps\uv-mbed\include',
           ],
 
+          "libraries": [ 
+            "deps\ziti-sdk-c\build\deps\uv-mbed\deps\http-parser.lib",
+            "deps\ziti-sdk-c\build\deps\uv-mbed\deps\mbedtls\crypto\library\mbedcrypto.lib",
+            "deps\ziti-sdk-c\build\deps\uv-mbed\deps\mbedtls\library\mbedtls.lib",
+            "deps\ziti-sdk-c\build\deps\uv-mbed\deps\mbedtls\library\mbedx509.lib",
+            "deps\ziti-sdk-c\build\deps\uv-mbed\deps\libuv\uv_a.lib",
+            "deps\ziti-sdk-c\build\deps\uv-mbed\deps\uv_link.lib",
+            "deps\ziti-sdk-c\build\deps\uv-mbed\uv_mbed.lib",
+            "deps\ziti-sdk-c\build\library\ziti.lib",        
+          ],
+
+
         }],
 
 
