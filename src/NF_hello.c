@@ -22,12 +22,17 @@ limitations under the License.
  */
 napi_value _NF_hello(napi_env env, const napi_callback_info info) {
   napi_value jsRetval = NULL;
+  napi_status status = napi_generic_failure;
 
-  assert(napi_create_string_utf8(
-    env,
-    "ziti",
-    NAPI_AUTO_LENGTH,
-    &jsRetval) == napi_ok);
+  status = napi_create_string_utf8(env, "ziti", NAPI_AUTO_LENGTH, &jsRetval);
+  if (status != napi_ok) return NULL;
+
+
+  // assert(napi_create_string_utf8(
+  //   env,
+  //   "ziti",
+  //   NAPI_AUTO_LENGTH,
+  //   &jsRetval) == napi_ok);
 
   return jsRetval;
 }

@@ -39,9 +39,24 @@
           'NDEBUG'
         ],
         'xcode_settings': {
+            "ALWAYS_SEARCH_USER_PATHS": "NO",
+            "GCC_CW_ASM_SYNTAX": "NO",                # No -fasm-blocks
+            "GCC_DYNAMIC_NO_PIC": "NO",               # No -mdynamic-no-pic
+                                                      # (Equivalent to -fPIC)
+            "GCC_ENABLE_CPP_EXCEPTIONS": "NO",        # -fno-exceptions
+            "GCC_ENABLE_CPP_RTTI": "NO",              # -fno-rtti
+            "GCC_ENABLE_PASCAL_STRINGS": "NO",        # No -mpascal-strings
+            "GCC_THREADSAFE_STATICS": "NO",           # -fno-threadsafe-statics
+            "PREBINDING": "NO",                       # No -Wl,-prebind
+            "MACOSX_DEPLOYMENT_TARGET": "10.13",      # -mmacosx-version-min=10.13
+            "USE_HEADERMAP": "NO",
+
           'OTHER_CPLUSPLUSFLAGS!': [
             '-Os',
             '-O2',
+            '-fno-strict-aliasing',
+            '-g',
+            '-fno-pie'
           ],
           'WARNING_CFLAGS': [
             '-Wall',

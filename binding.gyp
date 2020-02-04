@@ -3,6 +3,8 @@
 
   "include_dirs": [ 
     "includes",
+    "$(PWD)/deps/ziti-sdk-c/includes",
+    "$(PWD)/deps/ziti-sdk-c/deps/uv-mbed/include",
   ],
 
   "targets": [
@@ -74,7 +76,13 @@
           }
         }],
 
-        # ['OS == "win"', {
+        ['OS == "win"', {
+          "include_dirs": [ 
+            "includes",
+            "$(PWD)/deps/ziti-sdk-c/includes",
+            "$(PWD)/deps/ziti-sdk-c/deps/uv-mbed/include",
+          ],
+
         #     'defines': [
         #       '_ALLOW_KEYWORD_MACROS',
         #       '_FILE_OFFSET_BITS=64'
@@ -84,7 +92,7 @@
         #       '../vendor/lib/libglib-2.0.lib',
         #       '../vendor/lib/libgobject-2.0.lib'
         #     ]
-        # }],
+        }],
 
         ['OS == "linux"', {
 
