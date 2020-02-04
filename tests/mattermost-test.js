@@ -27,7 +27,6 @@ const rand = max => Math.floor(Math.random() * max);
 const delay = (ms, value) => new Promise(resolve => setTimeout(resolve, ms, value));
 
 const NF_init = async () => {
-    await delay(rand(1000));
     return new Promise((resolve) => {
         ziti.NF_init(process.argv[2], () => {
             resolve();

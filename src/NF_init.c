@@ -20,7 +20,7 @@ nf_context nf;
 uv_loop_t *loop = NULL;
 
 uv_loop_t *thread_loop;
-pthread_t thread;
+uv_thread_t thread;
 uv_async_t async;
 
 
