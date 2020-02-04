@@ -1,11 +1,15 @@
 {
   "includes": [ "deps/common-ziti.gypi" ],
 
-  "include_dirs": [ 
-    "includes",
-    "$(PWD)/deps/ziti-sdk-c/includes",
-    "$(PWD)/deps/ziti-sdk-c/deps/uv-mbed/include",
-  ],
+  # "include_dirs": [ 
+  #           '<(module_root_dir)\includes'
+  #           '<(module_root_dir)\deps\ziti-sdk-c\includes',
+  #           '<(module_root_dir)\deps\ziti-sdk-c\deps\uv-mbed\include',
+
+  #   # "includes",
+  #   # "$(PWD)/deps/ziti-sdk-c/includes",
+  #   # "$(PWD)/deps/ziti-sdk-c/deps/uv-mbed/include",
+  # ],
 
   "targets": [
     {
@@ -37,9 +41,8 @@
       ],
 
       "include_dirs": [
-          "$(PWD)/includes",
-          "$(PWD)/deps/ziti-sdk-c/includes",
-          "$(PWD)/deps/ziti-sdk-c/deps/uv-mbed/include",
+          "deps/ziti-sdk-c/includes",
+          "deps/ziti-sdk-c/deps/uv-mbed/include",
       ],
 
       "conditions": [
@@ -78,9 +81,8 @@
 
         ['OS == "win"', {
           "include_dirs": [ 
-            "includes",
-            "$(PWD)/deps/ziti-sdk-c/includes",
-            "$(PWD)/deps/ziti-sdk-c/deps/uv-mbed/include",
+            'deps\ziti-sdk-c\includes',
+            'deps\ziti-sdk-c\deps\uv-mbed\include',
           ],
 
         #     'defines': [
