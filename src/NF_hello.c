@@ -21,7 +21,7 @@ limitations under the License.
  * 
  */
 napi_value _NF_hello(napi_env env, const napi_callback_info info) {
-  napi_value jsRetval;
+  napi_value jsRetval = NULL;
 
   assert(napi_create_string_utf8(
     env,

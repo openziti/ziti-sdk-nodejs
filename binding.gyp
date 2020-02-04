@@ -1,4 +1,6 @@
 {
+  "includes": [ "deps/common-ziti.gypi" ],
+
   "include_dirs": [ 
     "includes",
   ],
@@ -72,17 +74,17 @@
           }
         }],
 
-        ['OS == "win"', {
-            'defines': [
-              '_ALLOW_KEYWORD_MACROS',
-              '_FILE_OFFSET_BITS=64'
-            ],
-            'libraries': [
-              '../vendor/lib/libvips.lib',
-              '../vendor/lib/libglib-2.0.lib',
-              '../vendor/lib/libgobject-2.0.lib'
-            ]
-        }],
+        # ['OS == "win"', {
+        #     'defines': [
+        #       '_ALLOW_KEYWORD_MACROS',
+        #       '_FILE_OFFSET_BITS=64'
+        #     ],
+        #     'libraries': [
+        #       '../vendor/lib/libvips.lib',
+        #       '../vendor/lib/libglib-2.0.lib',
+        #       '../vendor/lib/libgobject-2.0.lib'
+        #     ]
+        # }],
 
         ['OS == "linux"', {
 
