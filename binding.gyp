@@ -1,16 +1,6 @@
 {
   "includes": [ "deps/common-ziti.gypi" ],
 
-  # "include_dirs": [ 
-  #           '<(module_root_dir)\includes'
-  #           '<(module_root_dir)\deps\ziti-sdk-c\includes',
-  #           '<(module_root_dir)\deps\ziti-sdk-c\deps\uv-mbed\include',
-
-  #   # "includes",
-  #   # "$(PWD)/deps/ziti-sdk-c/includes",
-  #   # "$(PWD)/deps/ziti-sdk-c/deps/uv-mbed/include",
-  # ],
-
   "targets": [
     {
       "target_name": "<(module_name)",
@@ -19,7 +9,7 @@
 
       "sources": [ 
         "./src/ziti-add-on.c",
-        "./src/stack_traces.c",
+        # "./src/stack_traces.c",
         "./src/NF_hello.c",
         "./src/NF_init.c",
         "./src/NF_dial.c",
@@ -79,22 +69,16 @@
           }
         }],
 
+
         ['OS == "win"', {
+
           "include_dirs": [ 
             'deps\ziti-sdk-c\includes',
             'deps\ziti-sdk-c\deps\uv-mbed\include',
           ],
 
-        #     'defines': [
-        #       '_ALLOW_KEYWORD_MACROS',
-        #       '_FILE_OFFSET_BITS=64'
-        #     ],
-        #     'libraries': [
-        #       '../vendor/lib/libvips.lib',
-        #       '../vendor/lib/libglib-2.0.lib',
-        #       '../vendor/lib/libgobject-2.0.lib'
-        #     ]
         }],
+
 
         ['OS == "linux"', {
 
