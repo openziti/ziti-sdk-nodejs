@@ -110,6 +110,8 @@ CALL cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=debug -G "NMa
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 CALL nmake
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
+ECHO ===== nmake produced... ============
+CALL dir /s
 CALL cd ..
 CALL cd ..
 CALL cd ..
