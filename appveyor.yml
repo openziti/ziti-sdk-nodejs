@@ -12,9 +12,13 @@ environment:
     secure: 7sxn6236C/oltJYJfel3ISUxQfuBfB44QqdWs0Thjy+U3s+6MPugW8CGVlC8p0o8
 
   matrix:
+    - nodejs_version: 11
+      platform: x64
     - nodejs_version: 12
       platform: x64
-    # electron
+    - nodejs_version: 13
+      platform: x64
+    # # electron
     # - nodejs_version: 12
     #   platform: x64
     #   NODE_RUNTIME: electron
