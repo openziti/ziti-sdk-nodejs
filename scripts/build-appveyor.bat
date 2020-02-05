@@ -111,12 +111,14 @@ IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 CALL nmake
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 ECHO ===== nmake produced... ============
-CALL dir /s
+REM CALL dir /s
 CALL cd ..
 CALL cd ..
 CALL cd ..
 ECHO ===== after cd ../../.. dir contains... ============
 CALL dir
+
+SET CURRENT_DIR=%CD%
 
 :: build Ziti NodeJS-SDK
 CALL npm install --build-from-source --msvs_version=%msvs_version% %TOOLSET_ARGS%
