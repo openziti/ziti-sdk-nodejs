@@ -79,7 +79,7 @@
           ],
 
           "libraries": [
-            'deps/ziti-sdk-c/build/deps/uv-mbed/deps/http-parser.lib',
+            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/http-parser.lib",
             "deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/crypto/library/mbedcrypto.lib",
             "deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/mbedtls.lib",
             "deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/mbedx509.lib",
