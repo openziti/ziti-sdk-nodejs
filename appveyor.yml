@@ -6,6 +6,11 @@ configuration:
   - Release
 
 environment:
+  AWS_ACCESS_KEY_ID:
+    secure: GIQzwkV21ZqWhzZ0ii13r4dOEZ6Pkq8r6Jajx18uEaY=
+  AWS_SECRET_ACCESS_KEY:
+    secure: 7sxn6236C/oltJYJfel3ISUxQfuBfB44QqdWs0Thjy+U3s+6MPugW8CGVlC8p0o8
+
   matrix:
     - nodejs_version: 12
       platform: x64
