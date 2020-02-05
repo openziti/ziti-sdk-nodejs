@@ -92,7 +92,11 @@
             "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/uv_link.lib",
             "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/uv_mbed.lib",
             "<(cd)/deps/ziti-sdk-c/build/library/ziti.lib",        
-          ]
+          ],
+
+          "OTHER_LDFLAGS": [
+            "/NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:msvcrt.lib /NODEFAULTLIB:libcmtd.lib /NODEFAULTLIB:msvcrtd.lib",
+          ],
 
         }],
 
