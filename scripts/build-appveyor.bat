@@ -106,7 +106,7 @@ CALL dir
 ECHO ===== starting make sequence... ============
 CALL mkdir build
 CALL cd build
-CALL cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=release -G "NMake Makefiles" ..
+CALL cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release -G "NMake Makefiles" ..
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 CALL nmake
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR

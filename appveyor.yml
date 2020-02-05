@@ -1,13 +1,20 @@
+
+platform:
+  - x64
+
+configuration:
+  - Release
+
 environment:
   matrix:
     - nodejs_version: 12
       platform: x64
     # electron
-    - nodejs_version: 12
-      platform: x64
-      NODE_RUNTIME: electron
-      NODE_RUNTIME_VERSION: 7.1.0
-      TOOLSET_ARGS: --dist-url=https://atom.io/download/electron
+    # - nodejs_version: 12
+    #   platform: x64
+    #   NODE_RUNTIME: electron
+    #   NODE_RUNTIME_VERSION: 7.1.0
+    #   TOOLSET_ARGS: --dist-url=https://atom.io/download/electron
 
 os: Visual Studio 2015
 
