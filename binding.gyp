@@ -96,8 +96,9 @@
 
           'msvs_settings': {
             'VCLinkerTool': {
-              'IgnoreDefaultLibraryNames':
-                  ['libcmtd.lib', 'libcmt.lib', 'msvcrt.lib', 'msvcrtd.lib'],
+              'IgnoreDefaultLibraryNames': [
+                'libcmtd.lib', 'libcmt.lib', 'msvcrtd.lib'
+              ],
             }
           },
 
