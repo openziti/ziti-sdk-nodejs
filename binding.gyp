@@ -1,8 +1,9 @@
 {
   # "includes": [ "deps/common-ziti.gypi" ],
 
+  # The "cd" variable is passed in, and used, only during Windows builds
   'variables': {
-    'cd%': '<(current_dir)'
+    'cd%': '.'
 	},
 
   "targets": [
@@ -84,13 +85,13 @@
 
           "libraries": [
             "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/http-parser.lib",
-            "deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/crypto/library/mbedcrypto.lib",
-            "deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/mbedtls.lib",
-            "deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/mbedx509.lib",
-            "deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv/uv_a.lib",
-            "deps/ziti-sdk-c/build/deps/uv-mbed/deps/uv_link.lib",
-            "deps/ziti-sdk-c/build/deps/uv-mbed/uv_mbed.lib",
-            "deps/ziti-sdk-c/build/library/ziti.lib",        
+            "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/crypto/library/mbedcrypto.lib",
+            "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/mbedtls.lib",
+            "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/mbedx509.lib",
+            "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv/uv_a.lib",
+            "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/uv_link.lib",
+            "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/uv_mbed.lib",
+            "<(cd)/deps/ziti-sdk-c/build/library/ziti.lib",        
           ]
 
         }],
