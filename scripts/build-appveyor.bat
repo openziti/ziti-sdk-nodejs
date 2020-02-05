@@ -110,6 +110,11 @@ CALL cd ..
 
 :: build Ziti NodeJS-SDK
 CALL npm install --build-from-source --cd=%CD% --msvs_version=%msvs_version% %TOOLSET_ARGS%
+IF %ERRORLEVEL% NEQ 0 GOTO ERROR
+
+:: test our module
+CALL node tests/hello.js
+IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
 FOR /F "tokens=*" %%i in ('"CALL node_modules\.bin\node-pre-gyp reveal module %TOOLSET_ARGS% --silent"') DO SET MODULE=%%i
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
