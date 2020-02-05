@@ -20,7 +20,7 @@ os: Visual Studio 2015
 
 install:
   - scripts\build-appveyor.bat
-  - ps: if($env:appveyor_repo_tag -eq 'True') { node-pre-gyp package publish } else { echo "Not publishing binary because this is not a tag build" }
+  - ps: if($env:appveyor_repo_tag -eq 'True') { npm run publish } else { echo "Not publishing binary because this is not a tag build" }
 
 build: OFF
 test: OFF
