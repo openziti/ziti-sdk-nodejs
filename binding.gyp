@@ -94,9 +94,12 @@
             "<(cd)/deps/ziti-sdk-c/build/library/ziti.lib",        
           ],
 
-          "OTHER_LDFLAGS": [
-            "/NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:msvcrt.lib /NODEFAULTLIB:libcmtd.lib /NODEFAULTLIB:msvcrtd.lib",
-          ],
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'IgnoreDefaultLibraryNames':
+                  ['libcmtd.lib', 'libcmt.lib', 'msvcrt.lib', 'msvcrtd.lib'],
+            }
+          },
 
         }],
 

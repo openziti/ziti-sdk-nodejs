@@ -95,28 +95,18 @@ ECHO ===== conditional node-gyp upgrade END ============
 :: build Ziti C-SDK
 CALL npm run build:init
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
-ECHO ===== main dir contains... ============
-CALL dir
-ECHO ===== deps dir contains... ============
 CALL cd deps
-CALL dir
-ECHO ===== ziti-sdk-c dir contains... ============
 CALL cd ziti-sdk-c
-CALL dir
 ECHO ===== starting make sequence... ============
 CALL mkdir build
 CALL cd build
-CALL cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release -G "NMake Makefiles" ..
+CALL cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_VERBOSE_MAKEFILE=ON -G "NMake Makefiles" ..
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 CALL nmake
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
-ECHO ===== nmake produced... ============
-REM CALL dir /s
 CALL cd ..
 CALL cd ..
 CALL cd ..
-ECHO ===== after cd ../../.. dir contains... ============
-CALL dir
 
 :: build Ziti NodeJS-SDK
 CALL npm install --build-from-source --cd=%CD% --msvs_version=%msvs_version% %TOOLSET_ARGS%
