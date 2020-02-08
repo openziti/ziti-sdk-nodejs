@@ -100,8 +100,6 @@ void child_thread(void *data){
 
     //Start this loop
     uv_run(thread_loop, UV_RUN_DEFAULT);
-
-    // pthread_exit(NULL);
 }
 
 void consumer_notify(uv_async_t *handle, int status) { }
@@ -161,9 +159,7 @@ napi_value _NF_init(napi_env env, const napi_callback_info info) {
   // Create and set up the consumer thread
   thread_loop = uv_loop_new();
   uv_async_init(thread_loop, &async, (uv_async_cb)consumer_notify);
-  // pthread_create(&thread, NULL, child_thread, thread_loop);
   uv_thread_create(&thread, (uv_thread_cb)child_thread, thread_loop);
-
 
   // Light this candle!
   int rc = NF_init(ConfigFileName, thread_loop, on_nf_init, addon_data);
