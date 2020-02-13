@@ -113,8 +113,9 @@
               'LinkTimeCodeGeneration': 1, # link-time code generation
               'GenerateDebugInformation': 'true',
               'IgnoreDefaultLibraryNames': [
-                'msvcrt.lib'
+                'libcmtd.lib', 'libcmt.lib', 'msvcrtd.lib'
               ],
+              'SubSystem': 1, # /subsystem:console
             }
           },
 
