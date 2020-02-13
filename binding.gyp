@@ -96,16 +96,13 @@
 
           'msvs_settings': {
             'VCCLCompilerTool': {
-              'AdditionalOptions': [
-                '/GR',
-                '/MT  ',
-                '/EHsc'
-              ]
+              'ExceptionHandling': 1, # /EHsc
+              'RuntimeTypeInfo': 'true', # /GR
+              'RuntimeLibrary': '2' # /MD
             },
-
             'VCLinkerTool': {
               'IgnoreDefaultLibraryNames': [
-                'msvcrt.lib', 'libcmtd.lib', 'msvcrtd.lib'
+                'libcmt.lib', 'libcmtd.lib', 'msvcrtd.lib'
               ],
             }
           },
