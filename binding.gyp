@@ -104,6 +104,10 @@
             "<(cd)/deps/ziti-sdk-c/build/library/ziti.lib",        
           ],
 
+          'libraries': [
+            '-lws2_32.lib',
+          ],
+
           'msvs_settings': {
             'VCCLCompilerTool': {
               'RuntimeLibrary': 1, # static debug
