@@ -103,6 +103,9 @@
             "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/uv_mbed.lib",
             "<(cd)/deps/ziti-sdk-c/build/library/ziti.lib",
             "-lws2_32.lib",
+            "-lIphlpapi.lib",
+            "-lpsapi",
+            "-luserenv.lib"
           ],
 
           'msvs_settings': {
