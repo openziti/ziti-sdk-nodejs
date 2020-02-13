@@ -101,11 +101,8 @@
             "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv/uv_a.lib",
             "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/uv_link.lib",
             "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/uv_mbed.lib",
-            "<(cd)/deps/ziti-sdk-c/build/library/ziti.lib",        
-          ],
-
-          'libraries': [
-            '-lws2_32.lib',
+            "<(cd)/deps/ziti-sdk-c/build/library/ziti.lib",
+            "-lws2_32.lib",
           ],
 
           'msvs_settings': {
