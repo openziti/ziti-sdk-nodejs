@@ -111,7 +111,10 @@
             },
             'VCLinkerTool': {
               'LinkTimeCodeGeneration': 1, # link-time code generation
-              'GenerateDebugInformation': 'true'
+              'GenerateDebugInformation': 'true',
+              'IgnoreDefaultLibraryNames': [
+                'msvcrt.lib'
+              ],
             }
           },
 
