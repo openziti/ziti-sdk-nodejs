@@ -95,9 +95,17 @@
           ],
 
           'msvs_settings': {
+            'VCCLCompilerTool': {
+              'AdditionalOptions': [
+                '/GR',
+                '/MT  ',
+                '/EHsc'
+              ]
+            },
+
             'VCLinkerTool': {
               'IgnoreDefaultLibraryNames': [
-                'libcmtd.lib', 'libcmt.lib', 'msvcrtd.lib'
+                'msvcrt.lib', 'libcmtd.lib', 'msvcrtd.lib'
               ],
             }
           },
