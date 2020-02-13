@@ -114,6 +114,9 @@
               'Optimization': 0, # /Od, no optimization
             },
             'VCLinkerTool': {
+              'AdditionalOptions': [
+                '/FORCE'
+              ],
               'LinkTimeCodeGeneration': 1, # link-time code generation
               'GenerateDebugInformation': 'true',
               'IgnoreDefaultLibraryNames': [
