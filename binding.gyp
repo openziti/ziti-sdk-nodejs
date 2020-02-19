@@ -92,7 +92,6 @@
             'deps\ziti-sdk-c\includes',
             'deps\ziti-sdk-c\deps\uv-mbed\include',
           ],
-
           "libraries": [
             "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/http-parser.lib",
             "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/crypto/library/mbedcrypto.lib",
@@ -131,18 +130,30 @@
 
         ['OS == "linux"', {
 
-          "libraries": [ 
-            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libhttp-parser.a",
-            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/crypto/library/libmbedcrypto.a",
-            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/libmbedtls.a",
-            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/libmbedx509.a",
-            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv/libuv_a.a",
-            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv_link.a",
-            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/libuv_mbed.a",
-            "$(PWD)/deps/ziti-sdk-c/build/library/libziti.a",        
+          "libraries": [
+            "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/libuv_mbed.a",            
+            "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libhttp-parser.a",
+            "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/crypto/library/libmbedcrypto.a",
+            "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/libmbedtls.a",
+            "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/libmbedx509.a",
+            "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv/libuv_a.a",
+            "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv_link.a",
+            "<(module_root_dir)/deps/ziti-sdk-c/build/library/libziti.a",        
           ],
 
-          "cflags": ["-w", "-fpermissive", "-fPIC"]
+          "link_settings": {
+            "ldflags": [
+              "-Wl,-z,defs,-static",
+              "-v"
+            ]
+          },
+
+	        "cflags": [
+            "-fno-strict-aliasing",
+            "-g",
+            "-fno-pie",
+            "-static",
+          ]
 
         }]
 
