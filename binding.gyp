@@ -143,8 +143,8 @@
 
           "link_settings": {
             "ldflags": [
-              "-Wl,-z,defs,-static",
-              "-v"
+              # "-Wl,-z,defs,-static",
+              # "-v"
             ]
           },
 
@@ -153,6 +153,7 @@
             "-g",
             "-fno-pie",
             "-static",
+            "-fPIC"
           ]
 
         }]
