@@ -5,9 +5,10 @@ platform:
 configuration:
   - Release
 
+image:
+  - Visual Studio 2019
+
 environment:
-  matrix:
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
   AWS_ACCESS_KEY_ID:
     secure: GIQzwkV21ZqWhzZ0ii13r4dOEZ6Pkq8r6Jajx18uEaY=
   AWS_SECRET_ACCESS_KEY:
@@ -15,17 +16,8 @@ environment:
 
   matrix:
     - nodejs_version: 11
-      platform: x64
     - nodejs_version: 12
-      platform: x64
     - nodejs_version: 13
-      platform: x64
-    # # electron
-    # - nodejs_version: 12
-    #   platform: x64
-    #   NODE_RUNTIME: electron
-    #   NODE_RUNTIME_VERSION: 7.1.0
-    #   TOOLSET_ARGS: --dist-url=https://atom.io/download/electron
 
 install:
   - choco install ninja
