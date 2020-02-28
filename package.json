@@ -6,9 +6,9 @@
   "scripts": {
     "build": "npm run build:init; npm run build:c-sdk; npm install --build-from-source --clang=1",
     "build:init": "git submodule update --remote --init --recursive",
-    "build:c-sdk": "cd deps/ziti-sdk-c; mkdir build; cd build; cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=debug ..; make",
+    "build:c-sdk": "cd deps/ziti-sdk-c; git submodule update --init --recursive; mkdir build; cd build; cmake -G Ninja --config Debug ..; cmake --build . --target all",
     "build:nodejs": "node-gyp clean configure --debug build --debug -g --mmacosx-version-min=10.13",
-    "clean": "node-gyp clean; rm -rf build; cd deps/ziti-sdk-c/build && make clean",
+    "clean": "node-gyp clean; rm -rf build; cd deps/ziti-sdk-c && rm -rf build",
     "test": "echo \"Error: no test specified\"",
     "configure": "node-gyp configure --debug",
     "start": "node main.js ./config/identity.json chapel-hill",

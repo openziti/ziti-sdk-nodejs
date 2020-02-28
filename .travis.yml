@@ -18,6 +18,7 @@ matrix:
         homebrew:
           packages:
             - ninja
+          update: true
        env:
         - NODE_VERSION="13" # node abi 79
         - DO_NPM_PUBLISH=true # only attempt 'npm publish' from one job in the matrix
@@ -29,6 +30,7 @@ matrix:
         homebrew:
           packages:
             - ninja
+          update: true
        env: NODE_VERSION="12" # node abi 72
 
      - os: osx
@@ -38,6 +40,7 @@ matrix:
         homebrew:
           packages:
             - ninja
+          update: true
        env: NODE_VERSION="11" # node abi 67
 
      # Linux
