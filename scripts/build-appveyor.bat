@@ -101,9 +101,9 @@ CALL git submodule update --init --recursive
 ECHO ===== starting make sequence... ============
 CALL mkdir build
 CALL cd build
-CALL cmake -G Ninja --config Debug ..
+CALL cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_VERBOSE_MAKEFILE=OFF -G "NMake Makefiles" ..
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
-CALL cmake --build . --target all
+CALL nmake
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 CALL cd ..
 CALL cd ..
