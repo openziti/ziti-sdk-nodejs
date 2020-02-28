@@ -21,6 +21,7 @@ environment:
 
 install:
   - choco install ninja
+  - choco install python2
   - scripts\build-appveyor.bat
   - ps: if($env:appveyor_repo_tag -eq 'True') { npm run publish } else { echo "Not publishing binary because this is not a tag build" }
 
