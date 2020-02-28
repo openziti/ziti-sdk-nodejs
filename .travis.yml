@@ -6,6 +6,7 @@ compiler:
 
 git:
   depth: 10
+  submodules: false  # we update submodules manually
  
 matrix:
   include:

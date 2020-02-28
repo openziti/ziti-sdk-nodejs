@@ -97,12 +97,13 @@ CALL npm run build:init
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 CALL cd deps
 CALL cd ziti-sdk-c
+CALL git submodule update --init --recursive
 ECHO ===== starting make sequence... ============
 CALL mkdir build
 CALL cd build
-CALL cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_VERBOSE_MAKEFILE=OFF -G "NMake Makefiles" ..
+CALL cmake -G Ninja --config Debug ..
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
-CALL nmake
+CALL cmake --build . --target all
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 CALL cd ..
 CALL cd ..
