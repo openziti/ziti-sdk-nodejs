@@ -5,9 +5,6 @@ platform:
 configuration:
   - Release
 
-# image:
-  # - Visual Studio 2019
-
 environment:
   AWS_ACCESS_KEY_ID:
     secure: GIQzwkV21ZqWhzZ0ii13r4dOEZ6Pkq8r6Jajx18uEaY=
@@ -18,6 +15,8 @@ environment:
     - nodejs_version: 11
     - nodejs_version: 12
     - nodejs_version: 13
+
+os: Visual Studio 2015
 
 install:
   - choco install ninja
