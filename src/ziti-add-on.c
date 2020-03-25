@@ -16,19 +16,38 @@ limitations under the License.
 
 #include "ziti-nodejs.h"
 
+extern void set_signal_handler();
+
+
 napi_value Init(napi_env env, napi_value exports) {
 
   // Install call-stack tracer
   // set_signal_handler();
 
+
+  init_nodejs_debug();
+
+  uv_timeval64_t start_time;
+  uv_gettimeofday(&start_time);
+
+  struct tm *start_tm = gmtime((const time_t*)&start_time.tv_sec);
+  char time_str[32];
+  strftime(time_str, sizeof(time_str), "%FT%T", start_tm);
+
+  ZITI_NODEJS_LOG(INFO, "Ziti NodeJS SDK version %s @%s(%s) starting at (%s.%03d)",
+        ziti_nodejs_get_version(false), ziti_nodejs_git_commit(), ziti_nodejs_git_branch(),
+        time_str, start_time.tv_usec/1000);
+
+
   // Expose some Ziti SDK functions to JavaScript
+  expose_NF_close(env, exports);
+  expose_NF_dial(env, exports);
+  expose_NF_enroll(env, exports);
   expose_NF_hello(env, exports);
   expose_NF_init(env, exports);
-  expose_NF_shutdown(env, exports);
-  expose_NF_dial(env, exports);
-  expose_NF_write(env, exports);
   expose_NF_service_available(env, exports);
-  expose_NF_close(env, exports);
+  expose_NF_shutdown(env, exports);
+  expose_NF_write(env, exports);
 
   return exports;
 }

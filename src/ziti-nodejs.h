@@ -26,6 +26,8 @@ limitations under the License.
 
 #include <nf/ziti.h>
 
+#include "utils.h"
+
 
 #define DIE(v) do { \
 int code = (v);\
@@ -57,13 +59,14 @@ extern nf_context nf;
 
 // extern void set_signal_handler();
 
+extern void expose_NF_close(napi_env env, napi_value exports);
+extern void expose_NF_dial(napi_env env, napi_value exports);
+extern void expose_NF_enroll(napi_env env, napi_value exports);
 extern void expose_NF_hello(napi_env env, napi_value exports);
 extern void expose_NF_init(napi_env env, napi_value exports);
-extern void expose_NF_shutdown(napi_env env, napi_value exports);
-extern void expose_NF_dial(napi_env env, napi_value exports);
-extern void expose_NF_write(napi_env env, napi_value exports);
 extern void expose_NF_service_available(napi_env env, napi_value exports);
-extern void expose_NF_close(napi_env env, napi_value exports);
+extern void expose_NF_shutdown(napi_env env, napi_value exports);
+extern void expose_NF_write(napi_env env, napi_value exports);
 
 
 #ifdef __cplusplus
