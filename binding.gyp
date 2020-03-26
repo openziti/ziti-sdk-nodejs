@@ -89,6 +89,8 @@
             # ... or that C implementations shouldn't use
             # POSIX names
             '_CRT_NONSTDC_NO_DEPRECATE',
+            #
+            'NOGDI',
           ],
 
           "include_dirs": [ 

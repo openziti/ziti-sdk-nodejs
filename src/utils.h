@@ -45,8 +45,6 @@ extern FILE *ziti_nodejs_debug_out;
 
 
 // for windows compilation NOGDI needs to be set:
-// right click ziti -> properties -> C/C++ -> Preprocessor - ensure NOGDI is in the list of preprocessor definitions
-// if it's not present check the CMakeLists.txt file
 #define DEBUG_LEVELS(XX) \
     XX(NONE) \
     XX(ERROR) /*WINDOWS - see comment above wrt NOGDI*/ \
