@@ -21,12 +21,22 @@ limitations under the License.
 #include <assert.h>
 #include <stdlib.h>
 
+#include <node_version.h>
 #define NAPI_EXPERIMENTAL
 #include <node_api.h>
 
 #include <nf/ziti.h>
-
 #include "utils.h"
+
+
+#  ifdef NODE_MAJOR_VERSION
+#    if NODE_MAJOR_VERSION == 11
+extern int uv_gettimeofday(uv_timeval_t* tv);
+#    else
+extern int uv_gettimeofday(uv_timeval64_t* tv);
+#    endif
+#  endif
+
 
 
 #define DIE(v) do { \

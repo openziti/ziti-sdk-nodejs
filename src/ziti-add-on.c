@@ -27,17 +27,33 @@ napi_value Init(napi_env env, napi_value exports) {
 
   init_nodejs_debug();
 
+#  ifdef NODE_MAJOR_VERSION
+#    if NODE_MAJOR_VERSION == 11
+  uv_timeval_t start_time;
+#    else
   uv_timeval64_t start_time;
+#    endif
+#  endif
+
   uv_gettimeofday(&start_time);
 
   struct tm *start_tm = gmtime((const time_t*)&start_time.tv_sec);
   char time_str[32];
   strftime(time_str, sizeof(time_str), "%FT%T", start_tm);
 
+#  ifdef NODE_MAJOR_VERSION
+#    if NODE_MAJOR_VERSION == 11
+  ZITI_NODEJS_LOG(INFO, "Ziti NodeJS SDK version %s @%s(%s) starting at (%s.%03ld)",
+        ziti_nodejs_get_version(false), ziti_nodejs_git_commit(), ziti_nodejs_git_branch(),
+        time_str,
+        start_time.tv_usec/1000);
+#    else
   ZITI_NODEJS_LOG(INFO, "Ziti NodeJS SDK version %s @%s(%s) starting at (%s.%03d)",
         ziti_nodejs_get_version(false), ziti_nodejs_git_commit(), ziti_nodejs_git_branch(),
-        time_str, start_time.tv_usec/1000);
-
+        time_str,
+        start_time.tv_usec/1000);
+#    endif
+#  endif
 
   // Expose some Ziti SDK functions to JavaScript
   expose_NF_close(env, exports);
