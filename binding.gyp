@@ -23,7 +23,7 @@
         "./src/NF_shutdown.c",
         "./src/NF_write.c",
         
-        "./src/stack_traces.c",
+        # "./src/stack_traces.c",
         "./src/utils.c",
       ],
 
