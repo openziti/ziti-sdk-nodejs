@@ -28,12 +28,29 @@ limitations under the License.
 #include <nf/ziti.h>
 #include "utils.h"
 
+#ifdef _WIN32
+  /* Windows - set up dll import/export decorators. */
+# if defined(BUILDING_UV_SHARED)
+    /* Building shared library. */
+#   define UV_EXTERN __declspec(dllexport)
+# elif defined(USING_UV_SHARED)
+    /* Using shared library. */
+#   define UV_EXTERN __declspec(dllimport)
+# else
+    /* Building static library. */
+#   define UV_EXTERN /* nothing */
+# endif
+#elif __GNUC__ >= 4
+# define UV_EXTERN __attribute__((visibility("default")))
+#else
+# define UV_EXTERN /* nothing */
+#endif
 
 #  ifdef NODE_MAJOR_VERSION
 #    if NODE_MAJOR_VERSION == 11
-extern int uv_gettimeofday(uv_timeval_t* tv);
+UV_EXTERN int uv_gettimeofday(uv_timeval_t* tv);
 #    else
-extern int uv_gettimeofday(uv_timeval64_t* tv);
+UV_EXTERN int uv_gettimeofday(uv_timeval64_t* tv);
 #    endif
 #  endif
 
