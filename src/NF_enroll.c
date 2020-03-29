@@ -53,6 +53,10 @@ static void CallJs_on_enroll(napi_env env, napi_value js_cb, void* context, void
   // Retrieve the EnrollItem created by the worker thread.
   EnrollItem* item = (EnrollItem*)data;
 
+  ZITI_NODEJS_LOG(DEBUG, "item->json_salvo: %s", item->json_salvo);
+  ZITI_NODEJS_LOG(DEBUG, "item->len: %d", item->len);
+  ZITI_NODEJS_LOG(DEBUG, "item->err: %s", item->err);
+
   // env and js_cb may both be NULL if Node.js is in its cleanup phase, and
   // items are left over from earlier thread-safe calls from the worker thread.
   // When env is NULL, we simply skip over the call into Javascript
@@ -113,9 +117,19 @@ void on_nf_enroll(unsigned char *json_salvo, int len, char *err, void* ctx) {
   AddonData* addon_data = (AddonData*)ctx;
 
   EnrollItem* item = memset(malloc(sizeof(*item)), 0, sizeof(*item));
-  item->json_salvo = json_salvo;
+  if (NULL != json_salvo) {
+    item->json_salvo = calloc(1, strlen(json_salvo));
+    strcpy(item->json_salvo, json_salvo);
+  } else {
+    item->json_salvo = NULL;
+  }
   item->len = len;
-  item->err = err;
+  if (NULL != err) {
+    item->err = calloc(1, strlen(err));
+    strcpy(item->err, err);
+  } else {
+    item->err = NULL;
+  }
 
   // Initiate the call into the JavaScript callback. 
   // The call into JavaScript will not have happened 

@@ -29,6 +29,7 @@ limitations under the License.
 #include "utils.h"
 
 #ifdef _WIN32
+#define _NO_CRT_STDIO_INLINE 1
   /* Windows - set up dll import/export decorators. */
 # if defined(BUILDING_UV_SHARED)
     /* Building shared library. */

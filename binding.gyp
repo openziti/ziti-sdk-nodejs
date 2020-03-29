@@ -62,7 +62,8 @@
             "OTHER_CFLAGS": [
               "-fno-strict-aliasing",
               "-g",
-              "-fno-pie"
+              "-fno-pie",
+              "-DSOURCE_PATH_SIZE=3"
             ],
             "OTHER_LDFLAGS": [
               "-g",
@@ -91,6 +92,7 @@
             '_CRT_NONSTDC_NO_DEPRECATE',
             #
             'NOGDI',
+            'DSOURCE_PATH_SIZE=3'
           ],
 
           "include_dirs": [ 
@@ -159,6 +161,7 @@
             "-g",
             "-fno-pie",
             "-fPIC",
+            "-DSOURCE_PATH_SIZE=3"
           ]
 
         }]

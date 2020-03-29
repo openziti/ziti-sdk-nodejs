@@ -24,6 +24,8 @@ napi_value Init(napi_env env, napi_value exports) {
   // Install call-stack tracer
   // set_signal_handler();
 
+// TEMP: skip logging on windows
+#ifndef WIN32
 
   init_nodejs_debug();
 
@@ -43,17 +45,19 @@ napi_value Init(napi_env env, napi_value exports) {
 
 #  ifdef NODE_MAJOR_VERSION
 #    if NODE_MAJOR_VERSION == 11
-  ZITI_NODEJS_LOG(INFO, "Ziti NodeJS SDK version %s @%s(%s) starting at (%s.%03ld)",
-        ziti_nodejs_get_version(false), ziti_nodejs_git_commit(), ziti_nodejs_git_branch(),
+  ZITI_NODEJS_LOG(INFO, "Ziti NodeJS SDK version %s@%s(%s) starting at (%s.%03ld)",
+        ziti_nodejs_get_version(true), ziti_nodejs_git_commit(), ziti_nodejs_git_branch(),
         time_str,
         start_time.tv_usec/1000);
 #    else
-  ZITI_NODEJS_LOG(INFO, "Ziti NodeJS SDK version %s @%s(%s) starting at (%s.%03d)",
-        ziti_nodejs_get_version(false), ziti_nodejs_git_commit(), ziti_nodejs_git_branch(),
+  ZITI_NODEJS_LOG(INFO, "Ziti NodeJS SDK version %s@%s(%s) starting at (%s.%03d)",
+        ziti_nodejs_get_version(true), ziti_nodejs_git_commit(), ziti_nodejs_git_branch(),
         time_str,
         start_time.tv_usec/1000);
 #    endif
 #  endif
+
+#endif
 
   // Expose some Ziti SDK functions to JavaScript
   expose_NF_close(env, exports);

@@ -34,8 +34,7 @@ extern void nodejs_hexDump(char *desc, void *addr, int len);
 typedef const char *(*fmt_error_t)(int);
 typedef int *(*cond_error_t)(int);
 
-// #define __FILENAME__ (&__FILE__[SOURCE_PATH_SIZE])
-#define __FILENAME_NODEJS__ (__FILE__)
+#define __FILENAME_NODEJS__ (&__FILE__[SOURCE_PATH_SIZE])
 
 
 extern void init_nodejs_debug();
@@ -63,15 +62,18 @@ enum DebugLevel {
 
 // #define container_of(ptr, type, member) ((type *) ((ptr) - offsetof(type, member)))
 
-
-
+// TEMP: skip logging on windows
+#ifdef WIN32
+#define ZITI_NODEJS_LOG
+#else
 #define ZITI_NODEJS_LOG(level, fmt, ...) do { \
 if (level <= ziti_debug_level) {\
     long elapsed = get_nodejs_elapsed();\
-    fprintf(ziti_nodejs_debug_out, "[%9ld.%03ld] N " #level "\t%s:%d %s(): " fmt "\n",\
+    fprintf(ziti_nodejs_debug_out, "[%9ld.%03ld] " #level "\tziti-sdk-nodejs/%s:%d %s(): " fmt "\n",\
         elapsed/1000, elapsed%1000, __FILENAME_NODEJS__, __LINE__, __func__, ##__VA_ARGS__);\
 }\
 } while(0)
+#endif
 
 long get_nodejs_elapsed();
 
