@@ -14,14 +14,17 @@
 
       "sources": [ 
         "./src/ziti-add-on.c",
-        # "./src/stack_traces.c",
+        "./src/NF_close.c",
+        "./src/NF_dial.c",
+        "./src/NF_enroll.c",
         "./src/NF_hello.c",
         "./src/NF_init.c",
-        "./src/NF_dial.c",
+        "./src/NF_service_available.c",
         "./src/NF_shutdown.c",
         "./src/NF_write.c",
-        "./src/NF_service_available.c",
-        "./src/NF_close.c",
+        
+        # "./src/stack_traces.c",
+        "./src/utils.c",
       ],
 
       "include_dirs": [
@@ -54,16 +57,17 @@
             "GCC_ENABLE_PASCAL_STRINGS": "NO",        # No -mpascal-strings
             "GCC_THREADSAFE_STATICS": "NO",           # -fno-threadsafe-statics
             "PREBINDING": "NO",                       # No -Wl,-prebind
-            "MACOSX_DEPLOYMENT_TARGET": "10.13",      # -mmacosx-version-min=10.13
+            "MACOSX_DEPLOYMENT_TARGET": "10.14",      # -mmacosx-version-min=10.14
             "USE_HEADERMAP": "NO",
             "OTHER_CFLAGS": [
               "-fno-strict-aliasing",
               "-g",
-              "-fno-pie"
+              "-fno-pie",
+              "-DSOURCE_PATH_SIZE=3"
             ],
             "OTHER_LDFLAGS": [
               "-g",
-              "-mmacosx-version-min=10.13",
+              "-mmacosx-version-min=10.14",
             ],
             "WARNING_CFLAGS": [
               "-Wall",
@@ -86,6 +90,9 @@
             # ... or that C implementations shouldn't use
             # POSIX names
             '_CRT_NONSTDC_NO_DEPRECATE',
+            #
+            'NOGDI',
+            'DSOURCE_PATH_SIZE=3'
           ],
 
           "include_dirs": [ 
@@ -140,7 +147,7 @@
             "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/libmbedtls.a",
             "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/libmbedx509.a",         
             "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/crypto/library/libmbedcrypto.a", 
-],
+          ],
 
           "link_settings": {
             "ldflags": [
@@ -154,6 +161,7 @@
             "-g",
             "-fno-pie",
             "-fPIC",
+            "-DSOURCE_PATH_SIZE=3"
           ]
 
         }]

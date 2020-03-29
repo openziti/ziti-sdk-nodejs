@@ -21,10 +21,40 @@ limitations under the License.
 #include <assert.h>
 #include <stdlib.h>
 
+#include <node_version.h>
 #define NAPI_EXPERIMENTAL
 #include <node_api.h>
 
 #include <nf/ziti.h>
+#include "utils.h"
+
+#ifdef _WIN32
+#define _NO_CRT_STDIO_INLINE 1
+  /* Windows - set up dll import/export decorators. */
+# if defined(BUILDING_UV_SHARED)
+    /* Building shared library. */
+#   define UV_EXTERN __declspec(dllexport)
+# elif defined(USING_UV_SHARED)
+    /* Using shared library. */
+#   define UV_EXTERN __declspec(dllimport)
+# else
+    /* Building static library. */
+#   define UV_EXTERN /* nothing */
+# endif
+#elif __GNUC__ >= 4
+# define UV_EXTERN __attribute__((visibility("default")))
+#else
+# define UV_EXTERN /* nothing */
+#endif
+
+#  ifdef NODE_MAJOR_VERSION
+#    if NODE_MAJOR_VERSION == 11
+UV_EXTERN int uv_gettimeofday(uv_timeval_t* tv);
+#    else
+UV_EXTERN int uv_gettimeofday(uv_timeval64_t* tv);
+#    endif
+#  endif
+
 
 
 #define DIE(v) do { \
@@ -57,13 +87,14 @@ extern nf_context nf;
 
 // extern void set_signal_handler();
 
+extern void expose_NF_close(napi_env env, napi_value exports);
+extern void expose_NF_dial(napi_env env, napi_value exports);
+extern void expose_NF_enroll(napi_env env, napi_value exports);
 extern void expose_NF_hello(napi_env env, napi_value exports);
 extern void expose_NF_init(napi_env env, napi_value exports);
-extern void expose_NF_shutdown(napi_env env, napi_value exports);
-extern void expose_NF_dial(napi_env env, napi_value exports);
-extern void expose_NF_write(napi_env env, napi_value exports);
 extern void expose_NF_service_available(napi_env env, napi_value exports);
-extern void expose_NF_close(napi_env env, napi_value exports);
+extern void expose_NF_shutdown(napi_env env, napi_value exports);
+extern void expose_NF_write(napi_env env, napi_value exports);
 
 
 #ifdef __cplusplus
