@@ -101,7 +101,10 @@ CALL git submodule update --init --recursive
 ECHO ===== starting make sequence... ============
 CALL mkdir build
 CALL cd build
-CALL cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_VERBOSE_MAKEFILE=OFF -G "NMake Makefiles" ..
+
+REM CALL cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_VERBOSE_MAKEFILE=OFF -G "NMake Makefiles" ..
+CALL cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON --config Debug -G "NMake Makefiles" ..
+
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 CALL nmake
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
