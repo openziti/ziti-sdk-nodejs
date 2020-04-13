@@ -102,7 +102,7 @@ before_install:
 - if test "${COMMIT_MESSAGE#*'[publish binary]'}" != "$COMMIT_MESSAGE"; then PUBLISH_BINARY=true; fi;
 
 install:
-- git submodule update --remote --init --recursive
+- git submodule update --init --recursive
 # build Ziti C-SDK
 - npm run build:init
 - npm run build:c-sdk

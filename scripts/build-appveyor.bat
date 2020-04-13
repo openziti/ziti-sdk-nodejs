@@ -93,7 +93,7 @@ IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 ECHO ===== conditional node-gyp upgrade END ============
 
 :: build Ziti C-SDK
-CALL git submodule update --remote --init --recursive
+CALL git submodule update --init --recursive
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 CALL cd deps
 CALL cd ziti-sdk-c

@@ -5,7 +5,7 @@
   "main": "./lib/ziti",
   "scripts": {
     "build": "npm run build:init; npm run build:c-sdk; npm install --build-from-source --clang=1",
-    "build:init": "git submodule update --remote --init --recursive",
+    "build:init": "git submodule update --init --recursive",
     "build:c-sdk": "cd deps/ziti-sdk-c; git submodule update --init --recursive; mkdir build; cd build; cmake -G Ninja -DCMAKE_POSITION_INDEPENDENT_CODE=ON --config Debug ..; cmake --build . --target all",
     "build:nodejs": "node-gyp clean configure --debug build --debug -g --mmacosx-version-min=10.13",
     "clean": "node-gyp clean; rm -rf build; cd deps/ziti-sdk-c && rm -rf build",
