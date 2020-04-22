@@ -69,6 +69,7 @@ exit(code);\
  * 
  */
 typedef struct {
+  bool isWebsocket;
   napi_async_work work;
   napi_threadsafe_function tsfn_on_connect;
   napi_threadsafe_function tsfn_on_data;

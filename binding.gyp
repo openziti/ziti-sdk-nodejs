@@ -45,6 +45,7 @@
             "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv_link.a",
             "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/libuv_mbed.a",
             "$(PWD)/deps/ziti-sdk-c/build/library/libziti.a",        
+            "$(PWD)/deps/ziti-sdk-c/build/_deps/libsodium-build/lib/libsodium.a",
           ],
 
           "xcode_settings": {
@@ -96,8 +97,8 @@
           ],
 
           "include_dirs": [ 
-            'deps\ziti-sdk-c\includes',
-            'deps\ziti-sdk-c\deps\uv-mbed\include',
+            "deps\\ziti-sdk-c\\includes",
+            "deps\\ziti-sdk-c\\deps\\uv-mbed\\include"
           ],
           "libraries": [
             "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/http-parser.lib",
@@ -108,6 +109,7 @@
             "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/uv_link.lib",
             "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/uv_mbed.lib",
             "<(cd)/deps/ziti-sdk-c/build/library/ziti.lib",
+            "<(cd)/deps/ziti-sdk-c/build/_deps/libsodium-build/lib/libsodium.a",
             "-lws2_32.lib",
             "-lIphlpapi.lib",
             "-lpsapi",
@@ -147,6 +149,7 @@
             "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/libmbedtls.a",
             "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/libmbedx509.a",         
             "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/crypto/library/libmbedcrypto.a", 
+            "<(module_root_dir)/deps/ziti-sdk-c/build/_deps/libsodium-build/lib/libsodium.a",
           ],
 
           "link_settings": {

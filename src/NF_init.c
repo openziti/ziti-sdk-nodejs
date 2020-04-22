@@ -77,7 +77,7 @@ void on_nf_init(nf_context _nf, int status, void* ctx) {
 
   if (status == ZITI_OK) {
 
-    NF_set_timeout(nf, 10*1000);
+    NF_set_timeout(nf, 60*1000);
 
   }
 

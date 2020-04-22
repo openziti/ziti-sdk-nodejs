@@ -26,7 +26,7 @@ typedef struct {
 // An item that will be generated here and passed into the JavaScript service_available callback
 typedef struct ServiceAvailableItem {
   ssize_t status;
-  ssize_t permissions;
+  int     permissions;
 } ServiceAvailableItem;
 
 
@@ -82,13 +82,16 @@ static void CallJs_on_service_available(napi_env env, napi_value js_cb, void* co
 /**
  * 
  */
-static void on_service_available(nf_context nf_ctx, const char* service, int status, unsigned int permissions, void *ctx) {
+static void on_service_available(nf_context nf_ctx, ziti_service* service, int status, void *ctx) {
 
   AddonData* addon_data = (AddonData*)ctx;
 
   ServiceAvailableItem* item = memset(malloc(sizeof(*item)), 0, sizeof(*item));
   item->status = status;
-  item->permissions = permissions;
+  
+  if (ZITI_OK == status) {
+    item->permissions = service->perm_flags;
+  }
 
   // Initiate the call into the JavaScript callback. 
   // The call into JavaScript will not have happened 
