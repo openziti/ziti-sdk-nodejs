@@ -113,7 +113,7 @@ install:
 
 before_script:
 # if publishing, do it
-- if [[ $PUBLISH_BINARY == true ]]; then node-pre-gyp package publish; fi;
+- if [[ $PUBLISH_BINARY == true ]]; then node-pre-gyp package publish && sleep 5; fi;
 # cleanup
 - node-pre-gyp clean
 - node-gyp clean
