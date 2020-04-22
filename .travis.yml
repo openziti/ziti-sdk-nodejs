@@ -44,6 +44,16 @@ matrix:
           update: true
        env: NODE_VERSION="11" # node abi 67
 
+     - os: osx
+       osx_image: xcode11.2
+       compiler: gcc
+       addons:
+        homebrew:
+          packages:
+            - ninja
+          update: true
+       env: NODE_VERSION="14" # node abi 83
+
      # Linux
      - os: linux
        dist: bionic
