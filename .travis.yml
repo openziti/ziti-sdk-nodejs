@@ -129,6 +129,8 @@ install:
 - npm install --build-from-source --clang=1
 # test our module
 - node tests/hello.js
+# purge some stuff before publishing
+- npm run build:cleanup
 
 before_script:
 # if publishing, do it
