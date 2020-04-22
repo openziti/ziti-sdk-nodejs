@@ -132,13 +132,14 @@ install:
 
 before_script:
 # if publishing, do it
-- if [[ $PUBLISH_BINARY == true ]]; then node-pre-gyp package publish && sleep 5; fi;
+- if [[ $PUBLISH_BINARY == true ]]; then node-pre-gyp package publish && sleep 10; fi;
 # cleanup
 - node-pre-gyp clean
 - node-gyp clean
 
 script:
 # if publishing, test installing from remote
+- sleep 5
 - INSTALL_RESULT=0
 - if [[ $PUBLISH_BINARY == true ]]; then INSTALL_RESULT=$(npm install --fallback-to-build=false > /dev/null)$? || true; fi;
 # if install returned non zero (errored) then we first unpublish and then call false so travis will bail at this line
