@@ -8,7 +8,7 @@
     "build:init": "git submodule update --init --recursive",
     "build:c-sdk": "cd deps/ziti-sdk-c; git submodule update --init --recursive; mkdir build; cd build; cmake -G Ninja -DCMAKE_POSITION_INDEPENDENT_CODE=ON --config Debug ..; cmake --build . --target all",
     "build:nodejs": "node-gyp clean configure --debug build --debug -g --mmacosx-version-min=10.13",
-    "build:cleanup": "rm -rf node_modules && cd deps/ziti-sdk-c && rm -rf build",
+    "build:cleanup": "cd deps/ziti-sdk-c && rm -rf build",
     "clean": "node-gyp clean; rm -rf build; cd deps/ziti-sdk-c && rm -rf build",
     "test": "echo \"Error: no test specified\"",
     "configure": "node-gyp configure --debug",
