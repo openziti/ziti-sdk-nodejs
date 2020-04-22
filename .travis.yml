@@ -59,6 +59,15 @@ matrix:
        dist: bionic
        compiler: gcc
        env: 
+         - NODE_VERSION="14"
+       addons:
+         apt:
+          packages:
+            - ninja-build
+     - os: linux
+       dist: bionic
+       compiler: gcc
+       env: 
          - NODE_VERSION="13"
        addons:
          apt:
