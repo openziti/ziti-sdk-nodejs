@@ -21,7 +21,7 @@ matrix:
             - ninja
           update: true
        env:
-        - NODE_VERSION="13" # node abi 79
+        - NODE_VERSION="13.12" # node abi 79
         - DO_NPM_PUBLISH=true # only attempt 'npm publish' from one job in the matrix
        
      - os: osx
@@ -44,31 +44,31 @@ matrix:
           update: true
        env: NODE_VERSION="11" # node abi 67
 
-     - os: osx
-       osx_image: xcode11.2
-       compiler: gcc
-       addons:
-        homebrew:
-          packages:
-            - ninja
-          update: true
-       env: NODE_VERSION="14" # node abi 83
+    #  - os: osx
+    #    osx_image: xcode11.2
+    #    compiler: gcc
+    #    addons:
+    #     homebrew:
+    #       packages:
+    #         - ninja
+    #       update: true
+    #    env: NODE_VERSION="14" # node abi 83
 
      # Linux
+    #  - os: linux
+    #    dist: bionic
+    #    compiler: gcc
+    #    env: 
+    #      - NODE_VERSION="14"
+    #    addons:
+    #      apt:
+    #       packages:
+    #         - ninja-build
      - os: linux
        dist: bionic
        compiler: gcc
        env: 
-         - NODE_VERSION="14"
-       addons:
-         apt:
-          packages:
-            - ninja-build
-     - os: linux
-       dist: bionic
-       compiler: gcc
-       env: 
-         - NODE_VERSION="13"
+         - NODE_VERSION="13.12"
        addons:
          apt:
           packages:
