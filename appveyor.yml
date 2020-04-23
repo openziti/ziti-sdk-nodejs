@@ -2,9 +2,10 @@
    - x64
  
  configuration:
-   - Release
+   - Debug
  
  environment:
+   msvs_version: 2019
    AWS_ACCESS_KEY_ID:
      secure: GIQzwkV21ZqWhzZ0ii13r4dOEZ6Pkq8r6Jajx18uEaY=
    AWS_SECRET_ACCESS_KEY:
