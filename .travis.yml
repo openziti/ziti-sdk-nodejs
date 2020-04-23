@@ -91,11 +91,11 @@ matrix:
             - ninja-build
 
      # Windows
-    #  - os: windows
-    #    compiler: gcc
-    #    env: NODE_VERSION="12"
-    #    install:
-    #     - choco install ninja
+     - os: windows
+       compiler: gcc
+       env: NODE_VERSION="12"
+       install:
+        - choco install ninja
 
 env:
   global:
