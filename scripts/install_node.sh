@@ -33,13 +33,20 @@ do_win_node_install() {
     
     echo "DEBUG 3: do nvs use"
     "$NVS_HOME/nvs.sh"  use node/${NODE_VERSION}
+    PATH += ~/.nvs/node/${NODE_VERSION}/x64
     echo "DEBUG 3: done"
 
+    echo "DEBUG 4: do nvs link"
     "$NVS_HOME/nvs.sh"  link node/${NODE_VERSION}
-    # ${LOCALAPPDATA}/nvs/nvs.cmd link ${NODE_VERSION}
+    echo "DEBUG 4: done"
 
+    echo "DEBUG 5: do node --version"
     node --version
+    echo "DEBUG 5: done"
+
+    echo "DEBUG 6: do npm --version"
     npm --version
+    echo "DEBUG 6: done"
 
 
     # ls -l ${LOCALAPPDATA}/nvs
