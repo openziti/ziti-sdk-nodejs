@@ -22,11 +22,18 @@ do_win_node_install() {
     git clone https://github.com/jasongin/nvs "$NVS_HOME"
     export NVS_EXECUTE=1
     . "$NVS_HOME/nvs.sh" install
-    nvs --version
 
+    echo "DEBUG 1: check nvs version"
+    nvs --version
+    echo "DEBUG 1: done"
+
+    echo "DEBUG 2: do nvs add"
     nvs add node/${NODE_VERSION}
+    echo "DEBUG 2: done"
     
+    echo "DEBUG 3: do nvs use"
     "$NVS_HOME/nvs.sh"  use node/${NODE_VERSION}
+    echo "DEBUG 3: done"
 
     "$NVS_HOME/nvs.sh"  link node/${NODE_VERSION}
     # ${LOCALAPPDATA}/nvs/nvs.cmd link ${NODE_VERSION}
