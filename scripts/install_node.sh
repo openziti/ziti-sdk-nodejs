@@ -33,7 +33,7 @@ do_win_node_install() {
     
     echo "DEBUG 3: do nvs use"
     "$NVS_HOME/nvs.sh"  use node/${NODE_VERSION}
-    PATH += ~/.nvs/node/${NODE_VERSION}/x64
+    $PATH += ~/.nvs/node/${NODE_VERSION}/x64
     echo "DEBUG 3: done"
 
     echo "DEBUG 4: do nvs link"
@@ -82,17 +82,18 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
 elif [[ "$OSTYPE" == "cygwin" ]]; then
     # POSIX compatibility layer and Linux environment emulation for Windows
     echo "OSTYPE is supported";
-    do_win_node_install
+    do_win_node_install;
 elif [[ "$OSTYPE" == "msys" ]]; then
     # Lightweight shell and GNU utilities compiled for Windows (part of MinGW)
     echo "OSTYPE is supported";
-    do_win_node_install
+    # do_win_node_install;
+    do_node_install;
 elif [[ "$OSTYPE" == "win32" ]]; then
     # I'm not sure this can happen.
     echo "OSTYPE is unsupported";
 elif [[ "$OSTYPE" == "freebsd"* ]]; then
     echo "OSTYPE is supported";
-    do_node_install
+    do_node_install;
 else
     echo "OSTYPE is unsupported";
 fi
