@@ -3,6 +3,9 @@
  
  configuration:
    - Debug
+
+ image:
+   - Visual Studio 2015
  
  environment:
    AWS_ACCESS_KEY_ID:
@@ -17,9 +20,7 @@
       platform: x64
     - nodejs_version: 13
       platform: x64
- 
- os: Visual Studio 2015
- 
+  
  install:
    - choco install mingw
    - choco install ninja
