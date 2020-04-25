@@ -109,7 +109,7 @@
             "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv_link.a",
             "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/libuv_mbed.a",
             "<(cd)/deps/ziti-sdk-c/build/library/ziti.a",        
-            "<(cd)/deps/ziti-sdk-c/build/_deps/libsodium-build/lib/libsodium.a",
+            # "<(cd)/deps/ziti-sdk-c/build/_deps/libsodium-build/lib/libsodium.a",
             "-lws2_32.lib",
             "-lIphlpapi.lib",
             "-lpsapi",
