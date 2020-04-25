@@ -102,11 +102,14 @@ ECHO ===== starting make sequence... ============
 CALL mkdir build
 CALL cd build
 
-CALL "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
+ECHO ===== calling vcvars64.bat ============
+CALL "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
 
+ECHO ===== calling cmake -G Ninja ============
 CALL cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON --config Debug -G Ninja ..
 
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
+ECHO ===== calling cmake --build ============
 CALL cmake --build . --target all
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 CALL cd ..
@@ -114,6 +117,7 @@ CALL cd ..
 CALL cd ..
 
 :: build Ziti NodeJS-SDK
+ECHO ===== calling npm install --build-from-source ============
 CALL npm install --build-from-source --cd=%CD% --msvs_version=%msvs_version% %TOOLSET_ARGS%
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
