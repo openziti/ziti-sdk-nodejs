@@ -102,8 +102,11 @@ ECHO ===== starting make sequence... ============
 CALL mkdir build
 CALL cd build
 
-ECHO ===== calling vcvars64.bat ============
-CALL "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
+REM ECHO ===== calling vcvars64.bat ============
+REM CALL "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
+
+ECHO ===== calling refreshenv ============
+CALL refreshenv
 
 ECHO ===== calling cmake -G Ninja ============
 CALL cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON --config Debug -G Ninja ..
