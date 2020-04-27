@@ -118,7 +118,7 @@ static void CallJs_on_data(napi_env env, napi_value js_cb, void* context, void* 
 /**
  * This function is the callback invoked by the C-SDK when data arrives on the connection.
  */
-void on_data(nf_connection conn, uint8_t *buf, int len) {
+ssize_t on_data(nf_connection conn, uint8_t *buf, ssize_t len) {
 
   ConnAddonData* addon_data = (ConnAddonData*) NF_conn_data(conn);
 
@@ -127,12 +127,14 @@ void on_data(nf_connection conn, uint8_t *buf, int len) {
   if (len == ZITI_EOF) {
     if (addon_data->isWebsocket) {
       ZITI_NODEJS_LOG(DEBUG, "NF_dial.on_data(), skipping NF_close on ZITI_EOF due to isWebsocket=true");
+      return 0;
     } else {
       NF_close(&conn);
     }
   }
   else if (len < 0) {
     NF_close(&conn);
+    return 0;
   }
   else {
 
@@ -154,6 +156,8 @@ void on_data(nf_connection conn, uint8_t *buf, int len) {
         addon_data->tsfn_on_data,        
         item,  // Send the data we received from the service on over to the JS callback
         napi_tsfn_blocking) == napi_ok);
+
+    return len;
   }
 }
 

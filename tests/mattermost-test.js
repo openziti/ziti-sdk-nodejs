@@ -10,8 +10,9 @@ require('assert').equal(ziti.NF_hello(),"ziti");
 function NF_dial(service) {
     console.log('----------- inside NF_dial() ---------- service is: ', service);
     return new Promise((resolve, reject) => {
-        ziti.NF_dial( // eslint-disable-line new-cap
+        ziti.NF_dial(
         service,
+        false, // NOT a wabsocket
         (conn) => {
           console.log('----------- Now inside NF_dial connect callback ----------, conn is: ' + conn);
           resolve(conn);
