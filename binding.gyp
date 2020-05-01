@@ -97,19 +97,19 @@
           ],
 
           "include_dirs": [ 
-            "deps\\ziti-sdk-c\\includes",
-            "deps\\ziti-sdk-c\\deps\\uv-mbed\\include"
+            "deps/ziti-sdk-c/includes",
+            "deps/ziti-sdk-c/deps/uv-mbed/include"
           ],
           "libraries": [
-            "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libhttp-parser.a",
-            "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/crypto/library/libmbedcrypto.a",
-            "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/libmbedtls.a",
-            "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/libmbedx509.a",
-            "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv/libuv_a.a",
-            "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv_link.a",
-            "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/libuv_mbed.a",
-            "<(cd)/deps/ziti-sdk-c/build/library/ziti.a",        
-            # "<(cd)/deps/ziti-sdk-c/build/_deps/libsodium-build/lib/libsodium.a",
+            "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/http-parser.lib",
+            "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/crypto/library/mbedcrypto.lib",
+            "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/mbedtls.lib",
+            "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/mbedx509.lib",
+            "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv/uv_a.lib",
+            "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/uv_link.lib",
+            "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/uv_mbed.lib",
+            "<(cd)/deps/ziti-sdk-c/build/library/ziti.lib",
+            "<(cd)/deps/ziti-sdk-c/build/_deps/libsodium-src/x64/Release/v142/static/libsodium.lib",
             "-lws2_32.lib",
             "-lIphlpapi.lib",
             "-lpsapi",
