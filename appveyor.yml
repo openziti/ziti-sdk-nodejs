@@ -16,17 +16,12 @@
    matrix:
     - nodejs_version: 11
       platform: x64
-      COMPILER: MinGW-w64
     - nodejs_version: 12
       platform: x64
-      COMPILER: MinGW-w64
     - nodejs_version: 13
       platform: x64
-      COMPILER: MinGW-w64
   
  install:
-   - choco install mingw
-   - choco install ninja
    - scripts\build-appveyor.bat
    - ps: if($env:appveyor_repo_tag -eq 'True') { npm run publish } else { echo "Not publishing binary because this is not a tag build" }
  
