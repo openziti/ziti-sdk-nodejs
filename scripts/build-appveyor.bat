@@ -3,7 +3,7 @@ SETLOCAL
 SET EL=0
 
 ECHO ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %~f0 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dir "C:\Program Files (x86)\Microsoft Visual Studio\2019"
+
 IF /I "%msvs_toolset%"=="" ECHO msvs_toolset unset, defaulting to 14 && SET msvs_toolset=14
 IF /I "%msvs_version%"=="" ECHO msvs_version unset, defaulting to 2019 && SET msvs_version=2019
 
@@ -21,8 +21,8 @@ ECHO TOOLSET_ARGS^: %TOOLSET_ARGS%
 
 ECHO activating VS command prompt
 :: NOTE this call makes the x64 -> X64
-IF /I "%platform%"=="x64" ECHO x64 && CALL "C:\Program Files (x86)\Microsoft Visual Studio\%msvs_version%\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" amd64
-IF /I "%platform%"=="x86" ECHO x86 && CALL "C:\Program Files (x86)\Microsoft Visual Studio\%msvs_version%\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" x86
+IF /I "%platform%"=="x64" ECHO x64 && CALL "C:\Program Files (x86)\Microsoft Visual Studio\%msvs_version%\Community\VC\Auxiliary\Build\vcvarsall.bat" amd64
+IF /I "%platform%"=="x86" ECHO x86 && CALL "C:\Program Files (x86)\Microsoft Visual Studio\%msvs_version%\Community\VC\Auxiliary\Build\vcvarsall.bat" x86
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
 ECHO using compiler^: && CALL cl
