@@ -3,7 +3,7 @@ SETLOCAL
 SET EL=0
 
 ECHO ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %~f0 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dir "C:\Program Files (x86)"
+dir "C:\Program Files (x86)\Microsoft Visual Studio\2019"
 IF /I "%msvs_toolset%"=="" ECHO msvs_toolset unset, defaulting to 14 && SET msvs_toolset=14
 IF /I "%msvs_version%"=="" ECHO msvs_version unset, defaulting to 2019 && SET msvs_version=2019
 
