@@ -5,7 +5,7 @@ SET EL=0
 ECHO ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ %~f0 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 IF /I "%msvs_toolset%"=="" ECHO msvs_toolset unset, defaulting to 14 && SET msvs_toolset=14
-IF /I "%msvs_version%"=="" ECHO msvs_version unset, defaulting to 2015 && SET msvs_version=2015
+IF /I "%msvs_version%"=="" ECHO msvs_version unset, defaulting to 2019 && SET msvs_version=2019
 
 SET PATH=%CD%;%PATH%
 IF "%msvs_toolset%"=="12" SET msvs_version=2013
@@ -21,8 +21,8 @@ ECHO TOOLSET_ARGS^: %TOOLSET_ARGS%
 
 ECHO activating VS command prompt
 :: NOTE this call makes the x64 -> X64
-IF /I "%platform%"=="x64" ECHO x64 && CALL "C:\Program Files (x86)\Microsoft Visual Studio %msvs_toolset%.0\VC\vcvarsall.bat" amd64
-IF /I "%platform%"=="x86" ECHO x86 && CALL "C:\Program Files (x86)\Microsoft Visual Studio %msvs_toolset%.0\VC\vcvarsall.bat" x86
+IF /I "%platform%"=="x64" ECHO x64 && CALL "C:\Program Files (x86)\Microsoft Visual Studio\%msvs_version%\Community\VC\Auxiliary\Build\vcvarsall.bat" amd64
+IF /I "%platform%"=="x86" ECHO x86 && CALL "C:\Program Files (x86)\Microsoft Visual Studio\%msvs_version%\Community\VC\Auxiliary\Build\vcvarsall.bat" x86
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
 ECHO using compiler^: && CALL cl
@@ -91,6 +91,13 @@ ECHO NODE_RUNTIME^: %NODE_RUNTIME%
 IF DEFINED needs_patch CALL npm install --prefix %npm_in_nodejs_dir% node-gyp@6.x
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 ECHO ===== conditional node-gyp upgrade END ============
+
+:: install node-gyp v6.1
+ECHO ===== install node-gyp v6.1 ============
+CALL npm install -g node-gyp
+REM SET npm_config_node_gyp=C:\Users\appveyor\AppData\Roaming\npm\node-gyp
+SET npm_config_node_gyp=C:\Users\appveyor\AppData\Roaming\npm\node_modules\node-gyp\bin\node-gyp.js
+ECHO ===== install node-gyp v6.1 completed ============
 
 :: build Ziti C-SDK
 CALL git submodule update --init --recursive
