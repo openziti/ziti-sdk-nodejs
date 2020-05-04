@@ -92,6 +92,9 @@ IF DEFINED needs_patch CALL npm install --prefix %npm_in_nodejs_dir% node-gyp@6.
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 ECHO ===== conditional node-gyp upgrade END ============
 
+:: install node-gyp v6.1
+CALL npm install -g node-gyp
+
 :: build Ziti C-SDK
 CALL git submodule update --init --recursive
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
