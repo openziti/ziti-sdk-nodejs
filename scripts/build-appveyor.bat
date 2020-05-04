@@ -95,7 +95,8 @@ ECHO ===== conditional node-gyp upgrade END ============
 :: install node-gyp v6.1
 ECHO ===== install node-gyp v6.1 ============
 CALL npm install -g node-gyp
-SET npm_config_node_gyp=C:\Users\appveyor\AppData\Roaming\npm\node-gyp
+REM SET npm_config_node_gyp=C:\Users\appveyor\AppData\Roaming\npm\node-gyp
+SET npm_config_node_gyp=C:\Users\appveyor\AppData\Roaming\npm\node_modules\node-gyp\bin\node-gyp.js
 ECHO ===== install node-gyp v6.1 completed ============
 
 :: build Ziti C-SDK
