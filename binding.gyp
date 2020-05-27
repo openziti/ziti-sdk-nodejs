@@ -18,6 +18,9 @@
         "./src/NF_dial.c",
         "./src/NF_enroll.c",
         "./src/NF_hello.c",
+        "./src/Ziti_https_request.c",
+        "./src/Ziti_https_request_data.c",
+        "./src/Ziti_https_request_end.c",
         "./src/NF_init.c",
         "./src/NF_service_available.c",
         "./src/NF_shutdown.c",
@@ -30,6 +33,8 @@
       "include_dirs": [
           "deps/ziti-sdk-c/includes",
           "deps/ziti-sdk-c/deps/uv-mbed/include",
+          "deps/ziti-sdk-c/deps/uv-mbed/deps/http-parser",
+          "deps/ziti-sdk-c/deps/uv-mbed/deps/uv_link_t/include",
       ],
 
       "conditions": [
@@ -76,6 +81,7 @@
               "-W",
               "-Wno-unused-parameter",
               "-Wno-pointer-sign",
+              "-Wno-unused-function",
             ],
           }
         }],

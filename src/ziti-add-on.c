@@ -69,6 +69,10 @@ napi_value Init(napi_env env, napi_value exports) {
   expose_NF_shutdown(env, exports);
   expose_NF_write(env, exports);
 
+  expose_Ziti_https_request(env, exports);
+  expose_Ziti_https_request_data(env, exports);
+  expose_Ziti_https_request_end(env, exports);
+
   return exports;
 }
 
