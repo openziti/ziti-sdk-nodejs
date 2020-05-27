@@ -43,6 +43,22 @@ limitations under the License.
     /* Building static library. */
 #   define UV_EXTERN /* nothing */
 # endif
+
+
+#define strcasecmp _stricmp
+#define strncasecmp _strnicmp
+
+#if !defined (strndup_DEFINED)
+#define strndup_DEFINED
+static char* strndup(char* p, size_t len) {
+    char *s = malloc(len + 1);
+    strncpy(s, p, len);
+    s[len] = '\0';
+    return s;
+}
+#endif // strndup_DEFINED
+
+
 #elif __GNUC__ >= 4
 # define UV_EXTERN __attribute__((visibility("default")))
 #else
