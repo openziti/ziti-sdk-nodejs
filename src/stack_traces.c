@@ -194,8 +194,8 @@ int addr2line(char const * const program_name, void const * const addr)
 
     /* skip the first couple stack frames (as they are this function and
      our handler) and also skip the last frame as it's (always?) junk. */
-    // for (i = 3; i < (trace_size - 1); ++i)
-    for (i = 4; i < (trace_size - 1); ++i)
+    for (i = 3; i < (trace_size - 1); ++i)
+    // for (i = 4; i < (trace_size - 1); ++i)
     // for (i = 0; i < trace_size; ++i) // we'll use this for now so you can see what's going on
     {
       if (addr2line(icky_global_program_name, stack_traces[i]) != 0)

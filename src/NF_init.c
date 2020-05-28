@@ -19,7 +19,6 @@ limitations under the License.
 nf_context nf;
 uv_loop_t *loop = NULL;
 
-uv_loop_t *thread_loop;
 uv_thread_t thread;
 uv_async_t async;
 

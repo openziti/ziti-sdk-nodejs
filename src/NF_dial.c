@@ -122,7 +122,7 @@ ssize_t on_data(nf_connection conn, uint8_t *buf, ssize_t len) {
 
   ConnAddonData* addon_data = (ConnAddonData*) NF_conn_data(conn);
 
-  ZITI_NODEJS_LOG(INFO, "NF_dial.on_data() entered, len: %d, conn: %p", len, conn);
+  ZITI_NODEJS_LOG(INFO, "NF_dial.on_data() entered, len: %zd, conn: %p", len, conn);
 
   if (len == ZITI_EOF) {
     if (addon_data->isWebsocket) {
@@ -130,6 +130,7 @@ ssize_t on_data(nf_connection conn, uint8_t *buf, ssize_t len) {
       return 0;
     } else {
       NF_close(&conn);
+      return 0;
     }
   }
   else if (len < 0) {

@@ -20,6 +20,8 @@ limitations under the License.
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <uv_mbed/uv_mbed.h>
+#include <uv_mbed/um_http.h>
 
 #include <node_version.h>
 #define NAPI_EXPERIMENTAL
@@ -41,6 +43,22 @@ limitations under the License.
     /* Building static library. */
 #   define UV_EXTERN /* nothing */
 # endif
+
+
+#define strcasecmp _stricmp
+#define strncasecmp _strnicmp
+
+#if !defined (strndup_DEFINED)
+#define strndup_DEFINED
+static char* strndup(char* p, size_t len) {
+    char *s = malloc(len + 1);
+    strncpy(s, p, len);
+    s[len] = '\0';
+    return s;
+}
+#endif // strndup_DEFINED
+
+
 #elif __GNUC__ >= 4
 # define UV_EXTERN __attribute__((visibility("default")))
 #else
@@ -78,11 +96,51 @@ typedef struct {
 } ConnAddonData;
 
 
+// An item that will be passed into the JavaScript on_resp callback
+typedef struct HttpsRespItem {
+  um_http_req_t *req;
+  int code;
+  char* status;
+  um_http_hdr *headers;
+} HttpsRespItem;
+
+// An item that will be passed into the JavaScript on_resp_body callback
+typedef struct HttpsRespBodyItem {
+  um_http_req_t *req;
+  const void *body;
+  ssize_t len;
+} HttpsRespBodyItem;
+
+// An item that will be passed into the JavaScript on_req_body callback
+typedef struct HttpsReqBodyItem {
+  um_http_req_t *req;
+  const void *body;
+  ssize_t status;
+} HttpsReqBodyItem;
+
+typedef struct HttpsReq {
+  um_http_req_t *req;
+  bool on_resp_has_fired; // TEMP
+} HttpsReq;
+
+typedef struct {
+  napi_env env;
+  um_http_t client;
+  um_http_src_t ziti_src;
+  napi_threadsafe_function tsfn_on_resp;
+  napi_threadsafe_function tsfn_on_resp_body;
+  napi_threadsafe_function tsfn_on_req_body;
+  HttpsRespItem* item;
+  HttpsReq* httpsReq;
+} HttpsAddonData;
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 extern nf_context nf;
+extern uv_loop_t *thread_loop;
 
 // extern pthread_mutex_t nf_init_lock;
 
@@ -96,6 +154,10 @@ extern void expose_NF_init(napi_env env, napi_value exports);
 extern void expose_NF_service_available(napi_env env, napi_value exports);
 extern void expose_NF_shutdown(napi_env env, napi_value exports);
 extern void expose_NF_write(napi_env env, napi_value exports);
+
+extern void expose_Ziti_https_request(napi_env env, napi_value exports);
+extern void expose_Ziti_https_request_data(napi_env env, napi_value exports);
+extern void expose_Ziti_https_request_end(napi_env env, napi_value exports);
 
 
 #ifdef __cplusplus
