@@ -21,7 +21,7 @@ limitations under the License.
 /**
  * 
  */
-napi_value _NF_close(napi_env env, const napi_callback_info info) {
+napi_value _ziti_close(napi_env env, const napi_callback_info info) {
   napi_status status;
   size_t argc = 1;
   napi_value args[1];
@@ -37,16 +37,16 @@ napi_value _NF_close(napi_env env, const napi_callback_info info) {
     return NULL;
   }
 
-    // Obtain nf_connection
+    // Obtain ziti_connection
   int64_t js_conn;
   status = napi_get_value_int64(env, args[0], &js_conn);
   if (status != napi_ok) {
     napi_throw_error(env, NULL, "Failed to get Conn");
   }
-  nf_connection conn = (nf_connection)js_conn;
+  ziti_connection conn = (ziti_connection)js_conn;
 
   // Now, call the C-SDK to close the connection
-  NF_close(&conn);
+  ziti_close(&conn);
 
   status = napi_create_int32(env, 0, &jsRetval);
   if (status != napi_ok) {
@@ -60,18 +60,18 @@ napi_value _NF_close(napi_env env, const napi_callback_info info) {
 /**
  * 
  */
-void expose_NF_close(napi_env env, napi_value exports) {
+void expose_ziti_close(napi_env env, napi_value exports) {
   napi_status status;
   napi_value fn;
 
-  status = napi_create_function(env, NULL, 0, _NF_close, NULL, &fn);
+  status = napi_create_function(env, NULL, 0, _ziti_close, NULL, &fn);
   if (status != napi_ok) {
-    napi_throw_error(env, NULL, "Unable to wrap native function '_NF_close");
+    napi_throw_error(env, NULL, "Unable to wrap native function '_ziti_close");
   }
 
-  status = napi_set_named_property(env, exports, "NF_close", fn);
+  status = napi_set_named_property(env, exports, "ziti_close", fn);
   if (status != napi_ok) {
-    napi_throw_error(env, NULL, "Unable to populate exports for 'NF_close");
+    napi_throw_error(env, NULL, "Unable to populate exports for 'ziti_close");
   }
 
 }

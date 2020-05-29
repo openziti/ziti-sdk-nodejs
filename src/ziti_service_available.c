@@ -32,9 +32,10 @@ typedef struct ServiceAvailableItem {
 
 /**
  * This function is responsible for calling the JavaScript 'service_available' callback function 
- * that was specified when the NF_service_available(...) was called from JavaScript.
+ * that was specified when the ziti_service_available(...) was called from JavaScript.
  */
 static void CallJs_on_service_available(napi_env env, napi_value js_cb, void* context, void* data) {
+  napi_status status;
 
   // This parameter is not used.
   (void) context;
@@ -52,29 +53,49 @@ static void CallJs_on_service_available(napi_env env, napi_value js_cb, void* co
 
     // const obj = {}
     napi_value js_service_available_item, js_status, js_permissions;
-    assert(napi_create_object(env, &js_service_available_item) == napi_ok);
+    status = napi_create_object(env, &js_service_available_item);
+    if (status != napi_ok) {
+      napi_throw_error(env, NULL, "Unable to napi_create_object");
+    }
 
     // obj.status = status
-    assert(napi_create_int64(env, (int64_t)item->status, &js_status) == napi_ok);
-    assert(napi_set_named_property(env, js_service_available_item, "status", js_status) == napi_ok);
+    status = napi_create_int64(env, (int64_t)item->status, &js_status);
+    if (status != napi_ok) {
+      napi_throw_error(env, NULL, "Unable to napi_create_int64");
+    }
+    status = napi_set_named_property(env, js_service_available_item, "status", js_status);
+    if (status != napi_ok) {
+      napi_throw_error(env, NULL, "Unable to napi_set_named_property");
+    }
 
     // obj.permissions = permissions
-    assert(napi_create_int64(env, (int64_t)item->permissions, &js_permissions) == napi_ok);
-    assert(napi_set_named_property(env, js_service_available_item, "permissions", js_permissions) == napi_ok);
+    status = napi_create_int64(env, (int64_t)item->permissions, &js_permissions);
+    if (status != napi_ok) {
+      napi_throw_error(env, NULL, "Unable to napi_create_int64");
+    }
+    status = napi_set_named_property(env, js_service_available_item, "permissions", js_permissions);
+    if (status != napi_ok) {
+      napi_throw_error(env, NULL, "Unable to napi_set_named_property");
+    }
 
     // Retrieve the JavaScript `undefined` value so we can use it as the `this`
     // value of the JavaScript function call.
-    assert(napi_get_undefined(env, &undefined) == napi_ok);
+    status = napi_get_undefined(env, &undefined);
+    if (status != napi_ok) {
+      napi_throw_error(env, NULL, "Unable to napi_get_undefined");
+    }
 
     // Call the JavaScript function and pass it the ServiceAvailableItem
-    assert(
-      napi_call_function(
+    status = napi_call_function(
         env,
         undefined,
         js_cb,
         1,
         &js_service_available_item,
-        NULL) == napi_ok);
+        NULL);
+    if (status != napi_ok) {
+      napi_throw_error(env, NULL, "Unable to napi_call_function");
+    }
   }
 }
 
@@ -82,7 +103,8 @@ static void CallJs_on_service_available(napi_env env, napi_value js_cb, void* co
 /**
  * 
  */
-static void on_service_available(nf_context nf_ctx, ziti_service* service, int status, void *ctx) {
+static void on_service_available(ziti_context nf_ctx, ziti_service* service, int status, void *ctx) {
+  napi_status nstatus;
 
   AddonData* addon_data = (AddonData*)ctx;
 
@@ -96,17 +118,19 @@ static void on_service_available(nf_context nf_ctx, ziti_service* service, int s
   // Initiate the call into the JavaScript callback. 
   // The call into JavaScript will not have happened 
   // when this function returns, but it will be queued.
-  assert(
-    napi_call_threadsafe_function(
+  nstatus = napi_call_threadsafe_function(
       addon_data->tsfn,
       item,
-      napi_tsfn_blocking) == napi_ok);
+      napi_tsfn_blocking);
+  if (nstatus != napi_ok) {
+    ZITI_NODEJS_LOG(ERROR, "Unable to napi_call_threadsafe_function");
+  }
 }
 
 /**
  * 
  */
-napi_value _NF_service_available(napi_env env, const napi_callback_info info) {
+napi_value _ziti_service_available(napi_env env, const napi_callback_info info) {
   napi_status status;
   size_t argc = 2;
   napi_value args[2];
@@ -136,16 +160,18 @@ napi_value _NF_service_available(napi_env env, const napi_callback_info info) {
   AddonData* addon_data = malloc(sizeof(AddonData));
 
   // Create a string to describe this asynchronous operation.
-  assert(napi_create_string_utf8(
+  status = napi_create_string_utf8(
     env,
     "N-API on_service_available",
     NAPI_AUTO_LENGTH,
-    &work_name) == napi_ok);
+    &work_name);
+  if (status != napi_ok) {
+    napi_throw_error(env, NULL, "Unable to napi_create_string_utf8");
+  }
 
   // Convert the callback retrieved from JavaScript into a thread-safe function (tsfn) 
   // which we can call from a worker thread.
-  assert(
-    napi_create_threadsafe_function(
+  status = napi_create_threadsafe_function(
       env,
       js_write_cb,
       NULL,
@@ -156,10 +182,13 @@ napi_value _NF_service_available(napi_env env, const napi_callback_info info) {
       NULL,
       NULL,
       CallJs_on_service_available,
-      &(addon_data->tsfn)) == napi_ok);
+      &(addon_data->tsfn));
+  if (status != napi_ok) {
+    napi_throw_error(env, NULL, "Unable to napi_call_threadsafe_function");
+  }
 
   // Now, call the C-SDK to see if the service name is present
-  NF_service_available(nf, ServiceName, on_service_available, addon_data);
+  ziti_service_available(ztx, ServiceName, on_service_available, addon_data);
 
   status = napi_create_int32(env, 0 /* always succeed here, it is the cb that tells the real tale */, &jsRetval);
   if (status != napi_ok) {
@@ -175,18 +204,18 @@ napi_value _NF_service_available(napi_env env, const napi_callback_info info) {
 /**
  * 
  */
-void expose_NF_service_available(napi_env env, napi_value exports) {
+void expose_ziti_service_available(napi_env env, napi_value exports) {
   napi_status status;
   napi_value fn;
 
-  status = napi_create_function(env, NULL, 0, _NF_service_available, NULL, &fn);
+  status = napi_create_function(env, NULL, 0, _ziti_service_available, NULL, &fn);
   if (status != napi_ok) {
-    napi_throw_error(env, NULL, "Unable to wrap native function '_NF_service_available");
+    napi_throw_error(env, NULL, "Unable to wrap native function '_ziti_service_available");
   }
 
-  status = napi_set_named_property(env, exports, "NF_service_available", fn);
+  status = napi_set_named_property(env, exports, "ziti_service_available", fn);
   if (status != napi_ok) {
-    napi_throw_error(env, NULL, "Unable to populate exports for 'NF_service_available");
+    napi_throw_error(env, NULL, "Unable to populate exports for 'ziti_service_available");
   }
 
 }

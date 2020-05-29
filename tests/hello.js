@@ -6,7 +6,7 @@ const binding_path = binary.find(path.resolve(path.join(__dirname,'../package.js
 console.log("binding_path is: ", binding_path);
 const ziti = require(binding_path);
 console.log("ziti native addon is: \n", ziti);
-const result = ziti.NF_hello();
-console.log("NF_hello() result is: ", result);
+const result = ziti.ziti_hello();
+console.log("ziti_hello() result is: ", result);
 require('assert').equal(result,"ziti");
 console.log("SUCCESS");

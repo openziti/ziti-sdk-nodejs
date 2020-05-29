@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 #include "ziti-nodejs.h"
-#include <nf/ziti_src.h>
+#include <ziti/ziti_src.h>
 
 static const unsigned int U1 = 1;
 
@@ -562,7 +562,7 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
 
 
   // Set up the Ziti source
-  ziti_src_init(thread_loop, &(addon_data->ziti_src), service, nf );
+  ziti_src_init(thread_loop, &(addon_data->ziti_src), service, ztx );
   um_http_init_with_src(
     thread_loop, 
     &(addon_data->client), 
@@ -643,7 +643,7 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
 }
 
 
-void expose_Ziti_https_request(napi_env env, napi_value exports) {
+void expose_ziti_https_request(napi_env env, napi_value exports) {
   napi_status status;
   napi_value fn;
 

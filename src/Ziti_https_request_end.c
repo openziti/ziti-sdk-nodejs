@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 #include "ziti-nodejs.h"
-#include <nf/ziti_src.h>
+#include <ziti/ziti_src.h>
 
 
 /**
@@ -63,7 +63,7 @@ napi_value _Ziti_http_request_end(napi_env env, const napi_callback_info info) {
 }
 
 
-void expose_Ziti_https_request_end(napi_env env, napi_value exports) {
+void expose_ziti_https_request_end(napi_env env, napi_value exports) {
   napi_status status;
   napi_value fn;
 
