@@ -22,7 +22,7 @@ extern void set_signal_handler();
 napi_value Init(napi_env env, napi_value exports) {
 
   // Install call-stack tracer
-  set_signal_handler();
+  // set_signal_handler();
 
 // TEMP: skip logging on windows
 #ifndef WIN32
