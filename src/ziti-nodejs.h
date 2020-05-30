@@ -27,7 +27,7 @@ limitations under the License.
 #define NAPI_EXPERIMENTAL
 #include <node_api.h>
 
-#include <nf/ziti.h>
+#include <ziti/ziti.h>
 #include "utils.h"
 
 #ifdef _WIN32
@@ -73,14 +73,6 @@ UV_EXTERN int uv_gettimeofday(uv_timeval64_t* tv);
 #    endif
 #  endif
 
-
-
-#define DIE(v) do { \
-int code = (v);\
-if (code != ZITI_OK) {\
-fprintf(stderr, "ERROR: " #v " => %s\n", ziti_errorstr(code));\
-exit(code);\
-}} while(0)
 
 
 /**
@@ -139,25 +131,24 @@ typedef struct {
 extern "C" {
 #endif
 
-extern nf_context nf;
+extern ziti_context ztx;
 extern uv_loop_t *thread_loop;
 
 // extern pthread_mutex_t nf_init_lock;
 
 // extern void set_signal_handler();
 
-extern void expose_NF_close(napi_env env, napi_value exports);
-extern void expose_NF_dial(napi_env env, napi_value exports);
-extern void expose_NF_enroll(napi_env env, napi_value exports);
-extern void expose_NF_hello(napi_env env, napi_value exports);
-extern void expose_NF_init(napi_env env, napi_value exports);
-extern void expose_NF_service_available(napi_env env, napi_value exports);
-extern void expose_NF_shutdown(napi_env env, napi_value exports);
-extern void expose_NF_write(napi_env env, napi_value exports);
-
-extern void expose_Ziti_https_request(napi_env env, napi_value exports);
-extern void expose_Ziti_https_request_data(napi_env env, napi_value exports);
-extern void expose_Ziti_https_request_end(napi_env env, napi_value exports);
+extern void expose_ziti_close(napi_env env, napi_value exports);
+extern void expose_ziti_dial(napi_env env, napi_value exports);
+extern void expose_ziti_enroll(napi_env env, napi_value exports);
+extern void expose_ziti_hello(napi_env env, napi_value exports);
+extern void expose_ziti_init(napi_env env, napi_value exports);
+extern void expose_ziti_service_available(napi_env env, napi_value exports);
+extern void expose_ziti_shutdown(napi_env env, napi_value exports);
+extern void expose_ziti_write(napi_env env, napi_value exports);
+extern void expose_ziti_https_request(napi_env env, napi_value exports);
+extern void expose_ziti_https_request_data(napi_env env, napi_value exports);
+extern void expose_ziti_https_request_end(napi_env env, napi_value exports);
 
 
 #ifdef __cplusplus

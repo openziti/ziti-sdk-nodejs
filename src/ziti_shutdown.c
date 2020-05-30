@@ -20,26 +20,26 @@ limitations under the License.
 /**
  * 
  */
-napi_value _NF_shutdown(napi_env env, const napi_callback_info info) {
+napi_value _ziti_shutdown(napi_env env, const napi_callback_info info) {
 
-  NF_shutdown(nf);
+  ziti_shutdown(ztx);
 
   return NULL;
 }
 
 
-void expose_NF_shutdown(napi_env env, napi_value exports) {
+void expose_ziti_shutdown(napi_env env, napi_value exports) {
   napi_status status;
   napi_value fn;
 
-  status = napi_create_function(env, NULL, 0, _NF_shutdown, NULL, &fn);
+  status = napi_create_function(env, NULL, 0, _ziti_shutdown, NULL, &fn);
   if (status != napi_ok) {
-    napi_throw_error(env, NULL, "Unable to wrap native function '_NF_shutdown");
+    napi_throw_error(env, NULL, "Unable to wrap native function '_ziti_shutdown");
   }
 
-  status = napi_set_named_property(env, exports, "NF_shutdown", fn);
+  status = napi_set_named_property(env, exports, "ziti_shutdown", fn);
   if (status != napi_ok) {
-    napi_throw_error(env, NULL, "Unable to populate exports for 'NF_shutdown");
+    napi_throw_error(env, NULL, "Unable to populate exports for 'ziti_shutdown");
   }
 
 }

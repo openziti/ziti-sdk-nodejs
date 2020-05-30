@@ -20,7 +20,7 @@ limitations under the License.
 /**
  * 
  */
-napi_value _NF_hello(napi_env env, const napi_callback_info info) {
+napi_value _ziti_hello(napi_env env, const napi_callback_info info) {
   napi_value jsRetval = NULL;
   napi_status status = napi_generic_failure;
 
@@ -34,18 +34,18 @@ napi_value _NF_hello(napi_env env, const napi_callback_info info) {
 /**
  * 
  */
-void expose_NF_hello(napi_env env, napi_value exports) {
+void expose_ziti_hello(napi_env env, napi_value exports) {
   napi_status status;
   napi_value fn;
 
-  status = napi_create_function(env, NULL, 0, _NF_hello, NULL, &fn);
+  status = napi_create_function(env, NULL, 0, _ziti_hello, NULL, &fn);
   if (status != napi_ok) {
-    napi_throw_error(env, NULL, "Unable to wrap native function '_NF_hello");
+    napi_throw_error(env, NULL, "Unable to wrap native function '_ziti_hello");
   }
 
-  status = napi_set_named_property(env, exports, "NF_hello", fn);
+  status = napi_set_named_property(env, exports, "ziti_hello", fn);
   if (status != napi_ok) {
-    napi_throw_error(env, NULL, "Unable to populate exports for 'NF_hello");
+    napi_throw_error(env, NULL, "Unable to populate exports for 'ziti_hello");
   }
 
 }

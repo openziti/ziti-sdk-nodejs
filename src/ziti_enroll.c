@@ -16,7 +16,7 @@ limitations under the License.
 
 #include "ziti-nodejs.h"
 
-nf_context nf;
+ziti_context nf;
 uv_loop_t *enroll_loop = NULL;
 
 uv_loop_t *thread_loop;
@@ -41,7 +41,7 @@ typedef struct EnrollItem {
 
 /**
  * This function is responsible for calling the JavaScript callback function 
- * that was specified when the NF_enroll(...) was called from JavaScript.
+ * that was specified when the ziti_enroll(...) was called from JavaScript.
  */
 static void CallJs_on_enroll(napi_env env, napi_value js_cb, void* context, void* data) {
 
@@ -110,7 +110,7 @@ static void CallJs_on_enroll(napi_env env, napi_value js_cb, void* context, void
 /**
  * 
  */
-void on_nf_enroll(unsigned char *json_salvo, int len, char *err, void* ctx) {
+void on_ziti_enroll(unsigned char *json_salvo, int len, char *err, void* ctx) {
 
   ZITI_NODEJS_LOG(DEBUG, "\njson_salvo: %s, \nlen: %d, \nerr: %s,\nctx: %p", json_salvo, len, err, ctx);
 
@@ -155,7 +155,7 @@ static void consumer_notify(uv_async_t *handle, int status) { }
 /**
  * 
  */
-napi_value _NF_enroll(napi_env env, const napi_callback_info info) {
+napi_value _ziti_enroll(napi_env env, const napi_callback_info info) {
   napi_status status;
   napi_value jsRetval;
 
@@ -186,7 +186,7 @@ napi_value _NF_enroll(napi_env env, const napi_callback_info info) {
   // Create a string to describe this asynchronous operation.
   assert(napi_create_string_utf8(
     env,
-    "N-API on_nf_enroll",
+    "N-API on_ziti_enroll",
     NAPI_AUTO_LENGTH,
     &work_name) == napi_ok);
 
@@ -212,7 +212,7 @@ napi_value _NF_enroll(napi_env env, const napi_callback_info info) {
   uv_thread_create(&thread, (uv_thread_cb)child_thread, thread_loop);
 
   // Initiate the enrollment
-  int rc = NF_enroll(JWTFileName, thread_loop, on_nf_enroll, addon_data);
+  int rc = ziti_enroll(JWTFileName, thread_loop, on_ziti_enroll, addon_data);
 
   status = napi_create_int32(env, rc, &jsRetval);
   if (status != napi_ok) {
@@ -223,18 +223,18 @@ napi_value _NF_enroll(napi_env env, const napi_callback_info info) {
 }
 
 
-void expose_NF_enroll(napi_env env, napi_value exports) {
+void expose_ziti_enroll(napi_env env, napi_value exports) {
   napi_status status;
   napi_value fn;
 
-  status = napi_create_function(env, NULL, 0, _NF_enroll, NULL, &fn);
+  status = napi_create_function(env, NULL, 0, _ziti_enroll, NULL, &fn);
   if (status != napi_ok) {
-    napi_throw_error(env, NULL, "Unable to wrap native function '_NF_enroll");
+    napi_throw_error(env, NULL, "Unable to wrap native function '_ziti_enroll");
   }
 
-  status = napi_set_named_property(env, exports, "NF_enroll", fn);
+  status = napi_set_named_property(env, exports, "ziti_enroll", fn);
   if (status != napi_ok) {
-    napi_throw_error(env, NULL, "Unable to populate exports for 'NF_enroll");
+    napi_throw_error(env, NULL, "Unable to populate exports for 'ziti_enroll");
   }
 
 }

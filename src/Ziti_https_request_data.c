@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 #include "ziti-nodejs.h"
-#include <nf/ziti_src.h>
+#include <ziti/ziti_src.h>
 
 
 /**
@@ -191,11 +191,14 @@ napi_value _Ziti_http_request_data(napi_env env, const napi_callback_info info) 
   napi_value work_name;
 
   // Create a string to describe this asynchronous operation.
-  assert(napi_create_string_utf8(
+  status = napi_create_string_utf8(
     env,
     "N-API on_write",
     NAPI_AUTO_LENGTH,
-    &work_name) == napi_ok);
+    &work_name);
+  if (status != napi_ok) {
+    napi_throw_error(env, NULL, "Failed to napi_create_string_utf8");
+  }
 
   // Convert the callback retrieved from JavaScript into a thread-safe function (tsfn) 
   // which we can call from a worker thread.
@@ -224,7 +227,7 @@ napi_value _Ziti_http_request_data(napi_env env, const napi_callback_info info) 
 }
 
 
-void expose_Ziti_https_request_data(napi_env env, napi_value exports) {
+void expose_ziti_https_request_data(napi_env env, napi_value exports) {
   napi_status status;
   napi_value fn;
 

@@ -15,7 +15,6 @@ limitations under the License.
 */
 
 #include "ziti-nodejs.h"
-// #include <unistd.h>
 #include <string.h>
 
 // An item that will be generated here and passed into the JavaScript on_data callback
@@ -28,9 +27,10 @@ typedef struct OnDataItem {
 
 /**
  * This function is responsible for calling the JavaScript 'connect' callback function 
- * that was specified when the NF_dial(...) was called from JavaScript.
+ * that was specified when the ziti_dial(...) was called from JavaScript.
  */
 static void CallJs_on_connect(napi_env env, napi_value js_cb, void* context, void* data) {
+  napi_status status;
 
   // This parameter is not used.
   (void) context;
@@ -41,38 +41,50 @@ static void CallJs_on_connect(napi_env env, napi_value js_cb, void* context, voi
   if (env != NULL) {
     napi_value undefined, js_conn;
 
-    // Convert the nf_connection to a napi_value.
+    // Convert the ziti_connection to a napi_value.
     if (NULL != data) {
-      // Retrieve the nf_connection from the item created by the worker thread.
-      nf_connection conn = *(nf_connection*)data;
-      assert(napi_create_int64(env, (int64_t)conn, &js_conn) == napi_ok);
+      // Retrieve the ziti_connection from the item created by the worker thread.
+      ziti_connection conn = *(ziti_connection*)data;
+      status = napi_create_int64(env, (int64_t)conn, &js_conn);
+      if (status != napi_ok) {
+        napi_throw_error(env, NULL, "Unable to napi_create_int64");
+      }
     } else {
-      assert(napi_get_undefined(env, &js_conn) == napi_ok);
+      status = napi_get_undefined(env, &js_conn) == napi_ok;
+      if (status != napi_ok) {
+        napi_throw_error(env, NULL, "Unable to napi_get_undefined");
+      }
     }
 
     // Retrieve the JavaScript `undefined` value so we can use it as the `this`
     // value of the JavaScript function call.
-    assert(napi_get_undefined(env, &undefined) == napi_ok);
+    status = napi_get_undefined(env, &undefined);
+    if (status != napi_ok) {
+      napi_throw_error(env, NULL, "Unable to napi_get_undefined");
+    }
 
-    // Call the JavaScript function and pass it the nf_connection
-    assert(
-      napi_call_function(
+    // Call the JavaScript function and pass it the ziti_connection
+    status = napi_call_function(
         env,
         undefined,
         js_cb,
         1,
         &js_conn,
         NULL
-      ) == napi_ok);
+      );
+    if (status != napi_ok) {
+      napi_throw_error(env, NULL, "Unable to napi_call_function");
+    }
   }
 }
 
 
 /**
  * This function is responsible for calling the JavaScript 'data' callback function 
- * that was specified when the NF_dial(...) was called from JavaScript.
+ * that was specified when the ziti_dial(...) was called from JavaScript.
  */
 static void CallJs_on_data(napi_env env, napi_value js_cb, void* context, void* data) {
+  napi_status status;
 
   // This parameter is not used.
   (void) context;
@@ -89,26 +101,34 @@ static void CallJs_on_data(napi_env env, napi_value js_cb, void* context, void* 
     void* result_data;
 
     // Convert the buffer to a napi_value.
-    assert(napi_create_buffer_copy(env,
+    status = napi_create_buffer_copy(env,
                               item->len,
                               (const void*)item->buf,
                               (void**)&result_data,
-                              &js_buffer) == napi_ok);
+                              &js_buffer);
+    if (status != napi_ok) {
+      napi_throw_error(env, NULL, "Unable to napi_create_buffer_copy");
+    }
 
     // Retrieve the JavaScript `undefined` value so we can use it as the `this`
     // value of the JavaScript function call.
-    assert(napi_get_undefined(env, &undefined) == napi_ok);
+    status = napi_get_undefined(env, &undefined);
+    if (status != napi_ok) {
+      napi_throw_error(env, NULL, "Unable to napi_get_undefined");
+    }
 
     // Call the JavaScript function and pass it the data
-    assert(
-      napi_call_function(
+    status = napi_call_function(
         env,
         undefined,
         js_cb,
         1,
         &js_buffer,
         NULL
-      ) == napi_ok);
+      );
+    if (status != napi_ok) {
+      napi_throw_error(env, NULL, "Unable to napi_call_function");
+    }
   }
 }
 
@@ -118,23 +138,24 @@ static void CallJs_on_data(napi_env env, napi_value js_cb, void* context, void* 
 /**
  * This function is the callback invoked by the C-SDK when data arrives on the connection.
  */
-ssize_t on_data(nf_connection conn, uint8_t *buf, ssize_t len) {
+ssize_t on_data(ziti_connection conn, uint8_t *buf, ssize_t len) {
+  napi_status status;
 
-  ConnAddonData* addon_data = (ConnAddonData*) NF_conn_data(conn);
+  ConnAddonData* addon_data = (ConnAddonData*) ziti_conn_data(conn);
 
-  ZITI_NODEJS_LOG(INFO, "NF_dial.on_data() entered, len: %zd, conn: %p", len, conn);
+  ZITI_NODEJS_LOG(INFO, "len: %zd, conn: %p", len, conn);
 
   if (len == ZITI_EOF) {
     if (addon_data->isWebsocket) {
-      ZITI_NODEJS_LOG(DEBUG, "NF_dial.on_data(), skipping NF_close on ZITI_EOF due to isWebsocket=true");
+      ZITI_NODEJS_LOG(DEBUG, "skipping ziti_close on ZITI_EOF due to isWebsocket=true");
       return 0;
     } else {
-      NF_close(&conn);
+      ziti_close(&conn);
       return 0;
     }
   }
   else if (len < 0) {
-    NF_close(&conn);
+    ziti_close(&conn);
     return 0;
   }
   else {
@@ -152,11 +173,13 @@ ssize_t on_data(nf_connection conn, uint8_t *buf, ssize_t len) {
     // Initiate the call into the JavaScript callback. 
     // The call into JavaScript will not have happened 
     // when this function returns, but it will be queued.
-    assert(
-      napi_call_threadsafe_function(
+    status = napi_call_threadsafe_function(
         addon_data->tsfn_on_data,        
         item,  // Send the data we received from the service on over to the JS callback
-        napi_tsfn_blocking) == napi_ok);
+        napi_tsfn_blocking);
+    if (status != napi_ok) {
+      ZITI_NODEJS_LOG(ERROR, "Unable to napi_call_threadsafe_function");
+    }
 
     return len;
   }
@@ -166,18 +189,20 @@ ssize_t on_data(nf_connection conn, uint8_t *buf, ssize_t len) {
 /**
  * 
  */
-void on_connect(nf_connection conn, int status) {
+void on_connect(ziti_connection conn, int status) {
+  napi_status nstatus;
 
-  ConnAddonData* addon_data = (ConnAddonData*) NF_conn_data(conn);
-  nf_connection* the_conn = NULL;
+
+  ConnAddonData* addon_data = (ConnAddonData*) ziti_conn_data(conn);
+  ziti_connection* the_conn = NULL;
 
   ZITI_NODEJS_LOG(DEBUG, "conn: %p, isWebsocket: %o", conn, addon_data->isWebsocket);
 
   if (status == ZITI_OK) {
 
-    // Save the 'nf_connection' to the heap. The JavaScript marshaller (CallJs)
+    // Save the 'ziti_connection' to the heap. The JavaScript marshaller (CallJs)
     // will free this item after having sent it to JavaScript.
-    the_conn = malloc(sizeof(nf_connection));
+    the_conn = malloc(sizeof(ziti_connection));
     *the_conn = conn;
 
   }
@@ -185,18 +210,20 @@ void on_connect(nf_connection conn, int status) {
   // Initiate the call into the JavaScript callback. 
   // The call into JavaScript will not have happened 
   // when this function returns, but it will be queued.
-  assert(
-    napi_call_threadsafe_function(
+  nstatus = napi_call_threadsafe_function(
       addon_data->tsfn_on_connect,
-      the_conn,   // Send the nf_connection over to the JS callback
-      napi_tsfn_blocking) == napi_ok);
+      the_conn,   // Send the ziti_connection over to the JS callback
+      napi_tsfn_blocking);
+    if (nstatus != napi_ok) {
+      ZITI_NODEJS_LOG(ERROR, "Unable to napi_call_threadsafe_function");
+    }
 }
 
 
 /**
  * 
  */
-napi_value _NF_dial(napi_env env, const napi_callback_info info) {
+napi_value _ziti_dial(napi_env env, const napi_callback_info info) {
 
   napi_status status;
   size_t argc = 4;
@@ -236,16 +263,18 @@ napi_value _NF_dial(napi_env env, const napi_callback_info info) {
   addon_data->isWebsocket = isWebsocket;
 
   // Create a string to describe this asynchronous operation.
-  assert(napi_create_string_utf8(
+  status = napi_create_string_utf8(
     env,
     "N-API on_connect",
     NAPI_AUTO_LENGTH,
-    &work_name_connect) == napi_ok);
+    &work_name_connect);
+  if (status != napi_ok) {
+    napi_throw_error(env, NULL, "Unable to napi_create_string_utf8");
+  }
 
   // Convert the callback retrieved from JavaScript into a thread-safe function (tsfn) 
   // which we can call from a worker thread.
-  assert(
-    napi_create_threadsafe_function(
+  status = napi_create_threadsafe_function(
       env,
       js_connect_cb,
       NULL,
@@ -256,23 +285,28 @@ napi_value _NF_dial(napi_env env, const napi_callback_info info) {
       NULL,
       NULL,
       CallJs_on_connect,
-      &(addon_data->tsfn_on_connect)) == napi_ok);
+      &(addon_data->tsfn_on_connect));
+  if (status != napi_ok) {
+    napi_throw_error(env, NULL, "Unable to napi_create_threadsafe_function");
+  }
 
   // Obtain ptr to JS 'data' callback function
   napi_value js_data_cb = args[3];
   napi_value work_name_data;
 
   // Create a string to describe this asynchronous operation.
-  assert(napi_create_string_utf8(
+  status = napi_create_string_utf8(
     env,
     "N-API on_data",
     NAPI_AUTO_LENGTH,
-    &work_name_data) == napi_ok);
+    &work_name_data);
+  if (status != napi_ok) {
+    napi_throw_error(env, NULL, "Unable to napi_create_string_utf8");
+  }
 
   // Convert the callback retrieved from JavaScript into a thread-safe function (tsfn) 
   // which we can call from a worker thread.
-  assert(
-    napi_create_threadsafe_function(
+  status = napi_create_threadsafe_function(
       env,
       js_data_cb,
       NULL,
@@ -283,20 +317,29 @@ napi_value _NF_dial(napi_env env, const napi_callback_info info) {
       NULL,
       NULL,
       CallJs_on_data,
-      &(addon_data->tsfn_on_data)) == napi_ok);
-
+      &(addon_data->tsfn_on_data));
+  if (status != napi_ok) {
+    napi_throw_error(env, NULL, "Unable to napi_create_threadsafe_function");
+  }
   
-  NF_set_timeout(nf, 60*1000);
+  ziti_set_timeout(ztx, 60*1000);
 
   // Init a Ziti connection object, and attach our add-on data to it so we can 
   // pass context around between our callbacks, as propagate it all the way out
   // to the JavaScript callbacks
-  nf_connection conn;
-  DIE(NF_conn_init(nf, &conn, addon_data));
+  ziti_connection conn;
+  int rc = ziti_conn_init(ztx, &conn, addon_data);
+  if (rc != ZITI_OK) {
+    napi_throw_error(env, NULL, "failure in 'ziti_conn_init");
+  }
+
 
   // Connect to the service
-  // fprintf(stderr, "==NODEJS== calling NF_dial(%s)\n", ServiceName);
-  DIE(NF_dial(conn, ServiceName, on_connect, on_data));
+  rc = ziti_dial(conn, ServiceName, on_connect, on_data);
+  if (rc != ZITI_OK) {
+    napi_throw_error(env, NULL, "failure in 'ziti_dial");
+  }
+
 
   // usleep(100*1000);
 
@@ -308,18 +351,18 @@ napi_value _NF_dial(napi_env env, const napi_callback_info info) {
 /**
  * 
  */
-void expose_NF_dial(napi_env env, napi_value exports) {
+void expose_ziti_dial(napi_env env, napi_value exports) {
   napi_status status;
   napi_value fn;
 
-  status = napi_create_function(env, NULL, 0, _NF_dial, NULL, &fn);
+  status = napi_create_function(env, NULL, 0, _ziti_dial, NULL, &fn);
   if (status != napi_ok) {
-    napi_throw_error(env, NULL, "Unable to wrap native function '_NF_dial");
+    napi_throw_error(env, NULL, "Unable to wrap native function '_ziti_dial");
   }
 
-  status = napi_set_named_property(env, exports, "NF_dial", fn);
+  status = napi_set_named_property(env, exports, "ziti_dial", fn);
   if (status != napi_ok) {
-    napi_throw_error(env, NULL, "Unable to populate exports for 'NF_dial");
+    napi_throw_error(env, NULL, "Unable to populate exports for 'ziti_dial");
   }
 
 }

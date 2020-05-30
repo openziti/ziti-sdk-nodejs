@@ -60,18 +60,18 @@ napi_value Init(napi_env env, napi_value exports) {
 #endif
 
   // Expose some Ziti SDK functions to JavaScript
-  expose_NF_close(env, exports);
-  expose_NF_dial(env, exports);
-  expose_NF_enroll(env, exports);
-  expose_NF_hello(env, exports);
-  expose_NF_init(env, exports);
-  expose_NF_service_available(env, exports);
-  expose_NF_shutdown(env, exports);
-  expose_NF_write(env, exports);
+  expose_ziti_close(env, exports);
+  expose_ziti_dial(env, exports);
+  expose_ziti_enroll(env, exports);
+  expose_ziti_hello(env, exports);
+  expose_ziti_init(env, exports);
+  expose_ziti_service_available(env, exports);
+  expose_ziti_shutdown(env, exports);
+  expose_ziti_write(env, exports);
 
-  expose_Ziti_https_request(env, exports);
-  expose_Ziti_https_request_data(env, exports);
-  expose_Ziti_https_request_end(env, exports);
+  expose_ziti_https_request(env, exports);
+  expose_ziti_https_request_data(env, exports);
+  expose_ziti_https_request_end(env, exports);
 
   return exports;
 }
