@@ -204,7 +204,8 @@ void on_resp(um_http_resp_t *resp, void *data) {
 
   HttpsAddonData* addon_data = (HttpsAddonData*) data;
 
-  addon_data->httpsReq->on_resp_has_fired = true; // TEMP
+  addon_data->httpsReq->on_resp_has_fired = true;
+  addon_data->httpsReq->respCode = resp->code;
 
   ZITI_NODEJS_LOG(DEBUG, "addon_data is: %p", data);
 
