@@ -112,7 +112,8 @@ typedef struct HttpsReqBodyItem {
 
 typedef struct HttpsReq {
   um_http_req_t *req;
-  bool on_resp_has_fired; // TEMP
+  bool on_resp_has_fired;
+  int respCode;
 } HttpsReq;
 
 typedef struct {
