@@ -22,6 +22,8 @@ limitations under the License.
  */
 napi_value _ziti_shutdown(napi_env env, const napi_callback_info info) {
 
+  ZITI_NODEJS_LOG(DEBUG, "ztx: %p", ztx);
+
   ziti_shutdown(ztx);
 
   return NULL;

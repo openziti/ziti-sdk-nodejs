@@ -21,6 +21,9 @@ extern void set_signal_handler();
 
 napi_value Init(napi_env env, napi_value exports) {
 
+  //
+  thread_loop = NULL;
+
   // Install call-stack tracer
   // set_signal_handler();
 

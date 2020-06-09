@@ -41,6 +41,8 @@ static void CallJs_on_connect(napi_env env, napi_value js_cb, void* context, voi
   if (env != NULL) {
     napi_value undefined, js_conn;
 
+    ZITI_NODEJS_LOG(INFO, "data: %p", data);
+
     // Convert the ziti_connection to a napi_value.
     if (NULL != data) {
       // Retrieve the ziti_connection from the item created by the worker thread.
@@ -52,7 +54,7 @@ static void CallJs_on_connect(napi_env env, napi_value js_cb, void* context, voi
     } else {
       status = napi_get_undefined(env, &js_conn) == napi_ok;
       if (status != napi_ok) {
-        napi_throw_error(env, NULL, "Unable to napi_get_undefined");
+        napi_throw_error(env, NULL, "Unable to napi_get_undefined (1)");
       }
     }
 
@@ -60,8 +62,10 @@ static void CallJs_on_connect(napi_env env, napi_value js_cb, void* context, voi
     // value of the JavaScript function call.
     status = napi_get_undefined(env, &undefined);
     if (status != napi_ok) {
-      napi_throw_error(env, NULL, "Unable to napi_get_undefined");
+      napi_throw_error(env, NULL, "Unable to napi_get_undefined (2)");
     }
+
+    ZITI_NODEJS_LOG(INFO, "calling JS callback...");
 
     // Call the JavaScript function and pass it the ziti_connection
     status = napi_call_function(
@@ -72,6 +76,7 @@ static void CallJs_on_connect(napi_env env, napi_value js_cb, void* context, voi
         &js_conn,
         NULL
       );
+    ZITI_NODEJS_LOG(INFO, "returned from JS callback...");
     if (status != napi_ok) {
       napi_throw_error(env, NULL, "Unable to napi_call_function");
     }
@@ -114,7 +119,7 @@ static void CallJs_on_data(napi_env env, napi_value js_cb, void* context, void* 
     // value of the JavaScript function call.
     status = napi_get_undefined(env, &undefined);
     if (status != napi_ok) {
-      napi_throw_error(env, NULL, "Unable to napi_get_undefined");
+      napi_throw_error(env, NULL, "Unable to napi_get_undefined (3)");
     }
 
     // Call the JavaScript function and pass it the data
@@ -196,7 +201,7 @@ void on_connect(ziti_connection conn, int status) {
   ConnAddonData* addon_data = (ConnAddonData*) ziti_conn_data(conn);
   ziti_connection* the_conn = NULL;
 
-  ZITI_NODEJS_LOG(DEBUG, "conn: %p, isWebsocket: %o", conn, addon_data->isWebsocket);
+  ZITI_NODEJS_LOG(DEBUG, "conn: %p, status: %o, isWebsocket: %o", conn, status, addon_data->isWebsocket);
 
   if (status == ZITI_OK) {
 
@@ -204,8 +209,9 @@ void on_connect(ziti_connection conn, int status) {
     // will free this item after having sent it to JavaScript.
     the_conn = malloc(sizeof(ziti_connection));
     *the_conn = conn;
-
   }
+
+    ZITI_NODEJS_LOG(DEBUG, "the_conn: %p", the_conn);
 
   // Initiate the call into the JavaScript callback. 
   // The call into JavaScript will not have happened 
@@ -245,6 +251,7 @@ napi_value _ziti_dial(napi_env env, const napi_callback_info info) {
   if (status != napi_ok) {
     napi_throw_error(env, NULL, "Failed to get Service Name");
   }
+  ZITI_NODEJS_LOG(DEBUG, "ServiceName: %s", ServiceName);
 
   // Obtain isWebsocket flag
   bool isWebsocket = false;
@@ -335,13 +342,12 @@ napi_value _ziti_dial(napi_env env, const napi_callback_info info) {
 
 
   // Connect to the service
+  ZITI_NODEJS_LOG(DEBUG, "calling ziti_dial: %p", ztx);
   rc = ziti_dial(conn, ServiceName, on_connect, on_data);
   if (rc != ZITI_OK) {
     napi_throw_error(env, NULL, "failure in 'ziti_dial");
   }
-
-
-  // usleep(100*1000);
+  ZITI_NODEJS_LOG(DEBUG, "returned from ziti_dial: %p", ztx);
 
   return NULL;
 }

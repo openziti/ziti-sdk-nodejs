@@ -54,6 +54,7 @@ static void CallJs_on_write(napi_env env, napi_value js_cb, void* context, void*
     }
 
     // obj.conn = conn
+    ZITI_NODEJS_LOG(DEBUG, "conn=%p", item->conn);
     status = napi_create_int64(env, (int64_t)item->conn, &js_conn);
     if (status != napi_ok) {
       napi_throw_error(env, NULL, "Unable to napi_create_int64");
@@ -64,6 +65,7 @@ static void CallJs_on_write(napi_env env, napi_value js_cb, void* context, void*
     }
 
     // obj.status = status
+    ZITI_NODEJS_LOG(DEBUG, "status=%zo", item->status);
     status = napi_create_int64(env, (int64_t)item->status, &js_status);
     if (status != napi_ok) {
       napi_throw_error(env, NULL, "Unable to napi_create_int64");
@@ -77,7 +79,7 @@ static void CallJs_on_write(napi_env env, napi_value js_cb, void* context, void*
     // value of the JavaScript function call.
     status = napi_get_undefined(env, &undefined);
     if (status != napi_ok) {
-      napi_throw_error(env, NULL, "Unable to napi_get_undefined");
+      napi_throw_error(env, NULL, "Unable to napi_get_undefined (5)");
     }
 
     // Call the JavaScript function and pass it the WriteItem
@@ -91,6 +93,8 @@ static void CallJs_on_write(napi_env env, napi_value js_cb, void* context, void*
     if (status != napi_ok) {
       napi_throw_error(env, NULL, "Unable to napi_call_function");
     }
+
+    free(item);
   }
 }
 

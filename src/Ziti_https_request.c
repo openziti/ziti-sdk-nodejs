@@ -201,8 +201,11 @@ static void CallJs_on_resp(napi_env env, napi_value js_cb, void* context, void* 
  * 
  */
 void on_resp(um_http_resp_t *resp, void *data) {
+  ZITI_NODEJS_LOG(DEBUG, "resp: %p", resp);
 
   HttpsAddonData* addon_data = (HttpsAddonData*) data;
+
+  ZITI_NODEJS_LOG(DEBUG, "addon_data->httpsReq: %p", addon_data->httpsReq);
 
   addon_data->httpsReq->on_resp_has_fired = true;
   addon_data->httpsReq->respCode = resp->code;
@@ -472,7 +475,7 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
     path = expanded_path;
   }
   else {
-    ZITI_NODEJS_LOG(ERROR, "FYI, URL: no query found");
+    ZITI_NODEJS_LOG(DEBUG, "URL: no query found");
   }
   ZITI_NODEJS_LOG(DEBUG, "adjusted path: [%s]", path);
 
@@ -504,6 +507,9 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
   ZITI_NODEJS_LOG(DEBUG, "allocated addon_data : %p", addon_data);
 
   addon_data->env = env;
+
+  HttpsReq* httpsReq = calloc(1, sizeof(HttpsReq));
+  addon_data->httpsReq = httpsReq;
 
   // Create a string to describe this asynchronous operation.
   rc = napi_create_string_utf8(env, "on_resp", NAPI_AUTO_LENGTH, &work_name);
@@ -579,10 +585,12 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
     on_resp,
     addon_data  /* Pass our addon data around so we can eventually find our way back to the JS callback */
   );
-  ZITI_NODEJS_LOG(DEBUG, "req: %p", r);
 
   // We need body of the HTTP response, so wire it up
   r->resp.body_cb = on_resp_body;
+
+  ZITI_NODEJS_LOG(DEBUG, "req: %p", r);
+  httpsReq->req = r;
 
   // Add headers to request
   // Obtain headers array length
@@ -592,8 +600,19 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
     napi_throw_error(env, "EINVAL", "Failed to obtain headers array");
   }
   ZITI_NODEJS_LOG(DEBUG, "headers_array_length: %d", headers_array_length);
+
+  if (headers_array_length > 100) {
+    ZITI_NODEJS_LOG(DEBUG, "skipping headers; header count too long");
+    headers_array_length = 0;
+    addon_data->httpsReq->on_resp_has_fired = true;
+  }
+
+  ZITI_NODEJS_LOG(DEBUG, "addon_data->httpsReq->on_resp_has_fired: %o", addon_data->httpsReq->on_resp_has_fired);
+  ZITI_NODEJS_LOG(DEBUG, "addon_data->httpsReq->respCode: %o", addon_data->httpsReq->respCode);
+
   // Process each header
   for (i = 0; i < headers_array_length; i++) {
+
     napi_value headers_array_element;
     status = napi_get_element(env, args[2], i, &headers_array_element);
     if (status != napi_ok) {
@@ -606,7 +625,13 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
     if (status != napi_ok) {
       napi_throw_error(env, "EINVAL", "header arry element is not a string");
     }
-    // ZITI_NODEJS_LOG(DEBUG, "element_len: %zd", element_len);
+    ZITI_NODEJS_LOG(DEBUG, "element_len: %zd", element_len);
+
+    if (element_len > 8*1024) {
+      ZITI_NODEJS_LOG(DEBUG, "skipping header element; length too long");
+      addon_data->httpsReq->on_resp_has_fired = true;
+      break;
+    }
 
     // Obtain element
     char* header_element = calloc(1, element_len+2);
@@ -614,7 +639,7 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
     if (status != napi_ok) {
       napi_throw_error(env, "EINVAL", "Failed to obtain element");
     }
-    // ZITI_NODEJS_LOG(DEBUG, "header_element: %s", header_element);
+    ZITI_NODEJS_LOG(DEBUG, "header_element: %s", header_element);
 
     char * header_name = strtok(header_element, ":");
     if (NULL == header_name) {
@@ -624,20 +649,22 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
     if (strlen(header_value) < 1) {
       napi_throw_error(env, "EINVAL", "Failed to split header element");
     }
-    ZITI_NODEJS_LOG(DEBUG, "header name: %s, value: %s", header_name, header_value);
 
     rc = um_http_req_header(r, header_name, header_value);
     ZITI_NODEJS_LOG(DEBUG, "um_http_req_header rc: %d", rc);
+    free(header_element);
   }
 
-  HttpsReq* httpsReq = calloc(1, sizeof(HttpsReq));
-  httpsReq->req = r;
-
-  addon_data->httpsReq = httpsReq;
-
-  status = napi_create_int64(env, (int64_t)httpsReq, &jsRetval);
-  if (status != napi_ok) {
-    napi_throw_error(env, NULL, "Unable to create return value");
+  // Inform JS that we failed
+  if (addon_data->httpsReq->on_resp_has_fired) {
+    free(httpsReq);
+    free(addon_data);
+    napi_get_undefined(env, &jsRetval);
+  } else {
+    status = napi_create_int64(env, (int64_t)httpsReq, &jsRetval);
+    if (status != napi_ok) {
+      napi_throw_error(env, NULL, "Unable to create return value");
+    }
   }
 
   return jsRetval;

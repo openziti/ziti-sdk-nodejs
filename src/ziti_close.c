@@ -46,6 +46,7 @@ napi_value _ziti_close(napi_env env, const napi_callback_info info) {
   ziti_connection conn = (ziti_connection)js_conn;
 
   // Now, call the C-SDK to close the connection
+  ZITI_NODEJS_LOG(DEBUG, "calling ziti_close for conn=%p", conn);
   ziti_close(&conn);
 
   status = napi_create_int32(env, 0, &jsRetval);

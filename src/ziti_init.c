@@ -16,7 +16,7 @@ limitations under the License.
 
 #include "ziti-nodejs.h"
 
-ziti_context ztx;
+ziti_context ztx = NULL;
 uv_loop_t *loop = NULL;
 
 uv_thread_t thread;
@@ -78,6 +78,8 @@ static void CallJs(napi_env env, napi_value js_cb, void* context, void* data) {
 void on_ziti_init(ziti_context _ztx, int status, void* ctx) {
   napi_status nstatus;
 
+  ZITI_NODEJS_LOG(DEBUG, "_ztx: %p", _ztx);
+
   // Set the global ztx context variable
   ztx = _ztx;
 
@@ -118,6 +120,8 @@ static void consumer_notify(uv_async_t *handle, int status) { }
 napi_value _ziti_init(napi_env env, const napi_callback_info info) {
   napi_status status;
   napi_value jsRetval;
+
+  ZITI_NODEJS_LOG(DEBUG, "initializing");
 
   size_t argc = 2;
   napi_value args[2];
@@ -170,9 +174,12 @@ napi_value _ziti_init(napi_env env, const napi_callback_info info) {
   }
 
   // Create and set up the consumer thread
-  thread_loop = uv_loop_new();
-  uv_async_init(thread_loop, &async, (uv_async_cb)consumer_notify);
-  uv_thread_create(&thread, (uv_thread_cb)child_thread, thread_loop);
+  if (NULL == thread_loop) {  // Spawn the loop only once
+    ZITI_NODEJS_LOG(DEBUG, "calling uv_loop_new()");
+    thread_loop = uv_loop_new();
+    uv_async_init(thread_loop, &async, (uv_async_cb)consumer_notify);
+    uv_thread_create(&thread, (uv_thread_cb)child_thread, thread_loop);
+  }
 
   // Light this candle!
   int rc = ziti_init(ConfigFileName, thread_loop, on_ziti_init, addon_data);

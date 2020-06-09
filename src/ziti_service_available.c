@@ -82,7 +82,7 @@ static void CallJs_on_service_available(napi_env env, napi_value js_cb, void* co
     // value of the JavaScript function call.
     status = napi_get_undefined(env, &undefined);
     if (status != napi_ok) {
-      napi_throw_error(env, NULL, "Unable to napi_get_undefined");
+      napi_throw_error(env, NULL, "Unable to napi_get_undefined (4)");
     }
 
     // Call the JavaScript function and pass it the ServiceAvailableItem
