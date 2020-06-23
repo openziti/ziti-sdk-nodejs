@@ -3,14 +3,14 @@ var binary = require('node-pre-gyp');
 var path = require('path')
 var binding_path = binary.find(path.resolve(path.join(__dirname,'../package.json')));
 var ziti = require(binding_path);
-require('assert').equal(ziti.NF_hello(),"ziti");
+require('assert').equal(ziti.ziti_hello(),"ziti");
 
 
 
 function NF_dial(service) {
     console.log('----------- inside NF_dial() ---------- service is: ', service);
     return new Promise((resolve, reject) => {
-        ziti.NF_dial(
+        ziti.ziti_dial(
         service,
         false, // NOT a wabsocket
         (conn) => {
@@ -29,7 +29,7 @@ const delay = (ms, value) => new Promise(resolve => setTimeout(resolve, ms, valu
 
 const NF_init = async () => {
     return new Promise((resolve) => {
-        ziti.NF_init(process.argv[2], () => {
+        ziti.ziti_init(process.argv[2], () => {
             resolve();
         });
     });
@@ -37,7 +37,7 @@ const NF_init = async () => {
 
 const NF_service_available = (service) => {
     return new Promise((resolve) => {
-        ziti.NF_service_available(service, (status) => {
+        ziti.ziti_service_available(service, (status) => {
             resolve(status);
         });
     });
@@ -45,7 +45,7 @@ const NF_service_available = (service) => {
 
 const NF_write = (conn, data) => {
     return new Promise((resolve) => {
-        ziti.NF_write(conn, data, () => {
+        ziti.ziti_write(conn, data, () => {
             resolve();
         });
     });
@@ -87,7 +87,7 @@ function NF_dial_connect_callback(conn) {
         "User-Agent: curl/7.54.0\r\n" +
         "\r\n";
 
-    ziti.NF_write(
+    ziti.ziti_write(
         conn, 
         data, 
         NF_write_callback
