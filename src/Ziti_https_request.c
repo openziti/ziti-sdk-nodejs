@@ -19,6 +19,294 @@ limitations under the License.
 
 static const unsigned int U1 = 1;
 
+/**
+ *  Number of hosts we can have client pools for
+ */
+enum { listMapCapacity = 50 };
+
+/**
+ *  Number of simultaneous HTTP requests we can have active against a single host before queueing
+ */
+enum { perKeyListMapCapacity = 10 };
+
+struct ListMap* HttpsClientListMap;
+
+struct key_value {
+    char* key;
+    void* value;
+};
+
+struct ListMap {
+  struct   key_value kvPairs[listMapCapacity];
+  size_t   count;
+  uv_sem_t sem;
+};
+
+struct ListMap* newListMap() {
+    struct ListMap* listMap = calloc(1, sizeof *listMap);
+    return listMap;
+}
+
+pthread_mutex_t client_pool_lock;
+
+bool listMapInsert(struct ListMap* collection, char* key, void* value) {
+
+  if (collection->count == listMapCapacity) {
+    ZITI_NODEJS_LOG(ERROR, "collection->count already at capacity [%d], insert FAIL", listMapCapacity);
+    return false;
+  }
+
+  collection->kvPairs[collection->count].key = strdup(key);
+  collection->kvPairs[collection->count].value = value;
+  collection->count++;
+  ZITI_NODEJS_LOG(DEBUG, "collection->count total is: [%zd]", collection->count);
+
+  return true;
+}
+
+size_t countListMapValueForKey(struct ListMap* collection, char* key) {
+  size_t count = 0;
+  for (size_t i = 0 ; i < collection->count ; ++i) {
+    if (strcmp(collection->kvPairs[i].key, key) == 0) {
+      count++;
+    }
+  }
+  return count;
+}
+
+struct ListMap* getInnerListMapValueForKey(struct ListMap* collection, char* key) {
+  struct ListMap* value = NULL;
+  for (size_t i = 0 ; i < collection->count && value == NULL ; ++i) {
+    if (strcmp(collection->kvPairs[i].key, key) == 0) {
+      value = collection->kvPairs[i].value;
+    }
+  }
+  // ZITI_NODEJS_LOG(DEBUG, "returning value '%p', collection->count is: '%zd'", value, collection->count);
+  return value;
+}
+
+HttpsClient* getHttpsClientForKey(struct ListMap* collection, char* key) {
+  HttpsClient* value = NULL;
+  int busyCount = 0;
+  for (size_t i = 0 ; i < collection->count && value == NULL ; ++i) {
+    if (strcmp(collection->kvPairs[i].key, key) == 0) {
+      value = collection->kvPairs[i].value;
+      if (value->active) {      // if it's in use
+        value = NULL;           //  then keep searching
+      } else {
+        value->active = true;   // mark the one we will return as 'in use
+      }
+      busyCount++;
+    }
+  }
+  ZITI_NODEJS_LOG(DEBUG, "returning value '%p', collection->count is: [%zd], busy-count is: [%d]", value, collection->count, busyCount);
+  return value;
+}
+
+void freeListMap(struct ListMap* collection) {
+    if (collection == NULL) {
+        return;
+    }
+    for (size_t i = 0 ; i < collection->count ; ++i) {
+        free(collection->kvPairs[i].value);
+    }
+    free(collection);
+}
+
+/**
+ * 
+ */
+static void allocate_client(uv_work_t* req) {
+
+  ZITI_NODEJS_LOG(DEBUG, "entered");
+
+  HttpsAddonData* addon_data = (HttpsAddonData*) req->data;
+
+  if (pthread_mutex_lock(&client_pool_lock)) {
+    ZITI_NODEJS_LOG(ERROR, "pthread_mutex_lock failure");
+    abort();
+  }
+
+  struct ListMap* clientListMap = getInnerListMapValueForKey(HttpsClientListMap, addon_data->scheme_host_port);
+
+  // ZITI_NODEJS_LOG(DEBUG, "innerListMapValue for key [%s] is [%p]", addon_data->scheme_host_port, clientListMap);
+
+  if (NULL == clientListMap) { // If first time seeing this key, spawn a pool of clients for it
+
+    clientListMap = newListMap();
+    listMapInsert(HttpsClientListMap, addon_data->scheme_host_port, (void*)clientListMap);
+    // ZITI_NODEJS_LOG(DEBUG, "inserting innerListMapValue of [%p] for key [%s]", clientListMap, addon_data->scheme_host_port);
+
+    uv_sem_init(&(clientListMap->sem), perKeyListMapCapacity);
+
+    for (int i = 0; i < perKeyListMapCapacity; i++) {
+
+      HttpsClient* httpsClient = calloc(1, sizeof *httpsClient);
+      httpsClient->scheme_host_port = strdup(addon_data->scheme_host_port);
+      ziti_src_init(thread_loop, &(httpsClient->ziti_src), addon_data->service, ztx );
+      um_http_init_with_src(thread_loop, &(httpsClient->client), addon_data->scheme_host_port, (um_http_src_t *)&(httpsClient->ziti_src) );
+
+      // ZITI_NODEJS_LOG(DEBUG, "inserting client of [%p] into innerListMapValue [%p]", httpsClient, clientListMap);
+
+      listMapInsert(clientListMap, addon_data->scheme_host_port, (void*)httpsClient);
+
+    }
+  }
+
+  if (pthread_mutex_unlock(&client_pool_lock)) {
+    ZITI_NODEJS_LOG(ERROR, "pthread_mutex_unlock failure");
+    abort();
+  }
+
+  ZITI_NODEJS_LOG(DEBUG, "----------> acquiring sem");
+  uv_sem_wait(&(clientListMap->sem));
+
+  addon_data->httpsClient = getHttpsClientForKey(clientListMap, addon_data->scheme_host_port);
+  ZITI_NODEJS_LOG(DEBUG, "----------> successfully acquired sem, client is: [%p]", addon_data->httpsClient);
+
+}
+
+
+
+
+/**
+ * This function is responsible for calling the JavaScript on_resp_body callback function 
+ * that was specified when the Ziti_https_request(...) was called from JavaScript.
+ */
+static void CallJs_on_resp_body(napi_env env, napi_value js_cb, void* context, void* data) {
+
+  ZITI_NODEJS_LOG(DEBUG, "entered");
+
+  // This parameter is not used.
+  (void) context;
+
+  // Retrieve the HttpsRespBodyItem created by the worker thread.
+  HttpsRespBodyItem* item = (HttpsRespBodyItem*)data;
+
+
+  // env and js_cb may both be NULL if Node.js is in its cleanup phase, and
+  // items are left over from earlier thread-safe calls from the worker thread.
+  // When env is NULL, we simply skip over the call into Javascript
+  if (env != NULL) {
+
+    napi_value undefined;
+
+    // Retrieve the JavaScript `undefined` value so we can use it as the `this`
+    // value of the JavaScript function call.
+    napi_get_undefined(env, &undefined);
+
+    // const obj = {}
+    napi_value js_http_item, js_req, js_len, js_buffer;
+    void* result_data;
+    int rc = napi_create_object(env, &js_http_item);
+    if (rc != napi_ok) {
+      napi_throw_error(env, "EINVAL", "failure to create object");
+    }
+
+    // obj.req = req
+    napi_create_int64(env, (int64_t)item->req, &js_req);
+    if (rc != napi_ok) {
+      napi_throw_error(env, "EINVAL", "failure to create resp.req");
+    }
+    rc = napi_set_named_property(env, js_http_item, "req", js_req);
+    if (rc != napi_ok) {
+      napi_throw_error(env, "EINVAL", "failure to set named property req");
+    }
+    ZITI_NODEJS_LOG(DEBUG, "js_req: %p", item->req);
+
+    // obj.len = len
+    rc = napi_create_int32(env, item->len, &js_len);
+    if (rc != napi_ok) {
+      napi_throw_error(env, "EINVAL", "failure to create resp.len");
+    }
+    rc = napi_set_named_property(env, js_http_item, "len", js_len);
+    if (rc != napi_ok) {
+      napi_throw_error(env, "EINVAL", "failure to set named property len");
+    }
+    ZITI_NODEJS_LOG(DEBUG, "len: %zd", item->len);
+
+    // obj.body = body
+    if (NULL != item->body) {
+      rc = napi_create_buffer_copy(env, item->len, (const void*)item->body, (void**)&result_data, &js_buffer);
+      if (rc != napi_ok) {
+        napi_throw_error(env, "EINVAL", "failure to create resp.data");
+      }
+      rc = napi_set_named_property(env, js_http_item, "body", js_buffer);
+      if (rc != napi_ok) {
+        napi_throw_error(env, "EINVAL", "failure to set named property body");
+      }
+    } else {
+      rc = napi_set_named_property(env, js_http_item, "body", undefined);
+    }
+
+    // Call the JavaScript function and pass it the HttpsRespItem
+    rc = napi_call_function(
+      env,
+      undefined,
+      js_cb,
+      1,
+      &js_http_item,
+      NULL
+    );
+    if (rc != napi_ok) {
+      napi_throw_error(env, "EINVAL", "failure to invoke JS callback");
+    }
+
+  }
+}
+
+
+/**
+ * 
+ */
+void on_resp_body(um_http_req_t *req, const char *body, ssize_t len) {
+
+  // ZITI_NODEJS_LOG(DEBUG, "len: %zd, body is: \n>>>>>%s<<<<<", len, body);
+  ZITI_NODEJS_LOG(DEBUG, "body: %p", body);
+  ZITI_NODEJS_LOG(DEBUG, "len: %zd", len);
+
+  HttpsAddonData* addon_data = (HttpsAddonData*) req->data;
+  ZITI_NODEJS_LOG(DEBUG, "addon_data->httpsClient is: %p", addon_data->httpsClient);
+
+  HttpsRespBodyItem* item = calloc(1, sizeof(*item));
+  ZITI_NODEJS_LOG(DEBUG, "new HttpsRespBodyItem is: %p", item);
+  
+  //  Grab everything off the um_http_resp_t that we need to eventually pass on to the JS on_resp_body callback.
+  //  If we wait until CallJs_on_resp_body is invoked to do that work, the um_http_resp_t may have already been free'd by the C-SDK
+
+  item->req = req;
+
+  if (NULL != body) {
+    item->body = calloc(1, len);
+    memcpy((void*)item->body, body, len);
+  } else {
+    item->body = NULL;
+  }
+  item->len = len;
+
+  if ((NULL == body) && (UV_EOF == len)) {
+    ZITI_NODEJS_LOG(DEBUG, "<--------- returning httpsClient [%p] back to pool", addon_data->httpsClient);
+    addon_data->httpsClient->active = false;
+
+    struct ListMap* clientListMap = getInnerListMapValueForKey(HttpsClientListMap, addon_data->scheme_host_port);
+
+    ZITI_NODEJS_LOG(DEBUG, "<-------- returning sem for client: [%p] ", addon_data->httpsClient);
+    uv_sem_post(&(clientListMap->sem));
+    ZITI_NODEJS_LOG(DEBUG, "          after returning sem for client: [%p] ", addon_data->httpsClient);
+  }
+
+  ZITI_NODEJS_LOG(DEBUG, "calling tsfn_on_resp_body: %p", addon_data->tsfn_on_resp_body);
+
+  // Initiate the call into the JavaScript callback.
+  int rc = napi_call_threadsafe_function(
+      addon_data->tsfn_on_resp_body,
+      item,
+      napi_tsfn_blocking);
+  if (rc != napi_ok) {
+    napi_throw_error(addon_data->env, "EINVAL", "failure to invoke JS callback");
+  }
+
+}
 
 
 /**
@@ -136,8 +424,6 @@ static void CallJs_on_resp(napi_env env, napi_value js_cb, void* context, void* 
     }
 
     for (h = item->headers; h != NULL && h->name != NULL; h++) {
-      ZITI_NODEJS_LOG(DEBUG, "Processing header: %p", h);
-      ZITI_NODEJS_LOG(DEBUG, "\t%s: %s", h->name, h->value);
 
       if (strcasecmp(h->name, "set-cookie") == 0) {
         if (NULL == js_cookies_array) {
@@ -172,8 +458,6 @@ static void CallJs_on_resp(napi_env env, napi_value js_cb, void* context, void* 
       }
     }
 
-    ZITI_NODEJS_LOG(DEBUG, "Done with headers");
-
     // obj.headers = headers
     rc = napi_set_named_property(env, js_http_item, "headers", js_headers);
     if (rc != napi_ok) {
@@ -204,13 +488,10 @@ void on_resp(um_http_resp_t *resp, void *data) {
   ZITI_NODEJS_LOG(DEBUG, "resp: %p", resp);
 
   HttpsAddonData* addon_data = (HttpsAddonData*) data;
-
-  ZITI_NODEJS_LOG(DEBUG, "addon_data->httpsReq: %p", addon_data->httpsReq);
+  ZITI_NODEJS_LOG(DEBUG, "addon_data->httpsClient is: %p", addon_data->httpsClient);
 
   addon_data->httpsReq->on_resp_has_fired = true;
   addon_data->httpsReq->respCode = resp->code;
-
-  ZITI_NODEJS_LOG(DEBUG, "addon_data is: %p", data);
 
   HttpsRespItem* item = calloc(1, sizeof(*item));
   ZITI_NODEJS_LOG(DEBUG, "new HttpsRespItem is: %p", item);
@@ -229,18 +510,34 @@ void on_resp(um_http_resp_t *resp, void *data) {
 
   int header_cnt = 0;
   um_http_hdr *h;
-  for (h = resp->headers; h != NULL && h->name != NULL; h++) {
+  LIST_FOREACH(h, &resp->headers, _next) {
     header_cnt++;
   }
   ZITI_NODEJS_LOG(DEBUG, "header_cnt: %d", header_cnt);
 
   item->headers = calloc(header_cnt + 1, sizeof(um_http_hdr));
   header_cnt = 0;
-  for (h = resp->headers; h != NULL && h->name != NULL; h++) {
+  LIST_FOREACH(h, &resp->headers, _next) {
     item->headers[header_cnt].name = strdup(h->name);
     item->headers[header_cnt].value = strdup(h->value);
     ZITI_NODEJS_LOG(DEBUG, "item->headers[%d]: %s : %s", header_cnt, item->headers[header_cnt].name, item->headers[header_cnt].value);
     header_cnt++;
+  }
+
+  if ((UV_EOF == resp->code) || (resp->code < 0)) {
+    ZITI_NODEJS_LOG(DEBUG, "<--------- returning httpsClient [%p] back to pool", addon_data->httpsClient);
+    addon_data->httpsClient->active = false;
+
+    // Before we fully release this client (via semaphore post) let's re-init, because after errs happen on a client, 
+    // subsequent requests using that client never get processed.
+    ziti_src_init(thread_loop, &(addon_data->httpsClient->ziti_src), addon_data->service, ztx );
+    um_http_init_with_src(thread_loop, &(addon_data->httpsClient->client), addon_data->scheme_host_port, (um_http_src_t *)&(addon_data->httpsClient->ziti_src) );
+
+    struct ListMap* clientListMap = getInnerListMapValueForKey(HttpsClientListMap, addon_data->scheme_host_port);
+
+    ZITI_NODEJS_LOG(DEBUG, "<-------- returning sem for client: [%p] ", addon_data->httpsClient);
+    uv_sem_post(&(clientListMap->sem));
+    ZITI_NODEJS_LOG(DEBUG, "          after returning sem for client: [%p] ", addon_data->httpsClient);
   }
 
   // Initiate the call into the JavaScript callback. The call into JavaScript will not have happened when this function returns, but it will be queued.
@@ -252,23 +549,29 @@ void on_resp(um_http_resp_t *resp, void *data) {
     napi_throw_error(addon_data->env, "EINVAL", "failure to invoke JS callback");
   }
 
+  // ZITI_NODEJS_LOG(DEBUG, "<--------- returning httpsClient [%p] back to pool", addon_data->httpsClient);
+  // addon_data->httpsClient->active = false;
+
+  if (UV_EOF != resp->code) {
+    // We need body of the HTTP response, so wire up that callback now
+    resp->body_cb = on_resp_body;
+  }
 }
 
 
 /**
- * This function is responsible for calling the JavaScript on_resp_body callback function 
+ * This function is responsible for calling the JavaScript on_resp callback function 
  * that was specified when the Ziti_https_request(...) was called from JavaScript.
  */
-static void CallJs_on_resp_body(napi_env env, napi_value js_cb, void* context, void* data) {
+static void CallJs_on_req(napi_env env, napi_value js_cb, void* context, void* data) {
 
   ZITI_NODEJS_LOG(DEBUG, "entered");
 
   // This parameter is not used.
   (void) context;
 
-  // Retrieve the HttpsRespBodyItem created by the worker thread.
-  HttpsRespBodyItem* item = (HttpsRespBodyItem*)data;
-
+  // Retrieve the addon_data created by the worker thread.
+  HttpsAddonData* addon_data = (HttpsAddonData*) data;
 
   // env and js_cb may both be NULL if Node.js is in its cleanup phase, and
   // items are left over from earlier thread-safe calls from the worker thread.
@@ -282,15 +585,14 @@ static void CallJs_on_resp_body(napi_env env, napi_value js_cb, void* context, v
     napi_get_undefined(env, &undefined);
 
     // const obj = {}
-    napi_value js_http_item, js_req, js_len, js_buffer;
-    void* result_data;
+    napi_value js_http_item, js_req;
     int rc = napi_create_object(env, &js_http_item);
     if (rc != napi_ok) {
       napi_throw_error(env, "EINVAL", "failure to create object");
     }
 
     // obj.req = req
-    napi_create_int64(env, (int64_t)item->req, &js_req);
+    napi_create_int64(env, (int64_t)addon_data->httpsReq, &js_req);
     if (rc != napi_ok) {
       napi_throw_error(env, "EINVAL", "failure to create resp.req");
     }
@@ -298,34 +600,9 @@ static void CallJs_on_resp_body(napi_env env, napi_value js_cb, void* context, v
     if (rc != napi_ok) {
       napi_throw_error(env, "EINVAL", "failure to set named property req");
     }
-    ZITI_NODEJS_LOG(DEBUG, "js_req: %p", item->req);
+    ZITI_NODEJS_LOG(DEBUG, "js_req: %p", addon_data->httpsReq);
 
-    // obj.len = len
-    rc = napi_create_int32(env, item->len, &js_len);
-    if (rc != napi_ok) {
-      napi_throw_error(env, "EINVAL", "failure to create resp.len");
-    }
-    rc = napi_set_named_property(env, js_http_item, "len", js_len);
-    if (rc != napi_ok) {
-      napi_throw_error(env, "EINVAL", "failure to set named property len");
-    }
-    ZITI_NODEJS_LOG(DEBUG, "len: %zd", item->len);
-
-    // obj.body = body
-    if (NULL != item->body) {
-      rc = napi_create_buffer_copy(env, item->len, (const void*)item->body, (void**)&result_data, &js_buffer);
-      if (rc != napi_ok) {
-        napi_throw_error(env, "EINVAL", "failure to create resp.data");
-      }
-      rc = napi_set_named_property(env, js_http_item, "body", js_buffer);
-      if (rc != napi_ok) {
-        napi_throw_error(env, "EINVAL", "failure to set named property body");
-      }
-    } else {
-      rc = napi_set_named_property(env, js_http_item, "body", undefined);
-    }
-
-    // Call the JavaScript function and pass it the HttpsRespItem
+    // Call the JavaScript function and pass it the req
     rc = napi_call_function(
       env,
       undefined,
@@ -345,43 +622,41 @@ static void CallJs_on_resp_body(napi_env env, napi_value js_cb, void* context, v
 /**
  * 
  */
-void on_resp_body(um_http_req_t *req, const char *body, ssize_t len) {
-
-  // ZITI_NODEJS_LOG(DEBUG, "len: %zd, body is: \n>>>>>%s<<<<<", len, body);
-  ZITI_NODEJS_LOG(DEBUG, "body: %p", body);
-  ZITI_NODEJS_LOG(DEBUG, "len: %zd", len);
+void on_client(uv_work_t* req, int status) {
 
   HttpsAddonData* addon_data = (HttpsAddonData*) req->data;
+  ZITI_NODEJS_LOG(DEBUG, "client is: [%p]", addon_data->httpsClient);
 
-  HttpsRespBodyItem* item = calloc(1, sizeof(*item));
-  ZITI_NODEJS_LOG(DEBUG, "new HttpsRespBodyItem is: %p", item);
-  
-  //  Grab everything off the um_http_resp_t that we need to eventually pass on to the JS on_resp_body callback.
-  //  If we wait until CallJs_on_resp_body is invoked to do that work, the um_http_resp_t may have already been free'd by the C-SDK
+  // Initiate the request:   HTTP -> TLS -> Ziti -> Service 
+  um_http_req_t *r = um_http_req(
+    &(addon_data->httpsClient->client),
+    addon_data->method,
+    addon_data->path,
+    on_resp,
+    addon_data  /* Pass our addon data around so we can eventually find our way back to the JS callback */
+  );
 
-  item->req = req;
+  ZITI_NODEJS_LOG(DEBUG, "req: %p", r);
+  addon_data->httpsReq->req = r;
 
-  if (NULL != body) {
-    item->body = calloc(1, len);
-    memcpy((void*)item->body, body, len);
-  } else {
-    item->body = NULL;
+  // Add headers to request
+  for (int i = 0; i < (int)addon_data->headers_array_length; i++) {
+    um_http_req_header(r, addon_data->header_name[i], addon_data->header_value[i]);
+    free(addon_data->header_name[i]);
+    free(addon_data->header_value[i]);
   }
 
-  item->len = len;
-
-  ZITI_NODEJS_LOG(DEBUG, "calling tsfn_on_resp_body: %p", addon_data->tsfn_on_resp_body);
-
-  // Initiate the call into the JavaScript callback.
+  // Initiate the call into the JavaScript callback. The call into JavaScript will not have happened when this function returns, but it will be queued.
   int rc = napi_call_threadsafe_function(
-      addon_data->tsfn_on_resp_body,
-      item,
+      addon_data->tsfn_on_req,
+      addon_data,
       napi_tsfn_blocking);
   if (rc != napi_ok) {
     napi_throw_error(addon_data->env, "EINVAL", "failure to invoke JS callback");
   }
-
 }
+
+
 
 
 /**
@@ -390,8 +665,9 @@ void on_resp_body(um_http_req_t *req, const char *body, ssize_t len) {
  * @param {string}   [0] url
  * @param {string}   [1] method
  * @param {string[]} [2] headers;                  Array of strings of the form "name:value"
- * @param {func}     [3] JS on_resp callback;      This is invoked from 'on_resp' function above
- * @param {func}     [4] JS on_resp_data callback; This is invoked from 'on_resp_data' function above
+ * @param {func}     [3] JS on_req  callback;      This is invoked from 'on_client' function above
+ * @param {func}     [4] JS on_resp callback;      This is invoked from 'on_resp' function above
+ * @param {func}     [5] JS on_resp_data callback; This is invoked from 'on_resp_data' function above
  * 
  * @returns {um_http_req_t} req  This allows the JS to subsequently write the Body to the request (see _Ziti_http_request_data)
 
@@ -401,25 +677,30 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
   napi_status status;
   size_t result;
   napi_value jsRetval;
-  char* service;
-  char* path = "";
   char* query = "";
-  char* scheme_host_port;
   int rc;
 
   ZITI_NODEJS_LOG(DEBUG, "entered");
 
-  size_t argc = 5;
-  napi_value args[5];
+  if (NULL == HttpsClientListMap) {
+    HttpsClientListMap = newListMap();
+  }
+
+  size_t argc = 6;
+  napi_value args[6];
   status = napi_get_cb_info(env, info, &argc, args, NULL, NULL);
   if (status != napi_ok) {
     napi_throw_error(env, NULL, "Failed to parse arguments");
   }
 
-  if (argc < 5) {
+  if (argc < 6) {
     napi_throw_error(env, "EINVAL", "Too few arguments");
     return NULL;
   }
+
+  HttpsAddonData* addon_data = calloc(1, sizeof(HttpsAddonData));
+  ZITI_NODEJS_LOG(DEBUG, "allocated addon_data : %p", addon_data);
+  addon_data->env = env;
 
   // Obtain url length
   size_t url_len;
@@ -443,45 +724,45 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
   }
 
   if (url_parse.field_set & (U1 << (unsigned int) UF_HOST)) {
-    service = strndup(url + url_parse.field_data[UF_HOST].off, url_parse.field_data[UF_HOST].len);
+    addon_data->service = strndup(url + url_parse.field_data[UF_HOST].off, url_parse.field_data[UF_HOST].len);
   }
   else {
     ZITI_NODEJS_LOG(ERROR, "invalid URL: no host");
     napi_throw_error(env, "EINVAL", "invalid URL: no host");
   }
 
-  ZITI_NODEJS_LOG(DEBUG, "service: %s", service);
+  ZITI_NODEJS_LOG(DEBUG, "service: %s", addon_data->service);
 
   if (url_parse.field_set & (U1 << (unsigned int) UF_PATH)) {
-    path = strndup(url + url_parse.field_data[UF_PATH].off, url_parse.field_data[UF_PATH].len);
+    addon_data->path = strndup(url + url_parse.field_data[UF_PATH].off, url_parse.field_data[UF_PATH].len);
   }
   else {
     ZITI_NODEJS_LOG(ERROR, "invalid URL: no path");
     napi_throw_error(env, "EINVAL", "invalid URL: no path");
   }
 
-  ZITI_NODEJS_LOG(DEBUG, "path: [%s]", path);
+  ZITI_NODEJS_LOG(DEBUG, "path: [%s]", addon_data->path);
 
   if (url_parse.field_set & (U1 << (unsigned int) UF_QUERY)) {
     query = strndup(url + url_parse.field_data[UF_QUERY].off, url_parse.field_data[UF_QUERY].len);
     ZITI_NODEJS_LOG(DEBUG, "query: [%s]", query);
-    char* expanded_path = calloc(1, strlen(path)+strlen(query)+2);
+    char* expanded_path = calloc(1, strlen(addon_data->path)+strlen(query)+2);
 
-    strcat(expanded_path, path);
+    strcat(expanded_path, addon_data->path);
     strcat(expanded_path, "?");
     strcat(expanded_path, query);
     ZITI_NODEJS_LOG(DEBUG, "expanded_path: [%s]", expanded_path);
-    free(path);
-    path = expanded_path;
+    free(addon_data->path);
+    addon_data->path = expanded_path;
   }
   else {
     ZITI_NODEJS_LOG(DEBUG, "URL: no query found");
   }
-  ZITI_NODEJS_LOG(DEBUG, "adjusted path: [%s]", path);
+  ZITI_NODEJS_LOG(DEBUG, "adjusted path: [%s]", addon_data->path);
 
-  scheme_host_port = strndup(url + url_parse.field_data[UF_SCHEMA].off, url_parse.field_data[UF_PATH].off);
+  addon_data->scheme_host_port = strndup(url + url_parse.field_data[UF_SCHEMA].off, url_parse.field_data[UF_PATH].off);
 
-  ZITI_NODEJS_LOG(DEBUG, "scheme_host_port: %s", scheme_host_port);
+  ZITI_NODEJS_LOG(DEBUG, "scheme_host_port: %s", addon_data->scheme_host_port);
 
 
   // Obtain method length
@@ -491,25 +772,51 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
     napi_throw_error(env, "EINVAL", "method is not a string");
   }
   // Obtain method
-  char* method = calloc(1, method_len+2);
-  status = napi_get_value_string_utf8(env, args[1], method, method_len+1, &result);
+  addon_data->method = calloc(1, method_len+2);
+  status = napi_get_value_string_utf8(env, args[1], addon_data->method, method_len+1, &result);
   if (status != napi_ok) {
     napi_throw_error(env, "EINVAL", "Failed to obtain method");
   }
 
-  ZITI_NODEJS_LOG(DEBUG, "method: %s", method);
+  ZITI_NODEJS_LOG(DEBUG, "method: %s", addon_data->method);
 
-  // Obtain ptr to JS on_resp callback function
+  // Obtain ptr to JS on_req callback function
   napi_value js_cb = args[3];
   napi_value work_name;
 
-  HttpsAddonData* addon_data = calloc(1, sizeof(HttpsAddonData));
-  ZITI_NODEJS_LOG(DEBUG, "allocated addon_data : %p", addon_data);
-
-  addon_data->env = env;
 
   HttpsReq* httpsReq = calloc(1, sizeof(HttpsReq));
   addon_data->httpsReq = httpsReq;
+  httpsReq->addon_data = addon_data;
+
+  // Create a string to describe this asynchronous operation.
+  rc = napi_create_string_utf8(env, "on_req", NAPI_AUTO_LENGTH, &work_name);
+  if (rc != napi_ok) {
+    napi_throw_error(env, "EINVAL", "Failed to create string");
+  }
+
+  // Convert the callback retrieved from JavaScript into a thread-safe function (tsfn) 
+  // which we can call from a worker thread.
+  rc = napi_create_threadsafe_function(
+    env,
+    js_cb,
+    NULL,
+    work_name,
+    0,
+    1,
+    NULL,
+    NULL,
+    NULL,
+    CallJs_on_req,
+    &(addon_data->tsfn_on_req)
+  );
+  if (rc != napi_ok) {
+    napi_throw_error(env, "EINVAL", "Failed to create threadsafe_function");
+  }
+  ZITI_NODEJS_LOG(DEBUG, "napi_create_threadsafe_function addon_data->tsfn_on_req() : %p", addon_data->tsfn_on_req);
+
+  // Obtain ptr to JS on_resp callback function
+  napi_value js_cb2 = args[4];
 
   // Create a string to describe this asynchronous operation.
   rc = napi_create_string_utf8(env, "on_resp", NAPI_AUTO_LENGTH, &work_name);
@@ -521,7 +828,7 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
   // which we can call from a worker thread.
   rc = napi_create_threadsafe_function(
     env,
-    js_cb,
+    js_cb2,
     NULL,
     work_name,
     0,
@@ -539,7 +846,7 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
 
 
   // Obtain ptr to JS on_resp_data callback function
-  napi_value js_cb2 = args[4];
+  napi_value js_cb3 = args[5];
 
   // Create a string to describe this asynchronous operation.
   rc = napi_create_string_utf8(env, "on_resp_data", NAPI_AUTO_LENGTH, &work_name);
@@ -551,7 +858,7 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
   // which we can call from a worker thread.
   rc = napi_create_threadsafe_function(
     env,
-    js_cb2,
+    js_cb3,
     NULL,
     work_name,
     0,
@@ -567,51 +874,16 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
   }
   ZITI_NODEJS_LOG(DEBUG, "napi_create_threadsafe_function addon_data->tsfn_on_resp_body() : %p", addon_data->tsfn_on_resp_body);
 
-
-  // Set up the Ziti source
-  ziti_src_init(thread_loop, &(addon_data->ziti_src), service, ztx );
-  um_http_init_with_src(
-    thread_loop, 
-    &(addon_data->client), 
-    scheme_host_port, 
-    (um_http_src_t *)&(addon_data->ziti_src) 
-  );
-
-  // Initiate the request:   HTTP -> TLS -> Ziti -> Service 
-  um_http_req_t *r = um_http_req(
-    &(addon_data->client),
-    method,
-    path,
-    on_resp,
-    addon_data  /* Pass our addon data around so we can eventually find our way back to the JS callback */
-  );
-
-  // We need body of the HTTP response, so wire it up
-  r->resp.body_cb = on_resp_body;
-
-  ZITI_NODEJS_LOG(DEBUG, "req: %p", r);
-  httpsReq->req = r;
-
-  // Add headers to request
-  // Obtain headers array length
-  uint32_t i, headers_array_length;
-  status = napi_get_array_length(env, args[2], &headers_array_length);
+  //
+  // Capture headers
+  //
+  uint32_t i;
+  status = napi_get_array_length(env, args[2], &addon_data->headers_array_length);
   if (status != napi_ok) {
     napi_throw_error(env, "EINVAL", "Failed to obtain headers array");
   }
-  ZITI_NODEJS_LOG(DEBUG, "headers_array_length: %d", headers_array_length);
-
-  if (headers_array_length > 100) {
-    ZITI_NODEJS_LOG(DEBUG, "skipping headers; header count too long");
-    headers_array_length = 0;
-    addon_data->httpsReq->on_resp_has_fired = true;
-  }
-
-  ZITI_NODEJS_LOG(DEBUG, "addon_data->httpsReq->on_resp_has_fired: %o", addon_data->httpsReq->on_resp_has_fired);
-  ZITI_NODEJS_LOG(DEBUG, "addon_data->httpsReq->respCode: %o", addon_data->httpsReq->respCode);
-
-  // Process each header
-  for (i = 0; i < headers_array_length; i++) {
+  ZITI_NODEJS_LOG(DEBUG, "headers_array_length: %d", addon_data->headers_array_length);
+  for (i = 0; i < addon_data->headers_array_length; i++) {
 
     napi_value headers_array_element;
     status = napi_get_element(env, args[2], i, &headers_array_element);
@@ -650,23 +922,25 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
       napi_throw_error(env, "EINVAL", "Failed to split header element");
     }
 
-    rc = um_http_req_header(r, header_name, header_value);
-    ZITI_NODEJS_LOG(DEBUG, "um_http_req_header rc: %d", rc);
+    addon_data->header_name[i] = strdup(header_name);
+    addon_data->header_value[i] = strdup(header_value);
+
     free(header_element);
   }
 
-  // Inform JS that we failed
-  if (addon_data->httpsReq->on_resp_has_fired) {
-    free(httpsReq);
-    free(addon_data);
-    napi_get_undefined(env, &jsRetval);
-  } else {
-    status = napi_create_int64(env, (int64_t)httpsReq, &jsRetval);
-    if (status != napi_ok) {
-      napi_throw_error(env, NULL, "Unable to create return value");
-    }
-  }
+  //
+  // Queue the HTTP request.  First thing that happens in the flow is to allocate a client from the pool
+  //
+  addon_data->uv_req.data = addon_data;
+  uv_queue_work(thread_loop, &addon_data->uv_req, allocate_client, on_client);
 
+  //
+  // We always return zero.  The real results/status are returned via the multiple callbacks
+  //
+  status = napi_create_int64(env, (int64_t)0, &jsRetval);
+  if (status != napi_ok) {
+    napi_throw_error(env, NULL, "Unable to create return value");
+  }
   return jsRetval;
 }
 
