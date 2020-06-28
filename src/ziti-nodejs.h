@@ -156,7 +156,7 @@ extern "C" {
 extern ziti_context ztx;
 extern uv_loop_t *thread_loop;
 
-extern pthread_mutex_t client_pool_lock;
+extern uv_mutex_t client_pool_lock;
 
 // extern void set_signal_handler();
 

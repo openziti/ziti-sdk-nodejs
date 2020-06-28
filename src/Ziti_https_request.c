@@ -47,7 +47,7 @@ struct ListMap* newListMap() {
     return listMap;
 }
 
-pthread_mutex_t client_pool_lock;
+uv_mutex_t client_pool_lock;
 
 bool listMapInsert(struct ListMap* collection, char* key, void* value) {
 
@@ -122,8 +122,8 @@ static void allocate_client(uv_work_t* req) {
 
   HttpsAddonData* addon_data = (HttpsAddonData*) req->data;
 
-  if (pthread_mutex_lock(&client_pool_lock)) {
-    ZITI_NODEJS_LOG(ERROR, "pthread_mutex_lock failure");
+  if (uv_mutex_trylock(&client_pool_lock)) {
+    ZITI_NODEJS_LOG(ERROR, "uv_mutex_lock failure");
     abort();
   }
 
@@ -153,10 +153,7 @@ static void allocate_client(uv_work_t* req) {
     }
   }
 
-  if (pthread_mutex_unlock(&client_pool_lock)) {
-    ZITI_NODEJS_LOG(ERROR, "pthread_mutex_unlock failure");
-    abort();
-  }
+  uv_mutex_unlock(&client_pool_lock);
 
   ZITI_NODEJS_LOG(DEBUG, "----------> acquiring sem");
   uv_sem_wait(&(clientListMap->sem));
