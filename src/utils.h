@@ -49,7 +49,7 @@ extern FILE *ziti_nodejs_debug_out;
     XX(ERROR) /*WINDOWS - see comment above wrt NOGDI*/ \
     XX(WARN) \
     XX(INFO) \
-    XX(DEBUGX) \
+    XX(DEBUG) \
     XX(VERBOSE) \
     XX(TRACE)
 
