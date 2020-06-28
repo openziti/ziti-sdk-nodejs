@@ -110,22 +110,43 @@ typedef struct HttpsReqBodyItem {
   ssize_t status;
 } HttpsReqBodyItem;
 
+
+typedef struct HttpsAddonData HttpsAddonData;
+
 typedef struct HttpsReq {
   um_http_req_t *req;
   bool on_resp_has_fired;
   int respCode;
+  HttpsAddonData *addon_data;
 } HttpsReq;
 
 typedef struct {
+  char* scheme_host_port;
+  um_http_t client;
+  um_http_src_t ziti_src;
+  bool active;
+} HttpsClient;
+
+struct HttpsAddonData {
   napi_env env;
   um_http_t client;
   um_http_src_t ziti_src;
+  napi_threadsafe_function tsfn_on_req;
   napi_threadsafe_function tsfn_on_resp;
   napi_threadsafe_function tsfn_on_resp_body;
   napi_threadsafe_function tsfn_on_req_body;
   HttpsRespItem* item;
   HttpsReq* httpsReq;
-} HttpsAddonData;
+  uv_work_t uv_req;
+  char* service;
+  char* scheme_host_port;
+  char* method;
+  char* path;
+  uint32_t headers_array_length;
+  char* header_name[100];
+  char* header_value[100];
+  HttpsClient* httpsClient;
+} ;
 
 
 #ifdef __cplusplus
@@ -135,7 +156,7 @@ extern "C" {
 extern ziti_context ztx;
 extern uv_loop_t *thread_loop;
 
-// extern pthread_mutex_t nf_init_lock;
+extern uv_mutex_t client_pool_lock;
 
 // extern void set_signal_handler();
 

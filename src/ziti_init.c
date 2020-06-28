@@ -85,7 +85,7 @@ void on_ziti_init(ziti_context _ztx, int status, void* ctx) {
 
   if (status == ZITI_OK) {
 
-    ziti_set_timeout(ztx, 60*1000);
+    ziti_set_timeout(ztx, 5*1000);
 
   }
 

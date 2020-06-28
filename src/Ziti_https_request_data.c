@@ -170,12 +170,12 @@ napi_value _Ziti_http_request_data(napi_env env, const napi_callback_info info) 
 
   ZITI_NODEJS_LOG(DEBUG, "req: %p", r);
 
-  HttpsAddonData* addon_data = (HttpsAddonData*) r->data;
-  ZITI_NODEJS_LOG(DEBUG, "re-using addon_data : %p", addon_data);
+  HttpsAddonData* addon_data = httpsReq->addon_data;
+  ZITI_NODEJS_LOG(DEBUG, "addon_data is: %p", addon_data);
 
   // If some kind of Ziti error previously occured on this request, then short-circuit now
-  if (addon_data->httpsReq->on_resp_has_fired && (addon_data->httpsReq->respCode < 0)) {
-    ZITI_NODEJS_LOG(DEBUG, "aborting due to previous error: %d", addon_data->httpsReq->respCode);
+  if (httpsReq->on_resp_has_fired && (httpsReq->respCode < 0)) {
+    ZITI_NODEJS_LOG(DEBUG, "aborting due to previous error: %d", httpsReq->respCode);
     return NULL;
   }
 

@@ -24,6 +24,9 @@ napi_value Init(napi_env env, napi_value exports) {
   //
   thread_loop = NULL;
 
+  if (uv_mutex_init(&client_pool_lock))
+    abort();
+
   // Install call-stack tracer
   // set_signal_handler();
 
