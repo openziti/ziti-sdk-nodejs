@@ -45,7 +45,6 @@ napi_value _Ziti_http_request_end(napi_env env, const napi_callback_info info) {
   if (status != napi_ok) {
     napi_throw_error(env, NULL, "Failed to get Req");
   }
-  // um_http_req_t *r = (um_http_req_t*)js_req;
   HttpsReq* httpsReq = (HttpsReq*)js_req;
   um_http_req_t *r = httpsReq->req;
 

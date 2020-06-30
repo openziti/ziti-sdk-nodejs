@@ -125,6 +125,7 @@ typedef struct {
   um_http_t client;
   um_http_src_t ziti_src;
   bool active;
+  bool purge;
 } HttpsClient;
 
 struct HttpsAddonData {

@@ -25,7 +25,7 @@ limitations under the License.
 extern "C" {
 #endif
 
-extern const char *ziti_nodejs_get_version(int verbose);
+extern const char *ziti_nodejs_get_version(int verbose); 
 extern const char *ziti_nodejs_git_branch();
 extern const char *ziti_nodejs_git_commit();
 extern void nodejs_hexDump(char *desc, void *addr, int len);
@@ -43,7 +43,7 @@ extern int ziti_debug_level;
 extern FILE *ziti_nodejs_debug_out;
 
 
-// for windows compilation NOGDI needs to be set:
+/// for windows compilation NOGDI needs to be set:
 #define DEBUG_LEVELS(XX) \
     XX(NONE) \
     XX(ERROR) /*WINDOWS - see comment above wrt NOGDI*/ \
