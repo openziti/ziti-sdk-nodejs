@@ -49,7 +49,7 @@ struct ListMap* newListMap() {
 
 uv_mutex_t client_pool_lock;
 
-bool listMapInsertMap(struct ListMap* collection, char* key, void* value) {
+bool listMapInsert(struct ListMap* collection, char* key, void* value) {
 
   if (collection->count == listMapCapacity) {
     ZITI_NODEJS_LOG(ERROR, "collection->count already at capacity [%d], insert FAIL", listMapCapacity);
@@ -64,51 +64,6 @@ bool listMapInsertMap(struct ListMap* collection, char* key, void* value) {
   return true;
 }
 
-bool listMapInsertClient(struct ListMap* collection, char* key, HttpsClient* value) {
-
-  // Release any items that need purging
-  HttpsClient* httpsClient = NULL;
-  size_t count = collection->count;
-  for (size_t i = 0 ; i < count ; ++i) {
-    httpsClient = collection->kvPairs[i].value;
-    if (httpsClient->purge) {
-      free(collection->kvPairs[i].key);
-      collection->kvPairs[i].key = NULL;
-      free(collection->kvPairs[i].value);
-      collection->kvPairs[i].value = NULL;
-      collection->count--;
-      ZITI_NODEJS_LOG(DEBUG, "collection->count total REDUCED: [%zd]", collection->count);
-    }
-  }
-
-  if (collection->count == listMapCapacity) {
-    ZITI_NODEJS_LOG(ERROR, "collection->count already at capacity [%d], insert FAIL", listMapCapacity);
-    return false;
-  }
-
-  // Find an empty slot
-  size_t i;
-  for (i = 0 ; i < listMapCapacity && collection->kvPairs[i].value != NULL ; ++i) {
-    // nop
-  }
-
-  collection->kvPairs[i].key = strdup(key);
-  collection->kvPairs[i].value = value;
-  collection->count++;
-  ZITI_NODEJS_LOG(DEBUG, "collection->count total is: [%zd]", collection->count);
-
-  return true;
-}
-
-size_t countListMapValueForKey(struct ListMap* collection, char* key) {
-  size_t count = 0;
-  for (size_t i = 0 ; i < collection->count ; ++i) {
-    if (strcmp(collection->kvPairs[i].key, key) == 0) {
-      count++;
-    }
-  }
-  return count;
-}
 
 struct ListMap* getInnerListMapValueForKey(struct ListMap* collection, char* key) {
   struct ListMap* value = NULL;
@@ -117,7 +72,6 @@ struct ListMap* getInnerListMapValueForKey(struct ListMap* collection, char* key
       value = collection->kvPairs[i].value;
     }
   }
-  // ZITI_NODEJS_LOG(DEBUG, "returning value '%p', collection->count is: '%zd'", value, collection->count);
   return value;
 }
 
@@ -168,13 +122,10 @@ static void allocate_client(uv_work_t* req) {
 
   struct ListMap* clientListMap = getInnerListMapValueForKey(HttpsClientListMap, addon_data->scheme_host_port);
 
-  // ZITI_NODEJS_LOG(DEBUG, "innerListMapValue for key [%s] is [%p]", addon_data->scheme_host_port, clientListMap);
-
   if (NULL == clientListMap) { // If first time seeing this key, spawn a pool of clients for it
 
     clientListMap = newListMap();
-    listMapInsertMap(HttpsClientListMap, addon_data->scheme_host_port, (void*)clientListMap);
-    // ZITI_NODEJS_LOG(DEBUG, "inserting innerListMapValue of [%p] for key [%s]", clientListMap, addon_data->scheme_host_port);
+    listMapInsert(HttpsClientListMap, addon_data->scheme_host_port, (void*)clientListMap);
 
     uv_sem_init(&(clientListMap->sem), perKeyListMapCapacity);
 
@@ -185,11 +136,36 @@ static void allocate_client(uv_work_t* req) {
       ziti_src_init(thread_loop, &(httpsClient->ziti_src), addon_data->service, ztx );
       um_http_init_with_src(thread_loop, &(httpsClient->client), addon_data->scheme_host_port, (um_http_src_t *)&(httpsClient->ziti_src) );
 
-      // ZITI_NODEJS_LOG(DEBUG, "inserting client of [%p] into innerListMapValue [%p]", httpsClient, clientListMap);
-
-      listMapInsertClient(clientListMap, addon_data->scheme_host_port, (void*)httpsClient);
+      listMapInsert(clientListMap, addon_data->scheme_host_port, (void*)httpsClient);
 
     }
+  }
+  else {
+
+    for (int i = 0; i < perKeyListMapCapacity; i++) {
+
+      HttpsClient* httpsClient = clientListMap->kvPairs[i].value;
+
+      if (httpsClient->purge) {
+
+        ZITI_NODEJS_LOG(DEBUG, "*********** purging client [%p] from slot [%d]", httpsClient, i);
+
+        free(httpsClient->scheme_host_port);
+
+        // FIXME: find out why the following free causes things to eventually crash in the uv_loop
+        // free(httpsClient);
+
+        httpsClient = calloc(1, sizeof *httpsClient);
+        httpsClient->scheme_host_port = strdup(addon_data->scheme_host_port);
+        ziti_src_init(thread_loop, &(httpsClient->ziti_src), addon_data->service, ztx );
+        um_http_init_with_src(thread_loop, &(httpsClient->client), addon_data->scheme_host_port, (um_http_src_t *)&(httpsClient->ziti_src) );
+
+        clientListMap->kvPairs[i].value = httpsClient;
+
+        ZITI_NODEJS_LOG(DEBUG, "*********** new client [%p] now occupying slot [%d]", httpsClient, i);
+      }
+    }
+
   }
 
   uv_mutex_unlock(&client_pool_lock);
@@ -199,14 +175,6 @@ static void allocate_client(uv_work_t* req) {
 
   addon_data->httpsClient = getHttpsClientForKey(clientListMap, addon_data->scheme_host_port);
   ZITI_NODEJS_LOG(DEBUG, "----------> successfully acquired sem, client is: [%p]", addon_data->httpsClient);
-
-  //
-  // if (addon_data->httpsClient->purge) {
-  //   ZITI_NODEJS_LOG(DEBUG, "*********** due to prior error, now re-initializing client: [%p]", addon_data->httpsClient);
-  //   ziti_src_init(thread_loop, &(addon_data->httpsClient->ziti_src), addon_data->service, ztx );
-  //   um_http_init_with_src(thread_loop, &(addon_data->httpsClient->client), addon_data->scheme_host_port, (um_http_src_t *)&(addon_data->httpsClient->ziti_src) );
-  //   addon_data->httpsClient->purge = false;
-  // }
 
 }
 
@@ -420,42 +388,6 @@ static void CallJs_on_resp(napi_env env, napi_value js_cb, void* context, void* 
     }
     ZITI_NODEJS_LOG(DEBUG, "status: %s", item->status);
 
-    // // const headers_array = []
-    // napi_value js_headers_array, js_header_value;
-
-    // rc = napi_create_array(env, &js_headers_array);
-    // if (rc != napi_ok) {
-    //   napi_throw_error(env, "EINVAL", "failure to create js_headers_array");
-    // }
-    // um_http_hdr *h;
-    // int i = 0;
-    // for (h = item->headers; h != NULL && h->name != NULL; h++) {
-    //   ZITI_NODEJS_LOG(DEBUG, "Processing header: %p", h);
-    //   ZITI_NODEJS_LOG(DEBUG, "\t%s: %s", h->name, h->value);
-
-    //   char* tmp = calloc(1, strlen(h->name)+strlen(h->value)+2);
-    //   strcat(tmp, h->name);
-    //   strcat(tmp, "=");
-    //   strcat(tmp, h->value);
-
-    //   rc = napi_create_string_utf8(env, (const char*)tmp, strlen(tmp), &js_header_value);
-    //   if (rc != napi_ok) {
-    //     napi_throw_error(env, "EINVAL", "failure to create js_header_element");
-    //   }
-    //   free(tmp);
-    //   rc = napi_set_element(env, js_headers_array, i++, js_header_value);
-    //   if (rc != napi_ok) {
-    //     napi_throw_error(env, "EINVAL", "failure to set js_header_element");
-    //   }
-    // }
-    // ZITI_NODEJS_LOG(DEBUG, "Done with js_headers_array");
-
-    // // obj.headers_array = headers_array
-    // rc = napi_set_named_property(env, js_http_item, "headers_array", js_headers_array);
-    // if (rc != napi_ok) {
-    //   napi_throw_error(env, "EINVAL", "failure to set named property headers_array");
-    // }
-
     // const headers = {}
     um_http_hdr *h;
     int i = 0;
@@ -579,15 +511,6 @@ void on_resp(um_http_resp_t *resp, void *data) {
 
     struct ListMap* clientListMap = getInnerListMapValueForKey(HttpsClientListMap, addon_data->scheme_host_port);
 
-    {
-      HttpsClient* httpsClient = calloc(1, sizeof *httpsClient);
-      httpsClient->scheme_host_port = strdup(addon_data->scheme_host_port);
-      ziti_src_init(thread_loop, &(httpsClient->ziti_src), addon_data->service, ztx );
-      um_http_init_with_src(thread_loop, &(httpsClient->client), addon_data->scheme_host_port, (um_http_src_t *)&(httpsClient->ziti_src) );
-      ZITI_NODEJS_LOG(DEBUG, "inserting client of [%p] into innerListMapValue [%p]", httpsClient, clientListMap);
-      listMapInsertClient(clientListMap, addon_data->scheme_host_port, (void*)httpsClient);
-    }
-
     ZITI_NODEJS_LOG(DEBUG, "<-------- returning sem for client: [%p] ", addon_data->httpsClient);
     uv_sem_post(&(clientListMap->sem));
     ZITI_NODEJS_LOG(DEBUG, "          after returning sem for client: [%p] ", addon_data->httpsClient);
@@ -601,9 +524,6 @@ void on_resp(um_http_resp_t *resp, void *data) {
   if (rc != napi_ok) {
     napi_throw_error(addon_data->env, "EINVAL", "failure to invoke JS callback");
   }
-
-  // ZITI_NODEJS_LOG(DEBUG, "<--------- returning httpsClient [%p] back to pool", addon_data->httpsClient);
-  // addon_data->httpsClient->active = false;
 
   if (UV_EOF != resp->code) {
     // We need body of the HTTP response, so wire up that callback now
