@@ -25,7 +25,7 @@ limitations under the License.
 extern "C" {
 #endif
 
-extern const char *ziti_nodejs_get_version(int verbose);
+extern const char *ziti_nodejs_get_version(int verbose); 
 extern const char *ziti_nodejs_git_branch();
 extern const char *ziti_nodejs_git_commit();
 extern void nodejs_hexDump(char *desc, void *addr, int len);
