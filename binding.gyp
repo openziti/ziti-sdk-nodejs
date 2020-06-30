@@ -26,7 +26,7 @@
         "./src/ziti_shutdown.c",
         "./src/ziti_write.c",
         
-        "./src/stack_traces.c",
+        # "./src/stack_traces.c",
         "./src/utils.c",
       ],
 
