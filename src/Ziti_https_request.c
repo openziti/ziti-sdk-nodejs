@@ -49,7 +49,7 @@ struct ListMap* newListMap() {
 
 uv_mutex_t client_pool_lock;
 
-bool listMapInsert(struct ListMap* collection, char* key, void* value) {
+bool listMapInsertMap(struct ListMap* collection, char* key, void* value) {
 
   if (collection->count == listMapCapacity) {
     ZITI_NODEJS_LOG(ERROR, "collection->count already at capacity [%d], insert FAIL", listMapCapacity);
@@ -58,6 +58,42 @@ bool listMapInsert(struct ListMap* collection, char* key, void* value) {
 
   collection->kvPairs[collection->count].key = strdup(key);
   collection->kvPairs[collection->count].value = value;
+  collection->count++;
+  ZITI_NODEJS_LOG(DEBUG, "collection->count total is: [%zd]", collection->count);
+
+  return true;
+}
+
+bool listMapInsertClient(struct ListMap* collection, char* key, HttpsClient* value) {
+
+  // Release any items that need purging
+  HttpsClient* httpsClient = NULL;
+  size_t count = collection->count;
+  for (size_t i = 0 ; i < count ; ++i) {
+    httpsClient = collection->kvPairs[i].value;
+    if (httpsClient->purge) {
+      free(collection->kvPairs[i].key);
+      collection->kvPairs[i].key = NULL;
+      free(collection->kvPairs[i].value);
+      collection->kvPairs[i].value = NULL;
+      collection->count--;
+      ZITI_NODEJS_LOG(DEBUG, "collection->count total REDUCED: [%zd]", collection->count);
+    }
+  }
+
+  if (collection->count == listMapCapacity) {
+    ZITI_NODEJS_LOG(ERROR, "collection->count already at capacity [%d], insert FAIL", listMapCapacity);
+    return false;
+  }
+
+  // Find an empty slot
+  size_t i;
+  for (i = 0 ; i < listMapCapacity && collection->kvPairs[i].value != NULL ; ++i) {
+    // nop
+  }
+
+  collection->kvPairs[i].key = strdup(key);
+  collection->kvPairs[i].value = value;
   collection->count++;
   ZITI_NODEJS_LOG(DEBUG, "collection->count total is: [%zd]", collection->count);
 
@@ -92,6 +128,9 @@ HttpsClient* getHttpsClientForKey(struct ListMap* collection, char* key) {
     if (strcmp(collection->kvPairs[i].key, key) == 0) {
       value = collection->kvPairs[i].value;
       if (value->active) {      // if it's in use
+        value = NULL;           //  then keep searching
+      }
+      else if (value->purge) {  // if it's broken
         value = NULL;           //  then keep searching
       } else {
         value->active = true;   // mark the one we will return as 'in use
@@ -134,7 +173,7 @@ static void allocate_client(uv_work_t* req) {
   if (NULL == clientListMap) { // If first time seeing this key, spawn a pool of clients for it
 
     clientListMap = newListMap();
-    listMapInsert(HttpsClientListMap, addon_data->scheme_host_port, (void*)clientListMap);
+    listMapInsertMap(HttpsClientListMap, addon_data->scheme_host_port, (void*)clientListMap);
     // ZITI_NODEJS_LOG(DEBUG, "inserting innerListMapValue of [%p] for key [%s]", clientListMap, addon_data->scheme_host_port);
 
     uv_sem_init(&(clientListMap->sem), perKeyListMapCapacity);
@@ -148,7 +187,7 @@ static void allocate_client(uv_work_t* req) {
 
       // ZITI_NODEJS_LOG(DEBUG, "inserting client of [%p] into innerListMapValue [%p]", httpsClient, clientListMap);
 
-      listMapInsert(clientListMap, addon_data->scheme_host_port, (void*)httpsClient);
+      listMapInsertClient(clientListMap, addon_data->scheme_host_port, (void*)httpsClient);
 
     }
   }
@@ -160,6 +199,14 @@ static void allocate_client(uv_work_t* req) {
 
   addon_data->httpsClient = getHttpsClientForKey(clientListMap, addon_data->scheme_host_port);
   ZITI_NODEJS_LOG(DEBUG, "----------> successfully acquired sem, client is: [%p]", addon_data->httpsClient);
+
+  //
+  // if (addon_data->httpsClient->purge) {
+  //   ZITI_NODEJS_LOG(DEBUG, "*********** due to prior error, now re-initializing client: [%p]", addon_data->httpsClient);
+  //   ziti_src_init(thread_loop, &(addon_data->httpsClient->ziti_src), addon_data->service, ztx );
+  //   um_http_init_with_src(thread_loop, &(addon_data->httpsClient->client), addon_data->scheme_host_port, (um_http_src_t *)&(addon_data->httpsClient->ziti_src) );
+  //   addon_data->httpsClient->purge = false;
+  // }
 
 }
 
@@ -522,15 +569,24 @@ void on_resp(um_http_resp_t *resp, void *data) {
   }
 
   if ((UV_EOF == resp->code) || (resp->code < 0)) {
-    ZITI_NODEJS_LOG(DEBUG, "<--------- returning httpsClient [%p] back to pool", addon_data->httpsClient);
+    ZITI_NODEJS_LOG(ERROR, "<--------- returning httpsClient [%p] back to pool due to error: [%d]", addon_data->httpsClient, resp->code);
     addon_data->httpsClient->active = false;
 
-    // Before we fully release this client (via semaphore post) let's re-init, because after errs happen on a client, 
+    // Before we fully release this client (via semaphore post) let's indicate purge is needed, because after errs happen on a client, 
     // subsequent requests using that client never get processed.
-    ziti_src_init(thread_loop, &(addon_data->httpsClient->ziti_src), addon_data->service, ztx );
-    um_http_init_with_src(thread_loop, &(addon_data->httpsClient->client), addon_data->scheme_host_port, (um_http_src_t *)&(addon_data->httpsClient->ziti_src) );
+    ZITI_NODEJS_LOG(DEBUG, "*********** due to error, purge now necessary for client: [%p]", addon_data->httpsClient);
+    addon_data->httpsClient->purge = true;
 
     struct ListMap* clientListMap = getInnerListMapValueForKey(HttpsClientListMap, addon_data->scheme_host_port);
+
+    {
+      HttpsClient* httpsClient = calloc(1, sizeof *httpsClient);
+      httpsClient->scheme_host_port = strdup(addon_data->scheme_host_port);
+      ziti_src_init(thread_loop, &(httpsClient->ziti_src), addon_data->service, ztx );
+      um_http_init_with_src(thread_loop, &(httpsClient->client), addon_data->scheme_host_port, (um_http_src_t *)&(httpsClient->ziti_src) );
+      ZITI_NODEJS_LOG(DEBUG, "inserting client of [%p] into innerListMapValue [%p]", httpsClient, clientListMap);
+      listMapInsertClient(clientListMap, addon_data->scheme_host_port, (void*)httpsClient);
+    }
 
     ZITI_NODEJS_LOG(DEBUG, "<-------- returning sem for client: [%p] ", addon_data->httpsClient);
     uv_sem_post(&(clientListMap->sem));
