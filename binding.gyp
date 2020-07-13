@@ -25,7 +25,8 @@
         "./src/ziti_service_available.c",
         "./src/ziti_shutdown.c",
         "./src/ziti_write.c",
-        
+        "./src/ziti_websocket_connect.c",
+        "./src/ziti_websocket_write.c",
         # "./src/stack_traces.c",
         "./src/utils.c",
       ],
@@ -50,6 +51,17 @@
             "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv_link.a",
             "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/libuv_mbed.a",
             "$(PWD)/deps/ziti-sdk-c/build/library/libziti.a",        
+
+            # These are used when a local Xcode debug build is in play
+            # "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/Debug/libhttp-parser.a",
+            # "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/crypto/library/Debug/libmbedcrypto.a",
+            # "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/Debug/libmbedtls.a",
+            # "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/Debug/libmbedx509.a",
+            # "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv/Debug/libuv_a.a",
+            # "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/Debug/libuv_link.a",
+            # "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/Debug/libuv_mbed.a",
+            # "$(PWD)/deps/ziti-sdk-c/build/library/Debug/libziti.a",        
+
             "$(PWD)/deps/ziti-sdk-c/build/_deps/libsodium-build/lib/libsodium.a",
           ],
 

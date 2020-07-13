@@ -22,6 +22,8 @@ limitations under the License.
 #include <stdlib.h>
 #include <uv_mbed/uv_mbed.h>
 #include <uv_mbed/um_http.h>
+#include <uv_mbed/um_websocket.h>
+#include <uv_mbed/tcp_src.h>
 
 #include <node_version.h>
 #define NAPI_EXPERIMENTAL
@@ -29,6 +31,10 @@ limitations under the License.
 
 #include <ziti/ziti.h>
 #include "utils.h"
+
+
+#define NEWP(var, type) type *var = calloc(1, sizeof(type))
+
 
 #ifdef _WIN32
 #define _NO_CRT_STDIO_INLINE 1
@@ -86,6 +92,23 @@ typedef struct {
   napi_threadsafe_function tsfn_on_write;
   napi_threadsafe_function tsfn_on_service_available;
 } ConnAddonData;
+
+/**
+ * 
+ */
+typedef struct {
+  napi_async_work work;
+  napi_threadsafe_function tsfn_on_connect;
+  napi_threadsafe_function tsfn_on_data;
+  napi_threadsafe_function tsfn_on_write;
+  tcp_src_t *src;
+  um_websocket_t ws;
+  uv_pipe_t in;
+  uv_connect_t req;
+  uint32_t headers_array_length;
+  char* header_name[100];
+  char* header_value[100];
+} WSAddonData;
 
 
 // An item that will be passed into the JavaScript on_resp callback
@@ -172,6 +195,11 @@ extern void expose_ziti_write(napi_env env, napi_value exports);
 extern void expose_ziti_https_request(napi_env env, napi_value exports);
 extern void expose_ziti_https_request_data(napi_env env, napi_value exports);
 extern void expose_ziti_https_request_end(napi_env env, napi_value exports);
+extern void expose_ziti_websocket_connect(napi_env env, napi_value exports);
+extern void expose_ziti_websocket_write(napi_env env, napi_value exports);
+
+//
+extern int um_websocket_init_with_src (uv_loop_t *loop, um_websocket_t *ws, um_http_src_t *src);
 
 
 #ifdef __cplusplus
