@@ -115,10 +115,9 @@ static void allocate_client(uv_work_t* req) {
 
   HttpsAddonData* addon_data = (HttpsAddonData*) req->data;
 
-  if (uv_mutex_trylock(&client_pool_lock)) {
-    ZITI_NODEJS_LOG(ERROR, "uv_mutex_lock failure");
-    abort();
-  }
+  // if (uv_mutex_trylock(&client_pool_lock)) {
+  //   ZITI_NODEJS_LOG(ERROR, "uv_mutex_lock failure");
+  // }
 
   struct ListMap* clientListMap = getInnerListMapValueForKey(HttpsClientListMap, addon_data->scheme_host_port);
 
@@ -168,7 +167,7 @@ static void allocate_client(uv_work_t* req) {
 
   }
 
-  uv_mutex_unlock(&client_pool_lock);
+  // uv_mutex_unlock(&client_pool_lock);
 
   ZITI_NODEJS_LOG(DEBUG, "----------> acquiring sem");
   uv_sem_wait(&(clientListMap->sem));

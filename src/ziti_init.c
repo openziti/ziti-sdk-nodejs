@@ -29,6 +29,12 @@ typedef struct {
 } AddonData;
 
 
+static const char *ALL_CONFIG_TYPES[] = {
+        "all",
+        NULL
+};
+
+
 /**
  * This function is responsible for calling the JavaScript callback function 
  * that was specified when the ziti_init(...) was called from JavaScript.
@@ -123,6 +129,8 @@ napi_value _ziti_init(napi_env env, const napi_callback_info info) {
 
   ZITI_NODEJS_LOG(DEBUG, "initializing");
 
+  // uv_mbed_set_debug(TRACE, stdout);
+
   size_t argc = 2;
   napi_value args[2];
   status = napi_get_cb_info(env, info, &argc, args, NULL, NULL);
@@ -135,10 +143,21 @@ napi_value _ziti_init(napi_env env, const napi_callback_info info) {
     return NULL;
   }
 
-  // Obtain location of identity file
+  // Obtain length of location of identity file
   size_t result;
-  char ConfigFileName[100];
-  status = napi_get_value_string_utf8(env, args[0], ConfigFileName, 100, &result);
+  size_t config_path_len;
+  status = napi_get_value_string_utf8(env, args[0], NULL, 0, &config_path_len);
+  if (status != napi_ok) {
+    napi_throw_error(env, "EINVAL", "location of identity file is not a string");
+  }
+  // Obtain length of location of identity file
+  char* config_file_name = calloc(1, config_path_len+2);
+  status = napi_get_value_string_utf8(env, args[0], config_file_name, config_path_len+1, &result);
+  if (status != napi_ok) {
+    napi_throw_error(env, "EINVAL", "Failed to obtain location of identity file");
+  }
+
+  ZITI_NODEJS_LOG(DEBUG, "config_file_name: %s", config_file_name);
 
   // Obtain ptr to JS callback function
   napi_value js_cb = args[1];
@@ -182,7 +201,13 @@ napi_value _ziti_init(napi_env env, const napi_callback_info info) {
   }
 
   // Light this candle!
-  int rc = ziti_init(ConfigFileName, thread_loop, on_ziti_init, addon_data);
+  NEWP(opts, ziti_options);
+  opts->config = config_file_name;
+  opts->init_cb = on_ziti_init;
+  opts->config_types = ALL_CONFIG_TYPES;
+  opts->router_keepalive = 1;
+
+  int rc = ziti_init_opts(opts, thread_loop, addon_data);
 
   status = napi_create_int32(env, rc, &jsRetval);
   if (status != napi_ok) {

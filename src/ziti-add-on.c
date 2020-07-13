@@ -79,6 +79,9 @@ napi_value Init(napi_env env, napi_value exports) {
   expose_ziti_https_request_data(env, exports);
   expose_ziti_https_request_end(env, exports);
 
+  expose_ziti_websocket_connect(env, exports);
+  expose_ziti_websocket_write(env, exports);
+
   return exports;
 }
 
