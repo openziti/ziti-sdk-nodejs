@@ -104,7 +104,6 @@ typedef struct {
   // tcp_src_t *src;
   um_http_src_t ziti_src;
   um_websocket_t ws;
-  uv_pipe_t in;
   uv_connect_t req;
   uint32_t headers_array_length;
   char* header_name[100];
