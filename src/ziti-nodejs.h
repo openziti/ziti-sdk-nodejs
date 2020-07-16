@@ -101,7 +101,6 @@ typedef struct {
   napi_threadsafe_function tsfn_on_connect;
   napi_threadsafe_function tsfn_on_data;
   napi_threadsafe_function tsfn_on_write;
-  // tcp_src_t *src;
   um_http_src_t ziti_src;
   um_websocket_t ws;
   uv_connect_t req;
