@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 #include "ziti-nodejs.h"
+#include <ziti/ziti_src.h>
 #include <string.h>
 
 // An item that will be generated here and passed into the JavaScript on_data callback
@@ -24,6 +25,8 @@ typedef struct OnWsDataItem {
   int len;
 
 } OnWsDataItem;
+
+static const unsigned int U1 = 1;
 
 /**
  * This function is responsible for calling the JavaScript 'connect' callback function 
@@ -171,39 +174,6 @@ static void CallJs_on_data(napi_env env, napi_value js_cb, void* context, void* 
 }
 
 
-static void on_alloc(uv_handle_t* handle, size_t suggested_size, uv_buf_t* buf) {
-  ZITI_NODEJS_LOG(DEBUG, "=========on_alloc: handle: %p, suggested_size: %zd", handle, suggested_size);
-  buf->base = malloc(suggested_size);
-  buf->len = suggested_size;
-}
-
-
-static void ws_write_cb(uv_write_t *req, int status) {
-  ZITI_NODEJS_LOG(DEBUG, "=========ws_write_cb: req: %p, status: %o", req, status);
-  free(req->data);
-  free(req);
-}
-
-
-static void on_in_read(uv_stream_t *h, ssize_t nread, const uv_buf_t *buf) {
-    ZITI_NODEJS_LOG(DEBUG, "=========on_in_read:  stream: %p, nread: %zd", h, nread);
-    um_websocket_t *ws = h->data;
-    ZITI_NODEJS_LOG(DEBUG, "ws: %p", ws);
-    if (nread < 0) {
-        if (nread != UV_EOF)
-            ZITI_NODEJS_LOG(ERROR, "unexpected input error: %zd(%s)", nread, uv_strerror(nread));
-        // um_websocket_close(ws, NULL);
-    } else {
-        uv_write_t *wr = malloc(sizeof(uv_write_t));
-        wr->data = buf->base;
-        uv_buf_t b;
-        b.base = buf->base;
-        b.len = nread;
-        um_websocket_write(wr, ws, &b, ws_write_cb);
-    }
-}
-
-
 static void on_connect(uv_connect_t *req, int status) {
   ZITI_NODEJS_LOG(DEBUG, "=========on_connect: req: %p, status: %d", req, status);
   um_websocket_t *ws = (um_websocket_t *) req->handle;
@@ -308,11 +278,28 @@ napi_value _ziti_websocket_connect(napi_env env, const napi_callback_info info) 
 
   ZITI_NODEJS_LOG(DEBUG, "url: %s", url);
 
+  WSAddonData* addon_data = memset(malloc(sizeof(*addon_data)), 0, sizeof(*addon_data));
+
+  struct http_parser_url url_parse = {0};
+  int rc = http_parser_parse_url(url, strlen(url), false, &url_parse);
+  if (rc != 0) {
+    napi_throw_error(env, "EINVAL", "Failed to parse url");
+  }
+
+  if (url_parse.field_set & (U1 << (unsigned int) UF_HOST)) {
+    addon_data->service = strndup(url + url_parse.field_data[UF_HOST].off, url_parse.field_data[UF_HOST].len);
+  }
+  else {
+    ZITI_NODEJS_LOG(ERROR, "invalid URL: no host");
+    napi_throw_error(env, "EINVAL", "invalid URL: no host");
+  }
+
+  ZITI_NODEJS_LOG(DEBUG, "service: %s", addon_data->service);
+
   // Obtain ptr to JS 'connect' callback function
   napi_value js_wsect_cb = args[2];
   napi_value work_name_connect;
 
-  WSAddonData* addon_data = memset(malloc(sizeof(*addon_data)), 0, sizeof(*addon_data));
 
 
   // Create a string to describe this asynchronous operation.
@@ -428,11 +415,9 @@ napi_value _ziti_websocket_connect(napi_env env, const napi_callback_info info) 
     free(header_element);
   }
 
-
-  // Crank up the websocket 
-  addon_data->src = calloc(1, sizeof *addon_data->src);
-  tcp_src_init(thread_loop, addon_data->src);
-  um_websocket_init_with_src(thread_loop, &(addon_data->ws), (um_http_src_t *) addon_data->src);
+  // Crank up the websocket
+  ziti_src_init(thread_loop, &(addon_data->ziti_src), addon_data->service, ztx );
+  um_websocket_init_with_src(thread_loop, &(addon_data->ws), &(addon_data->ziti_src));
 
   // Add Cookies to request
   for (int i = 0; i < (int)addon_data->headers_array_length; i++) {
@@ -441,15 +426,8 @@ napi_value _ziti_websocket_connect(napi_env env, const napi_callback_info info) 
     free(addon_data->header_value[i]);
   }
 
-  uv_pipe_init(thread_loop, &(addon_data->in), 0);
-  uv_pipe_open(&(addon_data->in), 0);
-  
-  // TEMP: try to disable this
-  addon_data->in.data = &addon_data->ws;
-
   addon_data->ws.data = addon_data;  // Pass our addon data around so we can eventually find our way back to the JS callback
-  uv_read_start((uv_stream_t *) &(addon_data->in), on_alloc, on_in_read);
-  int rc = um_websocket_connect(&(addon_data->req), &(addon_data->ws), url, on_connect, on_ws_read);
+  rc = um_websocket_connect(&(addon_data->req), &(addon_data->ws), url, on_connect, on_ws_read);
   if (rc != ZITI_OK) {
     napi_throw_error(env, NULL, "failure in 'ziti_conn_init");
   }

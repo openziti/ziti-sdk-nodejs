@@ -101,13 +101,13 @@ typedef struct {
   napi_threadsafe_function tsfn_on_connect;
   napi_threadsafe_function tsfn_on_data;
   napi_threadsafe_function tsfn_on_write;
-  tcp_src_t *src;
+  um_http_src_t ziti_src;
   um_websocket_t ws;
-  uv_pipe_t in;
   uv_connect_t req;
   uint32_t headers_array_length;
   char* header_name[100];
   char* header_value[100];
+  char* service;
 } WSAddonData;
 
 
