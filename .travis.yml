@@ -34,15 +34,15 @@ matrix:
           update: true
        env: NODE_VERSION="12.16.0" # node abi 72
 
-     - os: osx
-       osx_image: xcode11.2
-       compiler: gcc
-       addons:
-        homebrew:
-          packages:
-            - ninja
-          update: true
-       env: NODE_VERSION="11.15.0" # node abi 67
+    #  - os: osx
+    #    osx_image: xcode11.2
+    #    compiler: gcc
+    #    addons:
+    #     homebrew:
+    #       packages:
+    #         - ninja
+    #       update: true
+    #    env: NODE_VERSION="11.15.0" # node abi 67
 
     #  - os: osx
     #    osx_image: xcode11.2
@@ -81,14 +81,14 @@ matrix:
          apt:
           packages:
             - ninja-build
-     - os: linux
-       dist: focal
-       compiler: gcc
-       env: NODE_VERSION="11.15.0"
-       addons:
-         apt:
-          packages:
-            - ninja-build
+    #  - os: linux
+    #    dist: focal
+    #    compiler: gcc
+    #    env: NODE_VERSION="11.15.0"
+    #    addons:
+    #      apt:
+    #       packages:
+    #         - ninja-build
 
      # Windows
     #  - os: windows
