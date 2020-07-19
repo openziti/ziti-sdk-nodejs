@@ -22,7 +22,6 @@ matrix:
           update: true
        env:
         - NODE_VERSION="13.12.0" # node abi 79
-        - DO_NPM_PUBLISH=true # only attempt 'npm publish' from one job in the matrix
        
      - os: osx
        osx_image: xcode11.2
@@ -69,6 +68,7 @@ matrix:
        compiler: gcc
        env: 
          - NODE_VERSION="13.12.0"
+         - DO_NPM_PUBLISH=true # only attempt 'npm publish' from one job in the matrix
        addons:
          apt:
           packages:
