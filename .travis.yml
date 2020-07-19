@@ -56,7 +56,7 @@ matrix:
 
      # Linux
     #  - os: linux
-    #    dist: bionic
+    #    dist: focal
     #    compiler: gcc
     #    env: 
     #      - NODE_VERSION="14"
@@ -65,7 +65,7 @@ matrix:
     #       packages:
     #         - ninja-build
      - os: linux
-       dist: bionic
+       dist: focal
        compiler: gcc
        env: 
          - NODE_VERSION="13.12.0"
@@ -74,7 +74,7 @@ matrix:
           packages:
             - ninja-build
      - os: linux
-       dist: bionic
+       dist: focal
        compiler: gcc
        env: NODE_VERSION="12.16.0"
        addons:
@@ -82,7 +82,7 @@ matrix:
           packages:
             - ninja-build
      - os: linux
-       dist: bionic
+       dist: focal
        compiler: gcc
        env: NODE_VERSION="11.15.0"
        addons:
