@@ -50,6 +50,9 @@ env:
 before_install:
 - scripts/validate_tag.sh
 - source ./scripts/install_node.sh ${NODE_VERSION}
+- gcc --version
+- cmake --version
+- ninja --version
 - node --version
 - npm --version
 - COMMIT_MESSAGE=$(git show -s --format=%B $TRAVIS_COMMIT | tr -d '\n')
@@ -62,7 +65,7 @@ install:
 - git submodule update --init --recursive
 - npm run build:init
 - npm run build:c-sdk
-- npm install --build-from-source --clang=1
+- npm install --build-from-source
 - node tests/hello.js
 - npm run build:cleanup
 before_script:
