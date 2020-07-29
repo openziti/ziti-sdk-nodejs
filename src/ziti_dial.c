@@ -329,7 +329,7 @@ napi_value _ziti_dial(napi_env env, const napi_callback_info info) {
     napi_throw_error(env, NULL, "Unable to napi_create_threadsafe_function");
   }
   
-  ziti_set_timeout(ztx, 60*1000);
+  ziti_set_timeout(ztx, 5*1000);
 
   // Init a Ziti connection object, and attach our add-on data to it so we can 
   // pass context around between our callbacks, as propagate it all the way out

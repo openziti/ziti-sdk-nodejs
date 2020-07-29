@@ -150,9 +150,10 @@ napi_value _ziti_websocket_write(napi_env env, const napi_callback_info info) {
     napi_throw_error(env, NULL, "Failed to get Conn");
   }
   um_websocket_t *ws = (um_websocket_t*)js_ws;
-
+  ZITI_NODEJS_LOG(DEBUG, "========= ws: %p", ws);
 
   WSAddonData* addon_data = (WSAddonData*) ws->data;
+  ZITI_NODEJS_LOG(DEBUG, "========= &(addon_data->ws): %p", &(addon_data->ws));
 
   // Obtain data to write (we expect a Buffer)
   void*  buffer;

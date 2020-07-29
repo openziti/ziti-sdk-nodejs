@@ -33,7 +33,7 @@ typedef struct {
 typedef struct EnrollItem {
 
   unsigned char *json_salvo;
-  int len;
+  int status;
   char *err;
 
 } EnrollItem;
@@ -54,7 +54,7 @@ static void CallJs_on_enroll(napi_env env, napi_value js_cb, void* context, void
   EnrollItem* item = (EnrollItem*)data;
 
   ZITI_NODEJS_LOG(DEBUG, "item->json_salvo: %s", item->json_salvo);
-  ZITI_NODEJS_LOG(DEBUG, "item->len: %d", item->len);
+  ZITI_NODEJS_LOG(DEBUG, "item->status: %d", item->status);
   ZITI_NODEJS_LOG(DEBUG, "item->err: %s", item->err);
 
   // env and js_cb may both be NULL if Node.js is in its cleanup phase, and
@@ -69,7 +69,7 @@ static void CallJs_on_enroll(napi_env env, napi_value js_cb, void* context, void
     assert(napi_get_undefined(env, &undefined) == napi_ok);
 
     // const obj = {}
-    napi_value js_enroll_item, js_json_salvo, js_len, js_err;
+    napi_value js_enroll_item, js_json_salvo, js_status, js_err;
     assert(napi_create_object(env, &js_enroll_item) == napi_ok);
 
     // obj.identity = identity
@@ -80,9 +80,9 @@ static void CallJs_on_enroll(napi_env env, napi_value js_cb, void* context, void
       assert(napi_set_named_property(env, js_enroll_item, "identity", undefined) == napi_ok);
     }
 
-    // obj.len = len
-    assert(napi_create_int64(env, (int64_t)item->len, &js_len) == napi_ok);
-    assert(napi_set_named_property(env, js_enroll_item, "len", js_len) == napi_ok);
+    // obj.status = status
+    assert(napi_create_int64(env, (int64_t)item->status, &js_status) == napi_ok);
+    assert(napi_set_named_property(env, js_enroll_item, "status", js_status) == napi_ok);
 
     // obj.err = err
     if (NULL != item->err) {
@@ -110,25 +110,29 @@ static void CallJs_on_enroll(napi_env env, napi_value js_cb, void* context, void
 /**
  * 
  */
-void on_ziti_enroll(unsigned char *json_salvo, int len, char *err, void* ctx) {
+void on_ziti_enroll(ziti_config *cfg, int status, char *err, void *ctx) {
 
-  ZITI_NODEJS_LOG(DEBUG, "\njson_salvo: %s, \nlen: %d, \nerr: %s,\nctx: %p", json_salvo, len, err, ctx);
+  ZITI_NODEJS_LOG(DEBUG, "\nstatus: %d, \nerr: %s,\nctx: %p", status, err, ctx);
 
   AddonData* addon_data = (AddonData*)ctx;
 
   EnrollItem* item = memset(malloc(sizeof(*item)), 0, sizeof(*item));
-  if (NULL != json_salvo) {
-    item->json_salvo = calloc(1, strlen(json_salvo));
-    strcpy(item->json_salvo, json_salvo);
-  } else {
-    item->json_salvo = NULL;
-  }
-  item->len = len;
+
+  item->status = status;
+
   if (NULL != err) {
     item->err = calloc(1, strlen(err));
     strcpy(item->err, err);
   } else {
     item->err = NULL;
+  }
+
+  if (status == ZITI_OK) {
+    char output_buf[16000];
+    size_t len;
+    json_from_ziti_config(cfg, output_buf, sizeof(output_buf), &len);
+    item->json_salvo = calloc(1, strlen(output_buf));
+    strcpy(item->json_salvo, output_buf);
   }
 
   // Initiate the call into the JavaScript callback. 
@@ -212,7 +216,9 @@ napi_value _ziti_enroll(napi_env env, const napi_callback_info info) {
   uv_thread_create(&thread, (uv_thread_cb)child_thread, thread_loop);
 
   // Initiate the enrollment
-  int rc = ziti_enroll(JWTFileName, thread_loop, on_ziti_enroll, addon_data);
+  ziti_enroll_opts opts = {0};
+  opts.jwt = JWTFileName;
+  int rc = ziti_enroll(&opts, thread_loop, on_ziti_enroll, addon_data);
 
   status = napi_create_int32(env, rc, &jsRetval);
   if (status != napi_ok) {

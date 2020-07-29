@@ -27,7 +27,7 @@ enum { listMapCapacity = 50 };
 /**
  *  Number of simultaneous HTTP requests we can have active against a single host before queueing
  */
-enum { perKeyListMapCapacity = 10 };
+enum { perKeyListMapCapacity = 25 };
 
 struct ListMap* HttpsClientListMap;
 
@@ -109,11 +109,45 @@ void freeListMap(struct ListMap* collection) {
 /**
  * 
  */
+static int purge_and_replace_bad_clients(struct ListMap* clientListMap, HttpsAddonData* addon_data) {
+  int numReplaced = 0;
+  for (int i = 0; i < perKeyListMapCapacity; i++) {
+
+    HttpsClient* httpsClient = clientListMap->kvPairs[i].value;
+
+    if (httpsClient->purge) {
+
+      ZITI_NODEJS_LOG(DEBUG, "*********** purging client [%p] from slot [%d]", httpsClient, i);
+
+      // FIXME: find out why the following free causes things to eventually crash in the uv_loop
+      // free(httpsClient->scheme_host_port);
+      // free(httpsClient);
+
+      httpsClient = calloc(1, sizeof *httpsClient);
+      httpsClient->scheme_host_port = strdup(addon_data->scheme_host_port);
+      ziti_src_init(thread_loop, &(httpsClient->ziti_src), addon_data->service, ztx );
+      um_http_init_with_src(thread_loop, &(httpsClient->client), addon_data->scheme_host_port, (um_http_src_t *)&(httpsClient->ziti_src) );
+
+      clientListMap->kvPairs[i].value = httpsClient;
+
+      ZITI_NODEJS_LOG(DEBUG, "*********** new client [%p] now occupying slot [%d]", httpsClient, i);
+
+      numReplaced++;
+    }
+  }
+  return numReplaced;
+}
+
+/**
+ * 
+ */
 static void allocate_client(uv_work_t* req) {
 
-  ZITI_NODEJS_LOG(DEBUG, "entered");
+  ZITI_NODEJS_LOG(DEBUG, "allocate_client() entered, uv_work_t is: %p", req);
 
   HttpsAddonData* addon_data = (HttpsAddonData*) req->data;
+
+  ZITI_NODEJS_LOG(DEBUG, "addon_data is: %p", addon_data);
 
   // if (uv_mutex_trylock(&client_pool_lock)) {
   //   ZITI_NODEJS_LOG(ERROR, "uv_mutex_lock failure");
@@ -141,42 +175,29 @@ static void allocate_client(uv_work_t* req) {
   }
   else {
 
-    for (int i = 0; i < perKeyListMapCapacity; i++) {
-
-      HttpsClient* httpsClient = clientListMap->kvPairs[i].value;
-
-      if (httpsClient->purge) {
-
-        ZITI_NODEJS_LOG(DEBUG, "*********** purging client [%p] from slot [%d]", httpsClient, i);
-
-        free(httpsClient->scheme_host_port);
-
-        // FIXME: find out why the following free causes things to eventually crash in the uv_loop
-        // free(httpsClient);
-
-        httpsClient = calloc(1, sizeof *httpsClient);
-        httpsClient->scheme_host_port = strdup(addon_data->scheme_host_port);
-        ziti_src_init(thread_loop, &(httpsClient->ziti_src), addon_data->service, ztx );
-        um_http_init_with_src(thread_loop, &(httpsClient->client), addon_data->scheme_host_port, (um_http_src_t *)&(httpsClient->ziti_src) );
-
-        clientListMap->kvPairs[i].value = httpsClient;
-
-        ZITI_NODEJS_LOG(DEBUG, "*********** new client [%p] now occupying slot [%d]", httpsClient, i);
-      }
-    }
+    purge_and_replace_bad_clients(clientListMap, addon_data);
 
   }
 
-  // uv_mutex_unlock(&client_pool_lock);
-
   ZITI_NODEJS_LOG(DEBUG, "----------> acquiring sem");
   uv_sem_wait(&(clientListMap->sem));
+  ZITI_NODEJS_LOG(DEBUG, "----------> successfully acquired sem");
 
   addon_data->httpsClient = getHttpsClientForKey(clientListMap, addon_data->scheme_host_port);
-  ZITI_NODEJS_LOG(DEBUG, "----------> successfully acquired sem, client is: [%p]", addon_data->httpsClient);
+  ZITI_NODEJS_LOG(DEBUG, "----------> client is: [%p]", addon_data->httpsClient);
 
+  if (NULL == addon_data->httpsClient) {
+    ZITI_NODEJS_LOG(DEBUG, "----------> client is NULL, so we must purge_and_replace_bad_clients");
+    purge_and_replace_bad_clients(clientListMap, addon_data);
+
+    addon_data->httpsClient = getHttpsClientForKey(clientListMap, addon_data->scheme_host_port);
+    ZITI_NODEJS_LOG(DEBUG, "----------> client is: [%p]", addon_data->httpsClient);
+  }
+
+  if (NULL == addon_data->httpsClient) {
+    ZITI_NODEJS_LOG(DEBUG, "----------> client is NULL, so we are in an unrecoverable state!");
+  }
 }
-
 
 
 
@@ -463,7 +484,7 @@ void on_resp(um_http_resp_t *resp, void *data) {
   ZITI_NODEJS_LOG(DEBUG, "resp: %p", resp);
 
   HttpsAddonData* addon_data = (HttpsAddonData*) data;
-  ZITI_NODEJS_LOG(DEBUG, "addon_data->httpsClient is: %p", addon_data->httpsClient);
+  ZITI_NODEJS_LOG(DEBUG, "addon_data->httpsReq is: %p", addon_data->httpsReq);
 
   addon_data->httpsReq->on_resp_has_fired = true;
   addon_data->httpsReq->respCode = resp->code;
@@ -596,6 +617,8 @@ static void CallJs_on_req(napi_env env, napi_value js_cb, void* context, void* d
  */
 void on_client(uv_work_t* req, int status) {
 
+  ZITI_NODEJS_LOG(DEBUG, "on_client() entered, uv_work_t is: %p, status is: %d", req, status);
+
   HttpsAddonData* addon_data = (HttpsAddonData*) req->data;
   ZITI_NODEJS_LOG(DEBUG, "client is: [%p]", addon_data->httpsClient);
 
@@ -614,8 +637,8 @@ void on_client(uv_work_t* req, int status) {
   // Add headers to request
   for (int i = 0; i < (int)addon_data->headers_array_length; i++) {
     um_http_req_header(r, addon_data->header_name[i], addon_data->header_value[i]);
-    free(addon_data->header_name[i]);
-    free(addon_data->header_value[i]);
+    // free(addon_data->header_name[i]);
+    // free(addon_data->header_value[i]);
   }
 
   // Initiate the call into the JavaScript callback. The call into JavaScript will not have happened when this function returns, but it will be queued.
@@ -905,6 +928,8 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
   //
   addon_data->uv_req.data = addon_data;
   uv_queue_work(thread_loop, &addon_data->uv_req, allocate_client, on_client);
+
+  ZITI_NODEJS_LOG(DEBUG, "uv_queue_work of allocate_client returned req: %p", &(addon_data->uv_req));
 
   //
   // We always return zero.  The real results/status are returned via the multiple callbacks
