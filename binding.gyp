@@ -27,7 +27,7 @@
         "./src/ziti_write.c",
         "./src/ziti_websocket_connect.c",
         "./src/ziti_websocket_write.c",
-        "./src/stack_traces.c",
+        # "./src/stack_traces.c",
         "./src/utils.c",
       ],
 

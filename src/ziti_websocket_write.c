@@ -64,7 +64,7 @@ static void CallJs_on_write(napi_env env, napi_value js_cb, void* context, void*
     }
 
     // obj.status = status
-    ZITI_NODEJS_LOG(DEBUG, "status=%zo", item->status);
+    ZITI_NODEJS_LOG(DEBUG, "status=%zd", item->status);
     status = napi_create_int64(env, (int64_t)item->status, &js_status);
     if (status != napi_ok) {
       napi_throw_error(env, NULL, "Unable to napi_create_int64");
@@ -102,7 +102,7 @@ static void CallJs_on_write(napi_env env, napi_value js_cb, void* context, void*
  * 
  */
 static void on_write(uv_write_t *req, int status) {
-  ZITI_NODEJS_LOG(DEBUG, "=========ws_write_cb: req: %p, status: %o", req, status);
+  ZITI_NODEJS_LOG(DEBUG, "=========ws_write_cb: req: %p, status: %d", req, status);
 
   WSAddonData* addon_data = (WSAddonData*) req->data;
 
