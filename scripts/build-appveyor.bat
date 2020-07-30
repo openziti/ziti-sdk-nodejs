@@ -114,7 +114,7 @@ CALL cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release -DCMA
 
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 ECHO ===== calling cmake --build ============
-CALL nmake
+CALL nmake ziti
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 CALL cd ..
 CALL cd ..
