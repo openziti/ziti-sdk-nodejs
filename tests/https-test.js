@@ -18,6 +18,10 @@ const Ziti_http_request = async (url, method, headers) => {
                 url,
                 method,
                 headers,
+                // on_req callback
+                (obj) => {
+                    console.log('----------- Now inside Ziti_http_request on_req callback ----------, obj is: \n%o', obj);
+                },
                 // on_resp callback
                 (obj) => {
                     console.log('----------- Now inside Ziti_http_request on_resp callback ----------, obj is: \n%o', obj);
