@@ -39,7 +39,7 @@ typedef int *(*cond_error_t)(int);
 
 extern void init_nodejs_debug();
 
-extern int ziti_debug_level;
+extern int ziti_nodejs_debug_level;
 extern FILE *ziti_nodejs_debug_out;
 
 
@@ -67,7 +67,7 @@ enum DebugLevel {
 #define ZITI_NODEJS_LOG
 #else
 #define ZITI_NODEJS_LOG(level, fmt, ...) do { \
-if (level <= ziti_debug_level) {\
+if (level <= ziti_nodejs_debug_level) {\
     long elapsed = get_nodejs_elapsed();\
     fprintf(ziti_nodejs_debug_out, "[%9ld.%03ld] " #level "\tziti-sdk-nodejs/%s:%d %s(): " fmt "\n",\
         elapsed/1000, elapsed%1000, __FILENAME_NODEJS__, __LINE__, __func__, ##__VA_ARGS__);\

@@ -126,7 +126,7 @@ static int purge_and_replace_bad_clients(struct ListMap* clientListMap, HttpsAdd
       httpsClient = calloc(1, sizeof *httpsClient);
       httpsClient->scheme_host_port = strdup(addon_data->scheme_host_port);
       ziti_src_init(thread_loop, &(httpsClient->ziti_src), addon_data->service, ztx );
-      um_http_init_with_src(thread_loop, &(httpsClient->client), addon_data->scheme_host_port, (um_http_src_t *)&(httpsClient->ziti_src) );
+      um_http_init_with_src(thread_loop, &(httpsClient->client), addon_data->scheme_host_port, (um_src_t *)&(httpsClient->ziti_src) );
 
       clientListMap->kvPairs[i].value = httpsClient;
 
@@ -167,7 +167,7 @@ static void allocate_client(uv_work_t* req) {
       HttpsClient* httpsClient = calloc(1, sizeof *httpsClient);
       httpsClient->scheme_host_port = strdup(addon_data->scheme_host_port);
       ziti_src_init(thread_loop, &(httpsClient->ziti_src), addon_data->service, ztx );
-      um_http_init_with_src(thread_loop, &(httpsClient->client), addon_data->scheme_host_port, (um_http_src_t *)&(httpsClient->ziti_src) );
+      um_http_init_with_src(thread_loop, &(httpsClient->client), addon_data->scheme_host_port, (um_src_t *)&(httpsClient->ziti_src) );
 
       listMapInsert(clientListMap, addon_data->scheme_host_port, (void*)httpsClient);
 
@@ -703,6 +703,7 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
   if (status != napi_ok) {
     napi_throw_error(env, "EINVAL", "url is not a string");
   }
+
   // Obtain url
   char* url = calloc(1, url_len+2);
   status = napi_get_value_string_utf8(env, args[0], url, url_len+1, &result);

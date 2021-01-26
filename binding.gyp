@@ -43,14 +43,19 @@
         ["OS=='mac'", {
 
           "libraries": [ 
-            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libhttp-parser.a",
-            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/crypto/library/libmbedcrypto.a",
-            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/libmbedtls.a",
-            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/libmbedx509.a",
-            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv/libuv_a.a",
-            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv_link.a",
-            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/libuv_mbed.a",
+
+            "$(PWD)/deps/ziti-sdk-c/build/_deps/mbedtls-build/library/libmbedcrypto.a",
+            "$(PWD)/deps/ziti-sdk-c/build/_deps/mbedtls-build/library/libmbedtls.a",
+            "$(PWD)/deps/ziti-sdk-c/build/_deps/mbedtls-build/library/libmbedx509.a",
+            "$(PWD)/deps/ziti-sdk-c/build/_deps/libuv-build/libuv_a.a",
+            "$(PWD)/deps/ziti-sdk-c/build/_deps/libsodium-build/lib/libsodium.a",
+            "$(PWD)/deps/ziti-sdk-c/build/_deps/uv-mbed-build/libuv_mbed.a",
             "$(PWD)/deps/ziti-sdk-c/build/library/libziti.a",        
+
+            # "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libhttp-parser.a",
+            # "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv_link.a",
+            # "$(PWD)/deps/ziti-sdk-c/build/library/libziti.a",        
+
 
             # These are used when a local Xcode debug build is in play
             # "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/Debug/libhttp-parser.a",
@@ -62,7 +67,6 @@
             # "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/Debug/libuv_mbed.a",
             # "$(PWD)/deps/ziti-sdk-c/build/library/Debug/libziti.a",        
 
-            "$(PWD)/deps/ziti-sdk-c/build/_deps/libsodium-build/lib/libsodium.a",
           ],
 
           "xcode_settings": {

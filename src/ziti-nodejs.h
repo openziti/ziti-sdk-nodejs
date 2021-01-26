@@ -101,7 +101,7 @@ typedef struct {
   napi_threadsafe_function tsfn_on_connect;
   napi_threadsafe_function tsfn_on_data;
   napi_threadsafe_function tsfn_on_write;
-  um_http_src_t ziti_src;
+  um_src_t ziti_src;
   um_websocket_t ws;
   uv_connect_t req;
   uint32_t headers_array_length;
@@ -146,7 +146,7 @@ typedef struct HttpsReq {
 typedef struct {
   char* scheme_host_port;
   um_http_t client;
-  um_http_src_t ziti_src;
+  um_src_t ziti_src;
   bool active;
   bool purge;
 } HttpsClient;
@@ -154,7 +154,7 @@ typedef struct {
 struct HttpsAddonData {
   napi_env env;
   um_http_t client;
-  um_http_src_t ziti_src;
+  um_http_req_t ziti_src;
   napi_threadsafe_function tsfn_on_req;
   napi_threadsafe_function tsfn_on_resp;
   napi_threadsafe_function tsfn_on_resp_body;
@@ -199,7 +199,7 @@ extern void expose_ziti_websocket_connect(napi_env env, napi_value exports);
 extern void expose_ziti_websocket_write(napi_env env, napi_value exports);
 
 //
-extern int um_websocket_init_with_src (uv_loop_t *loop, um_websocket_t *ws, um_http_src_t *src);
+extern int um_websocket_init_with_src (uv_loop_t *loop, um_websocket_t *ws, um_src_t *src);
 
 
 #ifdef __cplusplus

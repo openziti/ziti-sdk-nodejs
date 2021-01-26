@@ -110,6 +110,78 @@ void on_ziti_init(ziti_context _ztx, int status, void* ctx) {
 }
 
 
+/**
+ * 
+ */
+static void on_ziti_event(ziti_context _ztx, const ziti_event_t *event) {
+  napi_status nstatus;
+
+  AddonData* addon_data = (AddonData*)ziti_app_ctx(_ztx);
+
+  switch (event->type) {
+
+    case ZitiContextEvent:
+      // Set the global ztx context variable
+      ztx = _ztx;
+
+      if (event->event.ctx.ctrl_status == ZITI_OK) {
+        const ziti_version *ctrl_ver = ziti_get_controller_version(_ztx);
+        const ziti_identity *proxy_id = ziti_get_identity(_ztx);
+        ZITI_NODEJS_LOG(INFO, "controller version = %s(%s)[%s]", ctrl_ver->version, ctrl_ver->revision, ctrl_ver->build_date);
+        ZITI_NODEJS_LOG(INFO, "identity = <%s>[%s]@%s", proxy_id->name, proxy_id->id, ziti_get_controller(_ztx));
+      }
+      else {
+          ZITI_NODEJS_LOG(ERROR, "Failed to connect to controller: %s", event->event.ctx.err);
+      }
+
+      // Initiate the call into the JavaScript callback. 
+      // The call into JavaScript will not have happened 
+      // when this function returns, but it will be queued.
+      nstatus = napi_call_threadsafe_function(
+          addon_data->tsfn,
+          (void*) (long) event->event.ctx.ctrl_status,
+          napi_tsfn_blocking);
+      if (nstatus != napi_ok) {
+        ZITI_NODEJS_LOG(ERROR, "Unable to napi_call_threadsafe_function");
+      }
+      break;
+
+    case ZitiServiceEvent:
+      if (event->event.service.removed != NULL) {
+          for (ziti_service **sp = event->event.service.removed; *sp != NULL; sp++) {
+              // service_check_cb(ztx, *sp, ZITI_SERVICE_UNAVAILABLE, app_ctx);
+          }
+      }
+
+      if (event->event.service.added != NULL) {
+          for (ziti_service **sp = event->event.service.added; *sp != NULL; sp++) {
+              // service_check_cb(ztx, *sp, ZITI_OK, app_ctx);
+          }
+      }
+      break;
+
+    case ZitiRouterEvent:
+      switch (event->event.router.status){
+        case EdgeRouterConnected:
+          ZITI_NODEJS_LOG(INFO, "ziti connected to edge router %s\nversion = %s", event->event.router.name, event->event.router.version);
+          break;
+        case EdgeRouterDisconnected:
+          ZITI_NODEJS_LOG(INFO, "ziti disconnected from edge router %s", event->event.router.name);
+          break;
+        case EdgeRouterRemoved:
+          ZITI_NODEJS_LOG(INFO, "ziti removed edge router %s", event->event.router.name);
+          break;
+        case EdgeRouterUnavailable:
+          ZITI_NODEJS_LOG(INFO, "edge router %s is not available", event->event.router.name);
+          break;
+        }
+
+    default:
+        break;
+    }
+}
+
+
 
 static void child_thread(void *data){
     uv_loop_t *thread_loop = (uv_loop_t *) data;
@@ -201,13 +273,18 @@ napi_value _ziti_init(napi_env env, const napi_callback_info info) {
   }
 
   // Light this candle!
-  NEWP(opts, ziti_options);
-  opts->config = config_file_name;
-  opts->init_cb = on_ziti_init;
-  opts->config_types = ALL_CONFIG_TYPES;
-  opts->router_keepalive = 1;
+  ziti_options *opts = calloc(1, sizeof(ziti_options));
 
-  int rc = ziti_init_opts(opts, thread_loop, addon_data);
+  opts->config = config_file_name;
+  opts->events = ZitiContextEvent|ZitiServiceEvent|ZitiRouterEvent;
+  opts->event_cb = on_ziti_event;
+  opts->refresh_interval = 60;
+  opts->router_keepalive = 10;
+  opts->app_ctx = addon_data;
+  opts->config_types = ALL_CONFIG_TYPES;
+  opts->metrics_type = INSTANT;
+
+  int rc = ziti_init_opts(opts, thread_loop);
 
   status = napi_create_int32(env, rc, &jsRetval);
   if (status != napi_ok) {
