@@ -30,9 +30,9 @@ jobs:
     strategy:
       matrix:
         config:
-          - { name: "Windows MSVC", os: windows-latest, cc: "cl", cxx: "cl" }
-          - { name: "Ubuntu gcc",  os: ubuntu-latest, cc: "gcc",   cxx: "g++" }
-          - { name: "MacOS clang", os: macos-latest,  cc: "clang", cxx: "clang++" }
+          - { name: "Win", os: windows-latest, cc: "cl",    cxx: "cl" }
+          - { name: "Lin", os: ubuntu-latest,  cc: "gcc",   cxx: "g++" }
+          - { name: "Mac", os: macos-latest,   cc: "clang", cxx: "clang++" }
         # os:
           # - ubuntu-latest
           # - macOS-latest
@@ -79,16 +79,35 @@ jobs:
       run: |
         npm --version
 
-    - name: Build (embedded) C-SDK Phase-I
+    - name: Build (embedded) C-SDK Phase-I (Linux | Mac)
       run: |
         mkdir ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
         cd ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
         cmake -G Ninja -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.config.cxx }} ..
+      if: |
+        matrix.config.os == 'ubuntu-latest' ||
+        matrix.config.os == 'macOS-latest'
 
-    - name: Build (embedded) C-SDK Phase-II
+    - name: Build (embedded) C-SDK Phase-I (Windows)
+      run: |
+        mkdir ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
+        cd ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
+        cmake -G "NMake Makefiles" -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_VERBOSE_MAKEFILE=OFF ..
+      if: matrix.config.os == 'windows-latest'
+
+    - name: Build (embedded) C-SDK Phase-II (Linux | Mac)
       run: |
         cd ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
         cmake --build . --target all
+      if: |
+        matrix.config.os == 'ubuntu-latest' ||
+        matrix.config.os == 'macOS-latest'
+
+    - name: Build (embedded) C-SDK Phase-II (Windows)
+      run: |
+        cd ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
+        nmake ziti
+      if: matrix.config.os == 'windows-latest'
 
     - name: Build NodeJS-SDK
       run: |
