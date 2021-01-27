@@ -111,7 +111,7 @@ jobs:
         cd ${{ runner.workspace }}\${{ github.event.repository.name }}\deps\ziti-sdk-c\build
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         nmake ziti
-        find . -name mbedcrypto.lib
+        dir /s mbedcrypto.lib
       if: matrix.config.os == 'windows-latest'
 
     - name: Build NodeJS-SDK
