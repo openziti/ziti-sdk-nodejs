@@ -76,11 +76,11 @@ jobs:
 
     - name: Build (embedded) C-SDK Phase-I
       run: |
-        mkdir ${{ runner.workspace }}/deps/ziti-sdk-c/build; cd ${{ runner.workspace }}/deps/ziti-sdk-c/build; cmake -G Ninja -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+        mkdir ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build; cd ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build; cmake -G Ninja -DCMAKE_POSITION_INDEPENDENT_CODE=ON
 
     - name: Build (embedded) C-SDK Phase-II
       run: |
-        cd ${{ runner.workspace }}/deps/ziti-sdk-c/build; cmake --build . --target all
+        cd ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build; cmake --build . --target all
 
     # - name: Build (embedded) C-SDK Phase-I
     #   uses: ashutoshvarma/action-cmake-build@master
