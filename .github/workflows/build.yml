@@ -1,0 +1,71 @@
+
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+    paths-ignore:
+      - 'package.json'
+      - 'CHANGELOG.md'
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+    inputs:
+      tags:
+        required: false
+        description: 'Misc tags'
+
+jobs:
+
+  # -------------------------------------------------------------------------------
+  #  Do a clean build, test, and publish
+  # -------------------------------------------------------------------------------
+  build:
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      BUILD_NUMBER: ${{ github.run_number }}
+    
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macOS-latest
+        node-version: ['12', '13', '14']
+
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GH_ACTION }}
+
+    - name: tool versions
+      run: |
+        gcc --version
+        cmake --version
+        ninja --version
+        node --version
+        npm --version
+        npm install node-gyp -g
+
+    - name: Build (embedded) C-SDK
+      run: |
+        npm run build:init
+        npm run build:c-sdk
+
+    - name: Build NodeJS-SDK
+      run: |
+        npm install --build-from-source
+
+    - name: Hello test
+      run: |
+        node tests/hello.js
+
+    - name: Hello test
+      run: |
+        npm run build:cleanup
+
+
