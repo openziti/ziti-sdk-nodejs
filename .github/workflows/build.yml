@@ -35,9 +35,13 @@ jobs:
           - { name: "MacOS clang", os: macos-latest, cc: "clang", cxx: "clang++" }
         os:
           - ubuntu-latest
-          - macOS-latest
-          - windows-latest
-        node-version: ['12', '13', '14']
+          # - macOS-latest
+          # - windows-latest
+        node-version: [
+          # '12', 
+          # '13', 
+          '14'
+        ]
 
     steps:
 
@@ -45,11 +49,9 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
+        submodules: 'recursive'
         token: ${{ secrets.ZITI_CI_GH_TOKEN }}
     
-    - name: Checkout submodules
-      run: git submodule update --init --recursive
-
     - name: Setup Ninja
       uses: ashutoshvarma/setup-ninja@master
       with:
