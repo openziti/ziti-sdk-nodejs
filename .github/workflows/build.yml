@@ -30,9 +30,9 @@ jobs:
     strategy:
       matrix:
         config:
-          - { name: "Windows MSVC", os: windows-latest, cc: "cl", cxx: "cl" }
+          # - { name: "Windows MSVC", os: windows-latest, cc: "cl", cxx: "cl" }
           - { name: "Ubuntu gcc", os: ubuntu-latest, cc: "gcc", cxx: "g++" }
-          - { name: "MacOS clang", os: macos-latest, cc: "clang", cxx: "clang++" }
+          # - { name: "MacOS clang", os: macos-latest, cc: "clang", cxx: "clang++" }
         os:
           - ubuntu-latest
           # - macOS-latest
@@ -75,22 +75,30 @@ jobs:
         npm --version
 
     - name: Build (embedded) C-SDK Phase-I
-      uses: ashutoshvarma/action-cmake-build@master
-      with:
-        build-dir: ${{ runner.workspace }}/deps/ziti-sdk-c/build
-        cc: ${{ matrix.config.cc }}
-        cxx: ${{ matrix.config.cxx }}
-        configure-options: -G Ninja -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-        build-type: Release
+      run: |
+        cd ${{ runner.workspace }}/deps/ziti-sdk-c/build; cmake -G Ninja -DCMAKE_POSITION_INDEPENDENT_CODE=ON
 
     - name: Build (embedded) C-SDK Phase-II
-      uses: ashutoshvarma/action-cmake-build@master
-      with:
-        build-dir: ${{ runner.workspace }}/deps/ziti-sdk-c/build
-        cc: ${{ matrix.config.cc }}
-        cxx: ${{ matrix.config.cxx }}
-        configure-options: --build . --target all
-        build-type: Release
+      run: |
+        cd ${{ runner.workspace }}/deps/ziti-sdk-c/build; cmake --build . --target all
+
+    # - name: Build (embedded) C-SDK Phase-I
+    #   uses: ashutoshvarma/action-cmake-build@master
+    #   with:
+    #     build-dir: ${{ runner.workspace }}/deps/ziti-sdk-c/build
+    #     cc: ${{ matrix.config.cc }}
+    #     cxx: ${{ matrix.config.cxx }}
+    #     configure-options: -G Ninja -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+    #     build-type: Release
+
+    # - name: Build (embedded) C-SDK Phase-II
+    #   uses: ashutoshvarma/action-cmake-build@master
+    #   with:
+    #     build-dir: ${{ runner.workspace }}/deps/ziti-sdk-c/build
+    #     cc: ${{ matrix.config.cc }}
+    #     cxx: ${{ matrix.config.cxx }}
+    #     configure-options: --build . --target all
+    #     build-type: Release
 
     - name: Build NodeJS-SDK
       run: |
