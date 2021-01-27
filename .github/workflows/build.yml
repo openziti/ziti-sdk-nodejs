@@ -76,7 +76,7 @@ jobs:
 
     - name: Build (embedded) C-SDK Phase-I
       run: |
-        mkdir ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build; cd ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build; cmake -G Ninja -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.config.cxx }} -DCMAKE_GENERATOR=Ninja ..
+        mkdir ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build; cd ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build; cmake -G Ninja -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.config.cxx }} -DCMAKE_GENERATOR=Ninja -DCMAKE_MAKE_PROGRAM=Ninja ..
 
     - name: Build (embedded) C-SDK Phase-II
       run: |
