@@ -29,9 +29,14 @@ jobs:
     
     strategy:
       matrix:
+        config:
+          - { name: "Windows MSVC", os: windows-latest, cc: "cl", cxx: "cl" }
+          - { name: "Ubuntu gcc", os: ubuntu-latest, cc: "gcc", cxx: "g++" }
+          - { name: "MacOS clang", os: macos-latest, cc: "clang", cxx: "clang++" }
         os:
           - ubuntu-latest
           - macOS-latest
+          - windows-latest
         node-version: ['12', '13', '14']
 
     steps:
@@ -41,6 +46,11 @@ jobs:
       with:
         fetch-depth: 0
         token: ${{ secrets.ZITI_CI_GH_TOKEN }}
+    
+    - name: Checkout submodules
+      uses: srt32/git-actions@v0.0.3
+      with:
+        args: git submodule update --init --recursive
 
     - name: Setup Ninja
       uses: ashutoshvarma/setup-ninja@master
@@ -65,9 +75,13 @@ jobs:
         npm --version
 
     - name: Build (embedded) C-SDK
-      run: |
-        npm run build:init
-        npm run build:c-sdk
+      uses: ashutoshvarma/action-cmake-build@master
+      with:
+        build-dir: ${{ runner.workspace }}/deps/ziti-sdk-c/build
+        cc: ${{ matrix.config.cc }}
+        cxx: ${{ matrix.config.cxx }}
+        configure-options: -G Ninja
+        args: cmake -G Ninja -DCMAKE_POSITION_INDEPENDENT_CODE=ON --config Release ..; cmake --build . --target all
 
     - name: Build NodeJS-SDK
       run: |
