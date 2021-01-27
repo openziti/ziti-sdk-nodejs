@@ -42,6 +42,7 @@ jobs:
           # '13', 
           '14'
         ]
+      fail-fast: false
 
     steps:
 
