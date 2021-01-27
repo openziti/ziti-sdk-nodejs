@@ -74,14 +74,23 @@ jobs:
       run: |
         npm --version
 
-    - name: Build (embedded) C-SDK
+    - name: Build (embedded) C-SDK Phase-I
       uses: ashutoshvarma/action-cmake-build@master
       with:
         build-dir: ${{ runner.workspace }}/deps/ziti-sdk-c/build
         cc: ${{ matrix.config.cc }}
         cxx: ${{ matrix.config.cxx }}
-        configure-options: -G Ninja
-        args: cmake -G Ninja -DCMAKE_POSITION_INDEPENDENT_CODE=ON --config Release ..; cmake --build . --target all
+        configure-options: -G Ninja -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+        build-type: Release
+
+    - name: Build (embedded) C-SDK Phase-II
+      uses: ashutoshvarma/action-cmake-build@master
+      with:
+        build-dir: ${{ runner.workspace }}/deps/ziti-sdk-c/build
+        cc: ${{ matrix.config.cc }}
+        cxx: ${{ matrix.config.cxx }}
+        configure-options: --build . --target all
+        build-type: Release
 
     - name: Build NodeJS-SDK
       run: |
