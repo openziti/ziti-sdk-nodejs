@@ -58,7 +58,7 @@ jobs:
 
     - name: Install Ninja (Mac)
       run: brew install ninja
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.os == 'macOS-latest'
 
     - name: gcc version
       run: |
