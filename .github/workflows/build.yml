@@ -32,7 +32,7 @@ jobs:
         config:
           # - { name: "Windows MSVC", os: windows-latest, cc: "cl", cxx: "cl" }
           - { name: "Ubuntu gcc", os: ubuntu-latest, cc: "gcc", cxx: "g++" }
-          # - { name: "MacOS clang", os: macos-latest, cc: "clang", cxx: "clang++" }
+          - { name: "MacOS clang", os: macos-latest, cc: "clang", cxx: "clang++" }
         os:
           - ubuntu-latest
           - macOS-latest
@@ -52,8 +52,13 @@ jobs:
         submodules: 'recursive'
         token: ${{ secrets.ZITI_CI_GH_TOKEN }}
     
-    - name: Install Ninja
+    - name: Install Ninja (Linux)
       run: sudo apt-get install -y ninja-build
+      if: matrix.os == 'ubuntu-latest'
+
+    - name: Install Ninja (Mac)
+      run: brew install ninja
+      if: matrix.os == 'ubuntu-latest'
 
     - name: gcc version
       run: |
