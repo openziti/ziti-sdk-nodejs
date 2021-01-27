@@ -40,7 +40,7 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-        token: ${{ secrets.GH_ACTION }}
+        token: ${{ secrets.GH_CI_KEY }}
 
     - name: tool versions
       run: |
