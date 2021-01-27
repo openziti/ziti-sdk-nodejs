@@ -43,6 +43,7 @@ jobs:
         token: ${{ secrets.ZITI_CI_GH_TOKEN }}
 
     - name: tool versions
+      uses: seanmiddleditch/gha-setup-ninja@master
       run: |
         gcc --version
         cmake --version
@@ -52,6 +53,7 @@ jobs:
         npm install node-gyp -g
 
     - name: Build (embedded) C-SDK
+      uses: seanmiddleditch/gha-setup-ninja@master
       run: |
         npm run build:init
         npm run build:c-sdk
