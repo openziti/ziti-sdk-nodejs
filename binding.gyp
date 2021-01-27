@@ -162,16 +162,24 @@
         ['OS == "linux"', {
 
           "libraries": [
-            "<(module_root_dir)/deps/ziti-sdk-c/build/library/libziti.a",
-            "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/libuv_mbed.a",            
-            "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libhttp-parser.a",
-            "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv/libuv_a.a",
-            "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv_link.a",
-            "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/libuv_mbed.a",                   
-            "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/libmbedtls.a",
-            "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/libmbedx509.a",         
-            "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/crypto/library/libmbedcrypto.a", 
+            "<(module_root_dir)/deps/ziti-sdk-c/build/_deps/mbedtls-build/library/libmbedcrypto.a",
+            "<(module_root_dir)/deps/ziti-sdk-c/build/_deps/mbedtls-build/library/libmbedtls.a",
+            "<(module_root_dir)/deps/ziti-sdk-c/build/_deps/mbedtls-build/library/libmbedx509.a",
+            "<(module_root_dir)/deps/ziti-sdk-c/build/_deps/libuv-build/libuv_a.a",
             "<(module_root_dir)/deps/ziti-sdk-c/build/_deps/libsodium-build/lib/libsodium.a",
+            "<(module_root_dir)/deps/ziti-sdk-c/build/_deps/uv-mbed-build/libuv_mbed.a",
+            "<(module_root_dir)/deps/ziti-sdk-c/build/library/libziti.a",        
+
+            # "<(module_root_dir)/deps/ziti-sdk-c/build/library/libziti.a",
+            # "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/libuv_mbed.a",            
+            # "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libhttp-parser.a",
+            # "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv/libuv_a.a",
+            # "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv_link.a",
+            # "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/libuv_mbed.a",                   
+            # "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/libmbedtls.a",
+            # "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/libmbedx509.a",         
+            # "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/crypto/library/libmbedcrypto.a", 
+            # "<(module_root_dir)/deps/ziti-sdk-c/build/_deps/libsodium-build/lib/libsodium.a",
           ],
 
           "link_settings": {

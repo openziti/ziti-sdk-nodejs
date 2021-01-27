@@ -35,7 +35,7 @@ jobs:
           # - { name: "MacOS clang", os: macos-latest, cc: "clang", cxx: "clang++" }
         os:
           - ubuntu-latest
-          # - macOS-latest
+          - macOS-latest
           # - windows-latest
         node-version: [
           # '12', 
@@ -84,6 +84,7 @@ jobs:
 
     - name: Build NodeJS-SDK
       run: |
+        cd ${{ runner.workspace }}/${{ github.event.repository.name }}
         npm install --build-from-source
 
     - name: Hello test
