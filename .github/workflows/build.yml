@@ -51,11 +51,11 @@ jobs:
     
     - name: Install Ninja (Linux)
       run: sudo apt-get install -y ninja-build
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.config.os == 'ubuntu-latest'
 
     - name: Install Ninja (Mac)
       run: brew install ninja
-      if: matrix.os == 'macOS-latest'
+      if: matrix.config.os == 'macOS-latest'
 
     - name: gcc version
       run: |
