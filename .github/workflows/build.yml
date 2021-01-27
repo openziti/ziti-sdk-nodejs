@@ -30,7 +30,7 @@ jobs:
     strategy:
       matrix:
         config:
-          # - { name: "Windows MSVC", os: windows-latest, cc: "cl", cxx: "cl" }
+          - { name: "Windows MSVC", os: windows-latest, cc: "cl", cxx: "cl" }
           - { name: "Ubuntu gcc",  os: ubuntu-latest, cc: "gcc",   cxx: "g++" }
           - { name: "MacOS clang", os: macos-latest,  cc: "clang", cxx: "clang++" }
         # os:
@@ -56,6 +56,12 @@ jobs:
     - name: Install Ninja (Mac)
       run: brew install ninja
       if: matrix.config.os == 'macOS-latest'
+
+    - name: Install Ninja (Windows)
+      uses: crazy-max/ghaction-chocolatey@v1
+      with:
+        args: install ninja
+      if: matrix.config.os == 'windows-latest'
 
     - name: gcc version
       run: |
