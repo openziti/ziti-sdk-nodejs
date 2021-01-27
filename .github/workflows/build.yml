@@ -48,13 +48,23 @@ jobs:
         # ninja version to download. Default: 1.10.0
         version: 1.10.0
 
-    - name: tool versions
+    - name: gcc version
       run: |
         gcc --version
+    - name: cmake version
+      run: |
         cmake --version
+    - name: ninja version
+      run: |
         ninja --version
+    - name: node version
+      run: |
         node --version
+    - name: npm version
+      run: |
         npm --version
+    - name: install node-gyp
+      run: |
         npm install node-gyp -g
 
     - name: Build (embedded) C-SDK
