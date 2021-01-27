@@ -31,11 +31,11 @@ jobs:
       matrix:
         config:
           # - { name: "Windows MSVC", os: windows-latest, cc: "cl", cxx: "cl" }
-          - { name: "Ubuntu gcc", os: ubuntu-latest, cc: "gcc", cxx: "g++" }
-          - { name: "MacOS clang", os: macos-latest, cc: "clang", cxx: "clang++" }
-        os:
-          - ubuntu-latest
-          - macOS-latest
+          - { name: "Ubuntu gcc",  os: ubuntu-latest, cc: "gcc",   cxx: "g++" }
+          - { name: "MacOS clang", os: macos-latest,  cc: "clang", cxx: "clang++" }
+        # os:
+          # - ubuntu-latest
+          # - macOS-latest
           # - windows-latest
         node-version: [ 12.x, 13.x, 14.x, 15.x ]
       fail-fast: false
