@@ -52,11 +52,8 @@ jobs:
         submodules: 'recursive'
         token: ${{ secrets.ZITI_CI_GH_TOKEN }}
     
-    # - name: Setup Ninja
-    #   uses: ashutoshvarma/setup-ninja@master
-    #   with:
-    #     # ninja version to download. Default: 1.10.0
-    #     version: 1.10.0
+    - name: Install Ninja
+      run: sudo apt-get install -y ninja-build
 
     - name: gcc version
       run: |
@@ -75,7 +72,6 @@ jobs:
         npm --version
 
     - name: Build (embedded) C-SDK Phase-I
-      uses: seanmiddleditch/gha-setup-ninja@master
       run: |
         mkdir ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
         cd ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
