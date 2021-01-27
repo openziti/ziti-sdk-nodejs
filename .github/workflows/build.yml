@@ -80,25 +80,7 @@ jobs:
     - name: Build (embedded) C-SDK Phase-II
       run: |
         cd ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
-        cmake --build . --target all -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.config.cxx }} 
-
-    # - name: Build (embedded) C-SDK Phase-I
-    #   uses: ashutoshvarma/action-cmake-build@master
-    #   with:
-    #     build-dir: ${{ runner.workspace }}/deps/ziti-sdk-c/build
-    #     cc: ${{ matrix.config.cc }}
-    #     cxx: ${{ matrix.config.cxx }}
-    #     configure-options: -G Ninja -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-    #     build-type: Release
-
-    # - name: Build (embedded) C-SDK Phase-II
-    #   uses: ashutoshvarma/action-cmake-build@master
-    #   with:
-    #     build-dir: ${{ runner.workspace }}/deps/ziti-sdk-c/build
-    #     cc: ${{ matrix.config.cc }}
-    #     cxx: ${{ matrix.config.cxx }}
-    #     configure-options: --build . --target all
-    #     build-type: Release
+        cmake --build . --target all
 
     - name: Build NodeJS-SDK
       run: |
@@ -108,7 +90,7 @@ jobs:
       run: |
         node tests/hello.js
 
-    - name: Hello test
+    - name: Cleanup
       run: |
         npm run build:cleanup
 
