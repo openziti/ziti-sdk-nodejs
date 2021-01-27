@@ -33,9 +33,9 @@
 
       "include_dirs": [
           "deps/ziti-sdk-c/includes",
-          "deps/ziti-sdk-c/deps/uv-mbed/include",
-          "deps/ziti-sdk-c/deps/uv-mbed/deps/http-parser",
-          "deps/ziti-sdk-c/deps/uv-mbed/deps/uv_link_t/include",
+          "deps/ziti-sdk-c/build/_deps/uv-mbed-src/include",
+          "deps/ziti-sdk-c/build/_deps/http_parser-src",
+          "deps/ziti-sdk-c/build/_deps/uv_link-src/include",
       ],
 
       "conditions": [
