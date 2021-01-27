@@ -63,9 +63,6 @@ jobs:
     - name: npm version
       run: |
         npm --version
-    - name: install node-gyp
-      run: |
-        npm install node-gyp -g
 
     - name: Build (embedded) C-SDK
       run: |
