@@ -42,8 +42,13 @@ jobs:
         fetch-depth: 0
         token: ${{ secrets.ZITI_CI_GH_TOKEN }}
 
+    - name: Setup Ninja
+      uses: ashutoshvarma/setup-ninja@master
+      with:
+        # ninja version to download. Default: 1.10.0
+        version: 1.10.0
+
     - name: tool versions
-      uses: seanmiddleditch/gha-setup-ninja@master
       run: |
         gcc --version
         cmake --version
@@ -53,7 +58,6 @@ jobs:
         npm install node-gyp -g
 
     - name: Build (embedded) C-SDK
-      uses: seanmiddleditch/gha-setup-ninja@master
       run: |
         npm run build:init
         npm run build:c-sdk
