@@ -92,6 +92,7 @@ jobs:
       run: |
         mkdir ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
         cd ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         cmake -G "NMake Makefiles" -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_VERBOSE_MAKEFILE=OFF ..
       if: matrix.config.os == 'windows-latest'
 
@@ -106,6 +107,7 @@ jobs:
     - name: Build (embedded) C-SDK Phase-II (Windows)
       run: |
         cd ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         nmake ziti
       if: matrix.config.os == 'windows-latest'
 
