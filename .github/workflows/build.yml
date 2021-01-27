@@ -89,6 +89,7 @@ jobs:
         matrix.config.os == 'macOS-latest'
 
     - name: Build (embedded) C-SDK Phase-I (Windows)
+      shell: cmd
       run: |
         mkdir ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
         cd ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
@@ -105,6 +106,7 @@ jobs:
         matrix.config.os == 'macOS-latest'
 
     - name: Build (embedded) C-SDK Phase-II (Windows)
+      shell: cmd
       run: |
         cd ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
