@@ -76,7 +76,7 @@ jobs:
 
     - name: Build (embedded) C-SDK Phase-I
       run: |
-        mkdir cd ${{ runner.workspace }}/deps/ziti-sdk-c/build; cd ${{ runner.workspace }}/deps/ziti-sdk-c/build; cmake -G Ninja -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+        mkdir ${{ runner.workspace }}/deps/ziti-sdk-c/build; cd ${{ runner.workspace }}/deps/ziti-sdk-c/build; cmake -G Ninja -DCMAKE_POSITION_INDEPENDENT_CODE=ON
 
     - name: Build (embedded) C-SDK Phase-II
       run: |
