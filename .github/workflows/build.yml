@@ -96,9 +96,10 @@ jobs:
     - name: Build (embedded) C-SDK Phase-I (Windows)
       run: |
         vcpkg install openssl-windows:x64-windows
-        cmake -E make_directory ${{runner.workspace}}/build
-        cmake -S ${{ github.workspace }} -B ${{runner.workspace}}/build -DUSE_OPENSSL=on -DOPENSSL_ROOT_DIR=C:\vcpkg\packages\openssl_x64-windows
-        cmake --build ${{runner.workspace}}/build
+        cmake -E make_directory ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
+        cmake -S ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c -B ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build -DUSE_OPENSSL=on -DOPENSSL_ROOT_DIR=C:\vcpkg\packages\openssl_x64-windows
+        cmake --build ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
+      if: matrix.config.os == 'windows-latest'
 
     # - name: Build (embedded) C-SDK Phase-I (Windows)
     #   shell: cmd
