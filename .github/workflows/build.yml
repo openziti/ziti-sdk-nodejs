@@ -121,8 +121,8 @@ jobs:
         cd ${{ runner.workspace }}\${{ github.event.repository.name }}\deps\ziti-sdk-c\build
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         nmake ziti
-        powershell "(Get-Childitem mbedcrypto.lib -Recurse -ErrorAction SilentlyContinue).Fullname"
-        powershell "Get-Location"
+        powershell "(Get-Childitem libsodium.lib -Recurse -ErrorAction SilentlyContinue).Fullname"
+        powershell "(Get-Childitem sodium.lib -Recurse -ErrorAction SilentlyContinue).Fullname"
       if: matrix.config.os == 'windows-latest'
 
 
