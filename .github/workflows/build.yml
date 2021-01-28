@@ -140,6 +140,7 @@ jobs:
 
     - name: Hello test
       run: |
+        ldd /home/runner/work/ziti-sdk-nodejs/ziti-sdk-nodejs/build/Release/node-v83-linux-x64/ziti_sdk_nodejs.node
         node tests/hello.js
 
     - name: Cleanup
