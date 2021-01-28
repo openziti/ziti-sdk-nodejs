@@ -145,7 +145,7 @@
             # "<(cd)/deps/ziti-sdk-c/build/_deps/mbedtls-build/library/mbedtls.lib",
             # "<(cd)/deps/ziti-sdk-c/build/_deps/mbedtls-build/library/mbedx509.lib",
             "<(cd)/deps/ziti-sdk-c/build/_deps/libuv-build/uv_a.lib",
-            "<(cd)/deps/ziti-sdk-c/build/_deps/libsodium-build/lib/libsodium.lib",
+            "<(cd)/deps/ziti-sdk-c/build/_deps/libsodium-src/x64/Release/v142/static/libsodium.lib
             "<(cd)/deps/ziti-sdk-c/build/_deps/uv-mbed-build/uv_mbed.lib",
             "<(cd)/deps/ziti-sdk-c/build/library/ziti.lib",
 
