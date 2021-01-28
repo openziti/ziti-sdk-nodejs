@@ -115,10 +115,27 @@ jobs:
         powershell "Get-Location"
       if: matrix.config.os == 'windows-latest'
 
+    - name: Temp1
+      shell: cmd
+      run: |
+        cd ${{ runner.workspace }}/${{ github.event.repository.name }}
+        echo ------ cd is below -----
+        echo %cd%
+        echo ------ cd is above -----
+      if: matrix.config.os == 'windows-latest'
+
+    - name: Temp2
+      shell: cmd
+      run: |
+        cd ${{ runner.workspace }}\${{ github.event.repository.name }}
+        echo ------ cd is below -----
+        echo %cd%
+        echo ------ cd is above -----
+      if: matrix.config.os == 'windows-latest'
+
     - name: Build NodeJS-SDK
       run: |
         cd ${{ runner.workspace }}/${{ github.event.repository.name }}
-        pwd
         npm install --build-from-source
 
     - name: Hello test
