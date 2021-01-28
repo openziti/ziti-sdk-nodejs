@@ -30,7 +30,7 @@ jobs:
     strategy:
       matrix:
         config:
-          - { name: "Win", os: windows-latest, cc: "cl",    cxx: "cl" }
+          # - { name: "Win", os: windows-latest, cc: "cl",    cxx: "cl" }
           - { name: "Lnx", os: ubuntu-latest,  cc: "gcc",   cxx: "g++" }
           - { name: "Mac", os: macos-latest,   cc: "clang", cxx: "clang++" }
         node-version: [ 12.x, 13.x, 14.x, 15.x ]
