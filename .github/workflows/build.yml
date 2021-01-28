@@ -31,12 +31,8 @@ jobs:
       matrix:
         config:
           - { name: "Win", os: windows-latest, cc: "cl",    cxx: "cl" }
-          - { name: "Lin", os: ubuntu-latest,  cc: "gcc",   cxx: "g++" }
+          - { name: "Lnx", os: ubuntu-latest,  cc: "gcc",   cxx: "g++" }
           - { name: "Mac", os: macos-latest,   cc: "clang", cxx: "clang++" }
-        # os:
-          # - ubuntu-latest
-          # - macOS-latest
-          # - windows-latest
         node-version: [ 12.x, 13.x, 14.x, 15.x ]
       fail-fast: false
 
@@ -79,6 +75,9 @@ jobs:
       run: |
         npm --version
 
+
+    # Generate makefiles for embedded C-SDK
+
     - name: Build (embedded) C-SDK Phase-I (Linux)
       run: |
         mkdir ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
@@ -102,8 +101,11 @@ jobs:
         cd ${{ runner.workspace }}\${{ github.event.repository.name }}\deps\ziti-sdk-c\build
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         vcpkg install openssl-windows:x64-windows
-        cmake -G "NMake Makefiles" -DUSE_OPENSSL=on -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_VERBOSE_MAKEFILE=OFF -DOPENSSL_ROOT_DIR="D:/vcpkg/installed/x64-windows-static" ..
+        cmake -G "NMake Makefiles" -DUSE_OPENSSL=on -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_VERBOSE_MAKEFILE=OFF -DOPENSSL_ROOT_DIR=C:\vcpkg\packages\openssl_x64-windows ..
       if: matrix.config.os == 'windows-latest'
+
+
+      # Compile embedded C-SDK
 
     - name: Build (embedded) C-SDK Phase-II (Linux | Mac)
       run: |
@@ -140,6 +142,9 @@ jobs:
         echo %cd%
         echo ------ cd is above -----
       if: matrix.config.os == 'windows-latest'
+
+
+    #
 
     - name: Build NodeJS-SDK
       run: |
