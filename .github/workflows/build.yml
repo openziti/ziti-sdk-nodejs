@@ -112,6 +112,7 @@ jobs:
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         nmake ziti
         powershell "(Get-Childitem mbedcrypto.lib -Recurse -ErrorAction SilentlyContinue).Fullname"
+        powershell "Get-Location"
       if: matrix.config.os == 'windows-latest'
 
     - name: Build NodeJS-SDK
