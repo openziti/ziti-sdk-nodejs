@@ -76,7 +76,6 @@ jobs:
         npm --version
 
 
-    # Generate makefiles for embedded C-SDK
 
     - name: Build (embedded) C-SDK Phase-I (Linux)
       run: |
@@ -95,17 +94,23 @@ jobs:
         matrix.config.os == 'macOS-latest'
 
     - name: Build (embedded) C-SDK Phase-I (Windows)
-      shell: cmd
       run: |
-        mkdir ${{ runner.workspace }}\${{ github.event.repository.name }}\deps\ziti-sdk-c\build
-        cd ${{ runner.workspace }}\${{ github.event.repository.name }}\deps\ziti-sdk-c\build
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         vcpkg install openssl-windows:x64-windows
-        cmake -G "NMake Makefiles" -DUSE_OPENSSL=on -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_VERBOSE_MAKEFILE=OFF -DOPENSSL_ROOT_DIR=C:\vcpkg\packages\openssl_x64-windows ..
-      if: matrix.config.os == 'windows-latest'
+        cmake -E make_directory ${{runner.workspace}}/build
+        cmake -S ${{ github.workspace }} -B ${{runner.workspace}}/build -DUSE_OPENSSL=on -DOPENSSL_ROOT_DIR=C:\vcpkg\packages\openssl_x64-windows
+        cmake --build ${{runner.workspace}}/build
+
+    # - name: Build (embedded) C-SDK Phase-I (Windows)
+    #   shell: cmd
+    #   run: |
+    #     mkdir ${{ runner.workspace }}\${{ github.event.repository.name }}\deps\ziti-sdk-c\build
+    #     cd ${{ runner.workspace }}\${{ github.event.repository.name }}\deps\ziti-sdk-c\build
+    #     call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+    #     vcpkg install openssl-windows:x64-windows
+    #     cmake -G "NMake Makefiles" -DUSE_OPENSSL=on -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_VERBOSE_MAKEFILE=OFF -DOPENSSL_ROOT_DIR=C:\vcpkg\packages\openssl_x64-windows ..
+    #   if: matrix.config.os == 'windows-latest'
 
 
-      # Compile embedded C-SDK
 
     - name: Build (embedded) C-SDK Phase-II (Linux | Mac)
       run: |
@@ -115,14 +120,14 @@ jobs:
         matrix.config.os == 'ubuntu-latest' ||
         matrix.config.os == 'macOS-latest'
 
-    - name: Build (embedded) C-SDK Phase-II (Windows)
-      shell: cmd
-      run: |
-        cd ${{ runner.workspace }}\${{ github.event.repository.name }}\deps\ziti-sdk-c\build
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-        nmake ziti
-        powershell "(Get-Childitem uv_mbed.lib -Recurse -ErrorAction SilentlyContinue).Fullname"
-      if: matrix.config.os == 'windows-latest'
+    # - name: Build (embedded) C-SDK Phase-II (Windows)
+    #   shell: cmd
+    #   run: |
+    #     cd ${{ runner.workspace }}\${{ github.event.repository.name }}\deps\ziti-sdk-c\build
+    #     call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+    #     nmake ziti
+    #     powershell "(Get-Childitem uv_mbed.lib -Recurse -ErrorAction SilentlyContinue).Fullname"
+    #   if: matrix.config.os == 'windows-latest'
 
 
     #
