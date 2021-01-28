@@ -118,6 +118,7 @@ jobs:
     - name: Build NodeJS-SDK
       run: |
         cd ${{ runner.workspace }}/${{ github.event.repository.name }}
+        pwd
         npm install --build-from-source
 
     - name: Hello test
