@@ -69,6 +69,10 @@ jobs:
       run: |
         echo "## branch name is: ${{ steps.extract_branch.outputs.branch }}"
 
+    - name: Get current date
+      id: date
+      run: echo "name=$(date)" >> $GITHUB_ENV
+
     - name: Install Ninja (Linux)
       run: sudo apt-get install -y ninja-build
       if: matrix.config.os == 'ubuntu-latest'
@@ -159,7 +163,9 @@ jobs:
     - name: Build NodeJS-SDK (Linux | Mac)
       run: |
         cd ${{ runner.workspace }}/${{ github.event.repository.name }}
-        npm install --build-from-source --BUILD_DATE="`date`" --ZITI_BRANCH="`git branch --show-current`" --ZITI_COMMIT="`git rev-parse --short HEAD`" --ZITI_VERSION="`jq -r .version package.json`" --ZITI_OS="$RUNNER_OS" --ZITI_ARCH="x64"
+        npm install --build-from-source --BUILD_DATE="$BUILD_DATE" --ZITI_BRANCH="`git branch --show-current`" --ZITI_COMMIT="`git rev-parse --short HEAD`" --ZITI_VERSION="`jq -r .version package.json`" --ZITI_OS="$RUNNER_OS" --ZITI_ARCH="x64"
+      env:
+        BUILD_DATE: ${{ steps.date.outputs.date }}
       if: |
         matrix.config.os == 'ubuntu-latest' ||
         matrix.config.os == 'macOS-latest'
