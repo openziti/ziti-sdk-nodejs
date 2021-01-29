@@ -18,6 +18,18 @@ limitations under the License.
 #include "utils.h"
 
 
+#if !defined(BUILD_DATE)
+#define BUILD_DATE unknown
+#endif
+
+#if !defined(ZITI_OS)
+#define ZITI_OS unknown
+#endif
+
+#if !defined(ZITI_ARCH)
+#define ZITI_ARCH unknown
+#endif
+
 #if !defined(ZITI_VERSION)
 #define ZITI_VERSION unknown
 #endif

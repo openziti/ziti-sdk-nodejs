@@ -14,6 +14,15 @@
 
   "targets": [
     {
+      'defines': [
+        'BUILD_DATE=<@(BUILD_DATE)',
+        'ZITI_BRANCH=<@(ZITI_BRANCH)',
+        'ZITI_COMMIT=<@(ZITI_COMMIT)',
+        'ZITI_VERSION=<@(ZITI_VERSION)',
+        'ZITI_OS=<@(ZITI_OS)',
+        'ZITI_ARCH=<@(ZITI_ARCH)',
+      ],
+
       "target_name": "<(module_name)",
 
       "product_dir": "<(module_path)",

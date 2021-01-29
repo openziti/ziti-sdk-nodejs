@@ -33,7 +33,7 @@ jobs:
           # - { name: "Win", os: windows-latest, cc: "cl",    cxx: "cl" }
           - { name: "Lnx", os: ubuntu-latest,  cc: "gcc",   cxx: "g++" }
           - { name: "Mac", os: macos-latest,   cc: "clang", cxx: "clang++" }
-        node: [ '11', '12', '13', '14', '15' ]
+        node: [ '11', '12', '13', '14' ]
         architecture:
           - x64
       fail-fast: false
@@ -68,6 +68,10 @@ jobs:
       shell: bash
       run: |
         echo "## branch name is: ${{ steps.extract_branch.outputs.branch }}"
+
+    - name: Get current date
+      id: date
+      run: echo "##[set-output name=date;]$(echo $(date))"
 
     - name: Install Ninja (Linux)
       run: sudo apt-get install -y ninja-build
@@ -159,7 +163,9 @@ jobs:
     - name: Build NodeJS-SDK (Linux | Mac)
       run: |
         cd ${{ runner.workspace }}/${{ github.event.repository.name }}
-        npm install --build-from-source
+        npm install --build-from-source --BUILD_DATE="$BUILD_DATE" --ZITI_BRANCH="`git branch --show-current`" --ZITI_COMMIT="`git rev-parse --short HEAD`" --ZITI_VERSION="`jq -r .version package.json`" --ZITI_OS="$RUNNER_OS" --ZITI_ARCH="x64"
+      env:
+        BUILD_DATE: ${{ steps.date.outputs.date }}
       if: |
         matrix.config.os == 'ubuntu-latest' ||
         matrix.config.os == 'macOS-latest'
