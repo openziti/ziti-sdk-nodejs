@@ -77,7 +77,7 @@ jobs:
 
     - name: install node-gyp
       run: |
-        npm install node-gyp -g
+        sudo npm install node-gyp -g
 
 
     - name: Build (embedded) C-SDK Phase-I (Linux)
