@@ -185,21 +185,17 @@ jobs:
         ./node_modules/.bin/node-pre-gyp package unpublish publish
         sleep 5
       if: |
-        ${{ steps.extract_branch.outputs.branch }} == 'main' ||
-        ${{ steps.extract_branch.outputs.branch }} == 'master'
+        steps.extract_branch.outputs.branch == 'main' ||
+        steps.extract_branch.outputs.branch == 'master'
 
     - name: Install Binary
       run: |
         npm install --fallback-to-build=false > /dev/null
         sleep 5
       if: |
-        ${{ steps.extract_branch.outputs.branch }} == 'main' ||
-        ${{ steps.extract_branch.outputs.branch }} == 'master'
+        steps.extract_branch.outputs.branch == 'main' ||
+        steps.extract_branch.outputs.branch == 'master'
 
     - name: Fetch Binary info
       run: |
         ./node_modules/.bin/node-pre-gyp info
-      if: |
-        ${{ steps.extract_branch.outputs.branch }} == 'main' ||
-        ${{ steps.extract_branch.outputs.branch }} == 'master'
-
