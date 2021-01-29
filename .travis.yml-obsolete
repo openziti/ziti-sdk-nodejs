@@ -15,6 +15,16 @@ matrix:
         - ninja
         update: true
     env:
+    - NODE_VERSION="14.15.3"
+  - os: osx
+    osx_image: xcode11.2
+    compiler: gcc
+    addons:
+      homebrew:
+        packages:
+        - ninja
+        update: true
+    env:
     - NODE_VERSION="13.12.0"
   - os: osx
     osx_image: xcode11.2

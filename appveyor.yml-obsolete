@@ -20,6 +20,8 @@
       platform: x64
     - nodejs_version: 13
       platform: x64
+    - nodejs_version: 14
+      platform: x64
   
  install:
    - scripts\build-appveyor.bat

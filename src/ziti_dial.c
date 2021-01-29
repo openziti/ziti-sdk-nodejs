@@ -155,12 +155,12 @@ ssize_t on_data(ziti_connection conn, uint8_t *buf, ssize_t len) {
       ZITI_NODEJS_LOG(DEBUG, "skipping ziti_close on ZITI_EOF due to isWebsocket=true");
       return 0;
     } else {
-      ziti_close(&conn);
+      ziti_close(conn, NULL);
       return 0;
     }
   }
   else if (len < 0) {
-    ziti_close(&conn);
+    ziti_close(conn, NULL);
     return 0;
   }
   else {

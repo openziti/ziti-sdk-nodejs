@@ -3,7 +3,13 @@
 
   # The "cd" variable is passed in, and used, only during Windows builds
   'variables': {
-    'cd%': '.'
+    'cd%': '.',
+
+    # node v0.6.x doesn't give us its build variables,
+    # but on Unix it was only possible to use the system OpenSSL library,
+    # so default the variable to "true", v0.8.x node and up will overwrite it.
+    'node_shared_openssl%': 'true'
+
 	},
 
   "targets": [
@@ -33,24 +39,41 @@
 
       "include_dirs": [
           "deps/ziti-sdk-c/includes",
-          "deps/ziti-sdk-c/deps/uv-mbed/include",
-          "deps/ziti-sdk-c/deps/uv-mbed/deps/http-parser",
-          "deps/ziti-sdk-c/deps/uv-mbed/deps/uv_link_t/include",
+          "deps/ziti-sdk-c/build/_deps/uv-mbed-src/include",
+          "deps/ziti-sdk-c/build/_deps/http_parser-src",
+          "deps/ziti-sdk-c/build/_deps/uv_link-src/include",
       ],
 
       "conditions": [
 
+        ['node_shared_openssl=="false"', {
+          # so when "node_shared_openssl" is "false", then OpenSSL has been
+          # bundled into the node executable. So we need to include the same
+          # header files that were used when building node.
+          'include_dirs': [
+            '<(node_root_dir)/deps/openssl/openssl/include'
+          ],
+          "conditions" : [
+            ["target_arch=='ia32'", {
+              "include_dirs": [ "<(node_root_dir)/deps/openssl/config/piii" ]
+            }],
+            ["target_arch=='x64'", {
+              "include_dirs": [ "<(node_root_dir)/deps/openssl/config/k8" ]
+            }],
+            ["target_arch=='arm'", {
+              "include_dirs": [ "<(node_root_dir)/deps/openssl/config/arm" ]
+            }]
+          ]
+        }],
+
         ["OS=='mac'", {
 
           "libraries": [ 
-            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libhttp-parser.a",
-            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/crypto/library/libmbedcrypto.a",
-            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/libmbedtls.a",
-            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/libmbedx509.a",
-            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv/libuv_a.a",
-            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv_link.a",
-            "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/libuv_mbed.a",
+            "$(PWD)/deps/ziti-sdk-c/build/_deps/libuv-build/libuv_a.a",
+            "$(PWD)/deps/ziti-sdk-c/build/_deps/libsodium-build/lib/libsodium.a",
+            "$(PWD)/deps/ziti-sdk-c/build/_deps/uv-mbed-build/libuv_mbed.a",
             "$(PWD)/deps/ziti-sdk-c/build/library/libziti.a",        
+
 
             # These are used when a local Xcode debug build is in play
             # "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/Debug/libhttp-parser.a",
@@ -62,7 +85,6 @@
             # "$(PWD)/deps/ziti-sdk-c/build/deps/uv-mbed/Debug/libuv_mbed.a",
             # "$(PWD)/deps/ziti-sdk-c/build/library/Debug/libziti.a",        
 
-            "$(PWD)/deps/ziti-sdk-c/build/_deps/libsodium-build/lib/libsodium.a",
           ],
 
           "xcode_settings": {
@@ -119,15 +141,23 @@
             "deps/ziti-sdk-c/deps/uv-mbed/include"
           ],
           "libraries": [
-            "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/http-parser.lib",
-            "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/crypto/library/mbedcrypto.lib",
-            "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/mbedtls.lib",
-            "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/mbedx509.lib",
-            "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv/uv_a.lib",
-            "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/uv_link.lib",
-            "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/uv_mbed.lib",
-            "<(cd)/deps/ziti-sdk-c/build/library/ziti.lib",
+            # "<(cd)/deps/ziti-sdk-c/build/_deps/mbedtls-build/library/mbedcrypto.lib",
+            # "<(cd)/deps/ziti-sdk-c/build/_deps/mbedtls-build/library/mbedtls.lib",
+            # "<(cd)/deps/ziti-sdk-c/build/_deps/mbedtls-build/library/mbedx509.lib",
+            "<(cd)/deps/ziti-sdk-c/build/_deps/libuv-build/uv_a.lib",
             "<(cd)/deps/ziti-sdk-c/build/_deps/libsodium-src/x64/Release/v142/static/libsodium.lib",
+            "<(cd)/deps/ziti-sdk-c/build/_deps/uv-mbed-build/uv_mbed.lib",
+            "<(cd)/deps/ziti-sdk-c/build/library/ziti.lib",
+
+            # "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/http-parser.lib",
+            # "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/crypto/library/mbedcrypto.lib",
+            # "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/mbedtls.lib",
+            # "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/mbedx509.lib",
+            # "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv/uv_a.lib",
+            # "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/uv_link.lib",
+            # "<(cd)/deps/ziti-sdk-c/build/deps/uv-mbed/uv_mbed.lib",
+            # "<(cd)/deps/ziti-sdk-c/build/library/ziti.lib",
+            # "<(cd)/deps/ziti-sdk-c/build/_deps/libsodium-src/x64/Release/v142/static/libsodium.lib",
             "-lws2_32.lib",
             "-lIphlpapi.lib",
             "-lpsapi",
@@ -158,16 +188,10 @@
         ['OS == "linux"', {
 
           "libraries": [
-            "<(module_root_dir)/deps/ziti-sdk-c/build/library/libziti.a",
-            "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/libuv_mbed.a",            
-            "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libhttp-parser.a",
-            "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv/libuv_a.a",
-            "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/libuv_link.a",
-            "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/libuv_mbed.a",                   
-            "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/libmbedtls.a",
-            "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/library/libmbedx509.a",         
-            "<(module_root_dir)/deps/ziti-sdk-c/build/deps/uv-mbed/deps/mbedtls/crypto/library/libmbedcrypto.a", 
+            "<(module_root_dir)/deps/ziti-sdk-c/build/_deps/libuv-build/libuv_a.a",
+            "<(module_root_dir)/deps/ziti-sdk-c/build/_deps/uv-mbed-build/libuv_mbed.a",
             "<(module_root_dir)/deps/ziti-sdk-c/build/_deps/libsodium-build/lib/libsodium.a",
+            "<(module_root_dir)/deps/ziti-sdk-c/build/library/libziti.a",        
           ],
 
           "link_settings": {
