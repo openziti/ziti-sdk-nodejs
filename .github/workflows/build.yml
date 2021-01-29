@@ -204,6 +204,8 @@ jobs:
     - name: NPM Publish
       run: |
         npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       if: |
         (matrix.config.os == 'ubuntu-latest' && matrix.node == '14') &&
         (steps.extract_branch.outputs.branch == 'main' || steps.extract_branch.outputs.branch == 'master')
