@@ -156,4 +156,31 @@ jobs:
       run: |
         npm run build:cleanup
 
+    - name: Extract branch name
+      shell: bash
+      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+      id: extract_branch
+
+    - name: Publish Binary
+      run: |
+        node-pre-gyp package unpublish publish
+        sleep 5
+      if: |
+        ${{ steps.extract_branch.outputs.branch }} == 'main' ||
+        ${{ steps.extract_branch.outputs.branch }} == 'master'
+
+    - name: Install Binary
+      run: |
+        npm install --fallback-to-build=false > /dev/null
+        sleep 5
+      if: |
+        ${{ steps.extract_branch.outputs.branch }} == 'main' ||
+        ${{ steps.extract_branch.outputs.branch }} == 'master'
+
+    - name: Fetch Binary info
+      run: |
+        node-pre-gyp info
+      if: |
+        ${{ steps.extract_branch.outputs.branch }} == 'main' ||
+        ${{ steps.extract_branch.outputs.branch }} == 'master'
 
