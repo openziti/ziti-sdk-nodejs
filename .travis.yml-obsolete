@@ -1,0 +1,99 @@
+language: c
+compiler:
+- gcc
+git:
+  depth: 10
+  submodules: false
+matrix:
+  include:
+  - os: osx
+    osx_image: xcode11.2
+    compiler: gcc
+    addons:
+      homebrew:
+        packages:
+        - ninja
+        update: true
+    env:
+    - NODE_VERSION="14.15.3"
+  - os: osx
+    osx_image: xcode11.2
+    compiler: gcc
+    addons:
+      homebrew:
+        packages:
+        - ninja
+        update: true
+    env:
+    - NODE_VERSION="13.12.0"
+  - os: osx
+    osx_image: xcode11.2
+    compiler: gcc
+    addons:
+      homebrew:
+        packages:
+        - ninja
+        update: true
+    env: NODE_VERSION="12.16.0"
+  - os: linux
+    dist: focal
+    compiler: gcc
+    env:
+    - NODE_VERSION="13.12.0"
+    - DO_NPM_PUBLISH=true
+    addons:
+      apt:
+        packages:
+        - ninja-build
+  - os: linux
+    dist: focal
+    compiler: gcc
+    env: NODE_VERSION="12.16.0"
+    addons:
+      apt:
+        packages:
+        - ninja-build
+env:
+  global:
+  - secure: vWZAh/2fhkmV5p5uW7CIqb3KsrXsQhDuiK75hQiRJWBozSHXF1Um/oFmPbT2MGi4Zgo8YZBprrb0lECRFrtzEsTjrhYbCtCGzv4Y1hiIZ0dPl0+vU1yTzHO9FMYohWagXFQNDrWfaLBCIttuNIrH55TiX4Ud9gEoQOFisuyFg/3lE/wKPL55/jaPH9KjpiN1Lv5yFUw4FwYRD57cL6FXOf/9tCkMVmVWU1mHElkkjqhanYqXWkVJ6w/hicu+hsOqV00/jtWJGXLv4lGJLQFgVTHUZDvuXShlIfIyixbsLbS0HbXmHBmxHxl5uAFGeMV8iq+Xf8AHBFQ0IL2T00Grw/8BomIK/Tit+1FDVeIt5yLw4UQP0z6T4Ds6w7jQZDNfaCrTEYbaDi9NF4wWOsoJWTFDSbuYRXwWJ3/r5BSPjPSPv4rDIMQxCt67vYgzOtmwtzkDTi1BciaDzfI+ZWjAIAszGCRsPEfZLdprYnc3SQQ1KTHiR3QZNSq9WElojhRU7+99LeXMYjVW1awb3u9DAx1+u8zSS2xAzOobNjj7lE47M71wIOoFf//kPjwHTdPhzGmi276nFOjqN7h3b45/mOLFngeyjvOlb3nkGx/3oZGt5pZZJaZFZuRxDndO1FP3DoJUozVVvt/91aXGNoUPz7QrtM+BwtLEUVhcTQvnAvg=
+  - secure: jqUCQcHHFWnOcAgbYs/iSk25Jjel+CLcfdsuoFeIHFGpB0c3TaDk9TK1rQGOjnpc7Qd04dGxJEg5PM3qEhvVoZD+CGVVuSDJSmwwMGnDDl72B9vpmG2sFJg95rvQevju6pgWK5FdqgqvzWwoEaAk9rugcKFa6pB73O9ByA5zVC+G5J0CfcUmgVWs2NWuBGuBiUgBvSEblsYvIF7ic5gUd8DNhF36BdkR0GpJFFG1ZQYtujmp8bqdLJW14Ob7yeOj6cID+iOjkAFdMD94BBQLqiPbQuso3waa/Pp884VAhNZRWMtefEL7hPfFuRI5UbRLwPa+R0IDi69/rgAx5AMAIFYUUxrZSR0LcMwLZCQx0ThETxHtYih7Gsi/2I5sGHzf8jeD5aVFPZVGXb2uOKBF2iDidvzyLfdCxpyECmaTXBPBmy7mGYmQvKltzMTvlVM3czZaXhs6FWCB8sSmFox1zI25Rr/CZCy+c1qRJ8Wi64R3FSv1MBxnGBfT5iSilv7X5cK0WlmoGnb6NCgmP1oDwzaHyUT1sOhRPg8CJeOf601xr03oVE8VvsgTOMVTumgDMjLtrS60iV7SKK3fzdcl0nGyBDjdAC8pApZSunVMGZNc0DSrokl9U57LWHqSosEQvXf89jOxfyao+ynn/t6RtmJabH5hTDy0ViqRljYvfII=
+before_install:
+- scripts/validate_tag.sh
+- source ./scripts/install_node.sh ${NODE_VERSION}
+- gcc --version
+- cmake --version
+- ninja --version
+- node --version
+- npm --version
+- COMMIT_MESSAGE=$(git show -s --format=%B $TRAVIS_COMMIT | tr -d '\n')
+- export PATH=./node_modules/.bin/:$PATH
+- npm install node-gyp -g
+- PUBLISH_BINARY=false
+- if [[ $TRAVIS_BRANCH == `git describe --tags --always HEAD` ]]; then PUBLISH_BINARY=true; fi;
+- if test "${COMMIT_MESSAGE#*'[publish binary]'}" != "$COMMIT_MESSAGE"; then PUBLISH_BINARY=true; fi;
+install:
+- git submodule update --init --recursive
+- npm run build:init
+- npm run build:c-sdk
+- npm install --build-from-source
+- node tests/hello.js
+- npm run build:cleanup
+before_script:
+- if [[ $PUBLISH_BINARY == true ]]; then node-pre-gyp package publish && sleep 10; fi;
+script:
+- sleep 5
+- INSTALL_RESULT=0
+- if [[ $PUBLISH_BINARY == true ]]; then INSTALL_RESULT=$(npm install --fallback-to-build=false > /dev/null)$? || true; fi;
+- if [[ $INSTALL_RESULT != 0 ]]; then echo "returned $INSTALL_RESULT";node-pre-gyp unpublish;false; fi
+after_success:
+- node-pre-gyp info
+deploy:
+  provider: npm
+  edge: true
+  email: curt.tudor@netfoundry.io
+  api_key:
+    secure: u9BzMSC2P7P/MwQxS6pHneEXSnVRUovzwjgiKEpT1pUvkqTNyUjfycdFVLuH98WKS9V5B+ipOolV1oon66ohl55Gc0I6C9uWtVPPOxNv3l2tq8NsDnO+9y1fZYfjInGxoeBua83HTb1GT4w7TaT2HxHMXqfYtISKlcwdTTFxDRZnnmq2CH/m2/HQM5lwnD1A8ptrP9CDfnnfb1IS06YgxBkT31sK5Z2m7zTBx/qNdCyIKDBVnZwzHE7COzUljrycgUAsLVdep3vs0UcaIB33Nyja+T3GKNagPQQUE47KYFEZ4omaFJJsF1JCwqxzZzjqH2uGe9xtJfDbAfgkouV2hc4EcdIsgy1Bmj1fSLS3U+HHRviouhNnSKXD8t4X/xiactcyydBrFiA+25B9lpftCvQ8l/UP8fqz9Uo5iy4ZklnUq8OPhM/AhAhke86DHagi7LwEYRHMzd9d1Z61YgYqduMbe7MUmZZY9HPADFdnMOs48ZzEuQvyEaK0JHjXhhmuLHLIyYbn52QlAppEJ35iJJls+3h4PxtVTHjk3r8pNs50SMp7iHJObGL1drMCAosSq+f5r/cEa/KRgwHpv+OIs2aZtqiV2DlygB39aNWMTIx0l4YAhpgnNYgWEbi/6YqHE/uKm5Rh7ExoygZEhDa/IYl79iyroS/teYWi9KK4qso=
+  on:
+    tags: true
+    branch: master
+    condition: "$DO_NPM_PUBLISH = true"
