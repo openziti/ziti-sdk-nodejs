@@ -75,10 +75,6 @@ jobs:
       run: |
         npm --version
 
-    - name: install node-gyp
-      run: |
-        sudo npm install node-gyp -g
-
 
     - name: Build (embedded) C-SDK Phase-I (Linux)
       run: |
@@ -161,12 +157,18 @@ jobs:
 
     - name: Extract branch name
       shell: bash
-      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+      run: |
+        echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
       id: extract_branch
+
+    - name: Print branch name
+      shell: bash
+      run: |
+        echo "## branch name is: ${{ steps.extract_branch.outputs.branch }}"
 
     - name: Publish Binary
       run: |
-        node-pre-gyp package unpublish publish
+        ./node_modules/.bin/node-pre-gyp package unpublish publish
         sleep 5
       if: |
         ${{ steps.extract_branch.outputs.branch }} == 'main' ||
@@ -182,7 +184,7 @@ jobs:
 
     - name: Fetch Binary info
       run: |
-        node-pre-gyp info
+        ./node_modules/.bin/node-pre-gyp info
       if: |
         ${{ steps.extract_branch.outputs.branch }} == 'main' ||
         ${{ steps.extract_branch.outputs.branch }} == 'master'
