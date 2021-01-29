@@ -52,6 +52,16 @@ jobs:
         submodules: 'recursive'
         token: ${{ secrets.ZITI_CI_GH_TOKEN }}
     
+    - name: Extract branch name
+      shell: bash
+      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+      id: extract_branch
+
+    - name: Print branch name
+      shell: bash
+      run: |
+        echo "## branch name is: ${{ steps.extract_branch.outputs.branch }}"
+
     - name: Install Ninja (Linux)
       run: sudo apt-get install -y ninja-build
       if: matrix.config.os == 'ubuntu-latest'
@@ -162,16 +172,6 @@ jobs:
       run: |
         npm run build:cleanup
 
-    - name: Extract branch name
-      uses: nelonoel/branch-name@v1.0.1
-      run: |
-        echo ${BRANCH_NAME}
-      id: extract_branch
-
-    - name: Print branch name
-      shell: bash
-      run: |
-        echo "## branch name is: ${{ steps.extract_branch.outputs.branch }}"
 
     - name: Publish Binary
       run: |
