@@ -38,6 +38,13 @@ jobs:
 
     steps:
 
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
     - name: Checkout
       uses: actions/checkout@v2
       with:
@@ -156,9 +163,9 @@ jobs:
         npm run build:cleanup
 
     - name: Extract branch name
-      shell: bash
+      uses: nelonoel/branch-name@v1.0.1
       run: |
-        echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        echo ${BRANCH_NAME}
       id: extract_branch
 
     - name: Print branch name
