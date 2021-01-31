@@ -1,10 +1,14 @@
-# ziti-sdk-nodejs
+`ziti-sdk-nodejs`
+=====================
+
 A NodeJS-based SDK for delivering secure applications over a [Ziti Network](https://ziti.dev)
 
-[![NPM](https://nodei.co/npm/ziti-sdk-nodejs.png?downloads=true&downloadRank=true)](https://nodei.co/npm/ziti-sdk-nodejs/)
+<img src="https://ziti.dev/wp-content/uploads/2020/02/ziti.dev_.logo_.png" width="200" />
 
-## Status 
-[![Build Status](https://travis-ci.org/netfoundry/ziti-sdk-nodejs.svg?branch=master)](https://travis-ci.org/netfoundry/ziti-sdk-nodejs)
+Learn about Ziti at [ziti.dev](https://ziti.dev)
+
+
+[![Build Status](https://github.com/openziti/ziti-sdk-nodejs/workflows/Build/badge.svg?branch=main)]()
 [![npm](https://img.shields.io/npm/v/ziti-sdk-nodejs.svg)](https://www.npmjs.com/package/ziti-sdk-nodejs)
 [![npm](https://img.shields.io/npm/l/ziti-sdk-nodejs.svg)](https://www.npmjs.com/package/ziti-sdk-nodejs)
 [![npm](https://img.shields.io/npm/dm/ziti-sdk-nodejs.svg)](https://www.npmjs.com/package/ziti-sdk-nodejs)
@@ -12,7 +16,7 @@ A NodeJS-based SDK for delivering secure applications over a [Ziti Network](http
 
 ## Supported platforms
 
-The `ziti-sdk-nodejs` module works with Node.js v11.x, v12.x.
+The `ziti-sdk-nodejs` module works with Node.js v11.x, v12.x, v13.x, v14.x
 
 Binaries for most Node versions and platforms are provided by default via [node-pre-gyp](https://github.com/mapbox/node-pre-gyp).
 
