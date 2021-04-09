@@ -128,10 +128,9 @@ void on_ziti_enroll(ziti_config *cfg, int status, char *err, void *ctx) {
   }
 
   if (status == ZITI_OK) {
-    char output_buf[16000];
     size_t len;
-    json_from_ziti_config(cfg, output_buf, sizeof(output_buf), &len);
-    item->json_salvo = calloc(1, strlen(output_buf));
+    char *output_buf = ziti_config_to_json(cfg, 0, &len);
+    item->json_salvo = calloc(1, len);
     strcpy(item->json_salvo, output_buf);
   }
 
