@@ -31,7 +31,7 @@ jobs:
       matrix:
         config:
           # - { name: "Win", os: windows-latest, cc: "cl",    cxx: "cl" }
-          - { name: "Lnx", os: ubuntu-latest,  cc: "gcc",   cxx: "g++" }
+          - { name: "Lnx", os: ubuntu-16.04,   cc: "gcc",   cxx: "g++" }
           - { name: "Mac", os: macos-latest,   cc: "clang", cxx: "clang++" }
         node: [ '11', '12', '13', '14' ]
         architecture:
