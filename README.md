@@ -27,25 +27,25 @@ Binaries for most Node versions and platforms are provided by default via [node-
 ``` js
 var ziti = require('ziti-sdk-nodejs');
 
-const NF_init = async (identity) => {
+const ziti_init = async (identity) => {
     return new Promise((resolve) => {
-        ziti.NF_init(identity, () => {
+        ziti.ziti_init(identity, () => {
             resolve();
         });
     });
 };
 
-const NF_service_available = (service) => {
+const ziti_service_available = (service) => {
     return new Promise((resolve) => {
-        ziti.NF_service_available(service, (status) => {
+        ziti.ziti_service_available(service, (status) => {
             resolve(status);
         });
     });
 };
 
-function NF_dial(service) {
+function ziti_dial(service) {
     return new Promise((resolve, reject) => {
-        ziti.NF_dial(
+        ziti.ziti_dial(
             service,
             (conn) => {
                 resolve(conn);
@@ -57,9 +57,9 @@ function NF_dial(service) {
     });
 }
 
-const NF_write = (conn, data) => {
+const ziti_write = (conn, data) => {
     return new Promise((resolve) => {
-        ziti.NF_write(conn, data, () => {
+        ziti.ziti_write(conn, data, () => {
             resolve();
         });
     });
@@ -67,19 +67,19 @@ const NF_write = (conn, data) => {
 
 (async () => {
 
-    await NF_init(LOCATION_OF_IDENTITY_FILE);
+    await ziti_init(LOCATION_OF_IDENTITY_FILE);
 
-    let status = await NF_service_available(YOUR_SERVICE_NAME);
+    let status = await ziti_service_available(YOUR_SERVICE_NAME);
 
     if (status === 0) {
 
-        const conn = await NF_dial(YOUR_SERVICE_NAME);
+        const conn = await ziti_dial(YOUR_SERVICE_NAME);
 
         let data = SOME_KIND_OF_DATA;
 
         let buffer = Buffer.from(data);
 
-        await NF_write(conn, buffer);
+        await ziti_write(conn, buffer);
 
         ...etc
     }
