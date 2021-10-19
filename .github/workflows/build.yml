@@ -31,7 +31,7 @@ jobs:
       matrix:
         config:
           # - { name: "Win", os: windows-latest, cc: "cl",    cxx: "cl" }
-          - { name: "Lnx", os: ubuntu-16.04,   cc: "gcc",   cxx: "g++" }
+          - { name: "Lnx", os: ubuntu-18.04,   cc: "gcc",   cxx: "g++" }
           - { name: "Mac", os: macos-latest,   cc: "clang", cxx: "clang++" }
         node: [ '11', '12', '13', '14' ]
         architecture:
@@ -75,7 +75,7 @@ jobs:
 
     - name: Install Ninja (Linux)
       run: sudo apt-get install -y ninja-build
-      if: matrix.config.os == 'ubuntu-16.04'
+      if: matrix.config.os == 'ubuntu-18.04'
 
     - name: Install Ninja (Mac)
       run: brew install ninja
@@ -110,7 +110,7 @@ jobs:
         cd ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
         cmake -G Ninja -DUSE_OPENSSL=on -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.config.cxx }} ..
       if: |
-        matrix.config.os == 'ubuntu-16.04'
+        matrix.config.os == 'ubuntu-18.04'
 
     - name: Build (embedded) C-SDK Phase-I ( Mac)
       run: |
@@ -145,7 +145,7 @@ jobs:
         cd ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
         cmake --build . --target all
       if: |
-        matrix.config.os == 'ubuntu-16.04' ||
+        matrix.config.os == 'ubuntu-18.04' ||
         matrix.config.os == 'macOS-latest'
 
     # - name: Build (embedded) C-SDK Phase-II (Windows)
@@ -167,7 +167,7 @@ jobs:
       env:
         BUILD_DATE: ${{ steps.date.outputs.date }}
       if: |
-        matrix.config.os == 'ubuntu-16.04' ||
+        matrix.config.os == 'ubuntu-18.04' ||
         matrix.config.os == 'macOS-latest'
 
     - name: Build NodeJS-SDK (Windows)
@@ -197,7 +197,7 @@ jobs:
         ./node_modules/.bin/node-pre-gyp package unpublish publish
         sleep 5
       if: |
-        steps.extract_branch.outputs.branch == 'main' && matrix.config.os == 'ubuntu-16.04' && matrix.node != '14'
+        steps.extract_branch.outputs.branch == 'main' && matrix.config.os == 'ubuntu-18.04' && matrix.node != '14'
 
     - name: Install Binary
       run: |
@@ -215,4 +215,4 @@ jobs:
       with:
         token: ${{ secrets.NPM_TOKEN }}
       if: |
-        matrix.config.os == 'ubuntu-16.04' && matrix.node == '14' && steps.extract_branch.outputs.branch == 'main'
+        matrix.config.os == 'ubuntu-18.04' && matrix.node == '14' && steps.extract_branch.outputs.branch == 'main'
