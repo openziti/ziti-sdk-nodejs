@@ -174,6 +174,9 @@ static void on_ziti_event(ziti_context _ztx, const ziti_event_t *event) {
         case EdgeRouterUnavailable:
           ZITI_NODEJS_LOG(INFO, "edge router %s is not available", event->event.router.name);
           break;
+        case EdgeRouterAdded:
+          ZITI_NODEJS_LOG(INFO, "edge router %s was added", event->event.router.name);
+          break;
         }
 
     default:
