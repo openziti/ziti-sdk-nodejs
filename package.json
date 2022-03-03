@@ -51,6 +51,6 @@
     "aws-sdk": "^2.823.0"
   },
   "dependencies": {
-    "@mapbox/node-pre-gyp": "^1.0.5"
+    "@mapbox/node-pre-gyp": "^1.0.8"
   }
 }
