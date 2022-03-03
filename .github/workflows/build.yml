@@ -33,8 +33,9 @@ jobs:
           # - { name: "Win", os: windows-latest, cc: "cl",    cxx: "cl" }
           - { name: "Lnx", os: ubuntu-18.04,   cc: "gcc",   cxx: "g++" }
           - { name: "Mac", os: macos-latest,   cc: "clang", cxx: "clang++" }
-        node: [ '11', '12', '13', '14' ]
+        node: [ '12', '13', '14' ]
         architecture:
+          - arm64
           - x64
       fail-fast: false
 

@@ -1,7 +1,7 @@
 {
   "name": "ziti-sdk-nodejs",
   "description": "A NodeJS-based SDK for delivering secure applications over a Ziti Network",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "main": "./lib/ziti",
   "scripts": {
     "build": "npm run build:init; npm run build:c-sdk; npm install --build-from-source --clang=1",
@@ -51,6 +51,6 @@
     "aws-sdk": "^2.823.0"
   },
   "dependencies": {
-    "@mapbox/node-pre-gyp": "^1.0.5"
+    "@mapbox/node-pre-gyp": "^1.0.8"
   }
 }
