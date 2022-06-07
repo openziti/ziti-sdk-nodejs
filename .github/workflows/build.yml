@@ -215,5 +215,6 @@ jobs:
       uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
+        access: public
       if: |
         matrix.config.os == 'ubuntu-18.04' && matrix.node == '14' && steps.extract_branch.outputs.branch == 'main'
