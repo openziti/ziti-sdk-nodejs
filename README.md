@@ -1,24 +1,53 @@
-`ziti-sdk-nodejs`
-=====================
+<p align="center" width="100%">
+<a href="https://openziti.io"><img src="ziti.png" width="100"></a>
+</p>
 
-A NodeJS-based SDK for delivering secure applications over a [Ziti Network](https://ziti.dev)
+<p align="center">
+    <b>
+    <a>@openziti/ziti-sdk-nodejs</a>
+    <br>
+    <br>
+    <b>
+    A NodeJS-based SDK for delivering secure applications over a [Ziti Network](https://openziti.io)
+    <br>
+    <br>
+    <b>Part of the <a href="https://openziti.io/about">OpenZiti</a> ecosystem</b>
+</p>
 
-<img src="https://ziti.dev/wp-content/uploads/2020/02/ziti.dev_.logo_.png" width="200" />
+<p align="center">
+    <br>
+    <b>Are you interested in knowing how to easily embed programmable, high performance, zero trust networking into your NodeJS app, on any internet connection, without VPNs?
+    <br>
+    Learn more about our <a href="https://openziti.io/about">OpenZiti</a> project.</b>
+    <br>
+    </p>
 
-Learn about Ziti at [ziti.dev](https://ziti.dev)
-
-
+---
 [![Build Status](https://github.com/openziti/ziti-sdk-nodejs/workflows/Build/badge.svg?branch=main)]()
-[![npm](https://img.shields.io/npm/v/ziti-sdk-nodejs.svg)](https://www.npmjs.com/package/ziti-sdk-nodejs)
-[![npm](https://img.shields.io/npm/l/ziti-sdk-nodejs.svg)](https://www.npmjs.com/package/ziti-sdk-nodejs)
-[![npm](https://img.shields.io/npm/dm/ziti-sdk-nodejs.svg)](https://www.npmjs.com/package/ziti-sdk-nodejs)
+[![Issues](https://img.shields.io/github/issues-raw/openziti/ziti-sdk-nodejs)]()
+[![npm version](https://badge.fury.io/js/@openziti%2Fziti-sdk-nodejs.svg)](https://badge.fury.io/js/@openziti%2Fziti-sdk-nodejs)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![LOC](https://img.shields.io/tokei/lines/github/openziti/ziti-sdk-nodejs)]()
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=rounded)](CONTRIBUTING.md)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](CODE_OF_CONDUCT.md)
+
+---
 
 
-## Supported platforms
+
+
+# Supported platforms
 
 The `ziti-sdk-nodejs` module works with Node.js v11.x, v12.x, v13.x, v14.x
 
 Binaries for most Node versions and platforms are provided by default via [node-pre-gyp](https://github.com/mapbox/node-pre-gyp).
+
+# Installing
+
+``` js
+npm i @openziti/ziti-sdk-nodejs
+```
+
 
 # Usage
 
@@ -123,4 +152,4 @@ for tracking bugs and feature requests and have limited bandwidth to address the
 - Participate in discussion on [Discourse](https://openziti.discourse.group/)
 
 
-Copyright&copy; 2018-2020. NetFoundry, Inc.
+Copyright&copy;  NetFoundry, Inc.
