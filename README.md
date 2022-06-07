@@ -25,7 +25,7 @@
 ---
 [![Build Status](https://github.com/openziti/ziti-sdk-nodejs/workflows/Build/badge.svg?branch=main)]()
 [![Issues](https://img.shields.io/github/issues-raw/openziti/ziti-sdk-nodejs)]()
-[![npm version](https://badge.fury.io/js/@openziti%2Fziti-sdk-nodejs.svg)](https://badge.fury.io/js/@openziti%2Fziti-sdk-nodejs)
+[![npm version](https://badge.fury.io/js/@openziti%2Fziti-sdk-nodejs.svg)](https://badge.fury.io/js/@openziti%2Fziti-sdk-nodejs.svg)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![LOC](https://img.shields.io/tokei/lines/github/openziti/ziti-sdk-nodejs)]()
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=rounded)](CONTRIBUTING.md)
