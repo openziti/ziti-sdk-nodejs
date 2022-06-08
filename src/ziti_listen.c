@@ -17,19 +17,19 @@ limitations under the License.
 #include "ziti-nodejs.h"
 #include <string.h>
 
-// An item that will be generated here and passed into the JavaScript on_data callback
-typedef struct OnDataItem {
+// An item that will be generated here and passed into the JavaScript on_client callback
+typedef struct OnClientItem {
 
-  uint8_t *buf;
-  int len;
+  int status;
+  ziti_client_ctx *clt_ctx;
 
-} OnDataItem;
+} OnClientItem;
 
 /**
- * This function is responsible for calling the JavaScript 'connect' callback function 
- * that was specified when the ziti_dial(...) was called from JavaScript.
+ * This function is responsible for calling the JavaScript 'on_listen' callback function 
+ * that was specified when the ziti_listen(...) was called from JavaScript.
  */
-static void CallJs_on_connect(napi_env env, napi_value js_cb, void* context, void* data) {
+static void CallJs_on_listen(napi_env env, napi_value js_cb, void* context, void* data) {
   napi_status status;
 
   // This parameter is not used.
@@ -88,32 +88,52 @@ static void CallJs_on_connect(napi_env env, napi_value js_cb, void* context, voi
  * This function is responsible for calling the JavaScript 'data' callback function 
  * that was specified when the ziti_dial(...) was called from JavaScript.
  */
-static void CallJs_on_data(napi_env env, napi_value js_cb, void* context, void* data) {
+static void CallJs_on_client(napi_env env, napi_value js_cb, void* context, void* data) {
   napi_status status;
 
   // This parameter is not used.
   (void) context;
 
-  // Retrieve the OnDataItem created by the worker thread.
-  OnDataItem* item = (OnDataItem*)data;
+  // Retrieve the OnClientItem created by the worker thread.
+  OnClientItem* item = (OnClientItem*)data;
 
   // env and js_cb may both be NULL if Node.js is in its cleanup phase, and
   // items are left over from earlier thread-safe calls from the worker thread.
   // When env is NULL, we simply skip over the call into Javascript and free the
   // items.
   if (env != NULL) {
+
     napi_value undefined, js_buffer;
     void* result_data;
 
-    // Convert the buffer to a napi_value.
-    status = napi_create_buffer_copy(env,
-                              item->len,
-                              (const void*)item->buf,
-                              (void**)&result_data,
-                              &js_buffer);
-    if (status != napi_ok) {
-      napi_throw_error(env, NULL, "Unable to napi_create_buffer_copy");
+    // const obj = {}
+    napi_value js_client_item, js_clt_ctx, js_status;
+    int rc = napi_create_object(env, &js_client_item);
+    if (rc != napi_ok) {
+      napi_throw_error(env, "EINVAL", "failure to create object");
     }
+
+    // obj.code = status
+    rc = napi_create_int32(env, item->status, &js_status);
+    if (rc != napi_ok) {
+      napi_throw_error(env, "EINVAL", "failure to create resp.status");
+    }
+    rc = napi_set_named_property(env, js_client_item, "status", js_status);
+    if (rc != napi_ok) {
+      napi_throw_error(env, "EINVAL", "failure to set named property status");
+    }
+    ZITI_NODEJS_LOG(DEBUG, "status: %zd", item->status);
+
+    // obj.clt_ctx = clt_ctx
+    napi_create_int64(env, (int64_t)item->clt_ctx, &js_clt_ctx);
+    if (rc != napi_ok) {
+      napi_throw_error(env, "EINVAL", "failure to create resp.req");
+    }
+    rc = napi_set_named_property(env, js_client_item, "clt_ctx", js_clt_ctx);
+    if (rc != napi_ok) {
+      napi_throw_error(env, "EINVAL", "failure to set named property req");
+    }
+    ZITI_NODEJS_LOG(DEBUG, "js_clt_ctx: %p", item->clt_ctx);
 
     // Retrieve the JavaScript `undefined` value so we can use it as the `this`
     // value of the JavaScript function call.
@@ -128,7 +148,7 @@ static void CallJs_on_data(napi_env env, napi_value js_cb, void* context, void* 
         undefined,
         js_cb,
         1,
-        &js_buffer,
+        &js_client_item,
         NULL
       );
     if (status != napi_ok) {
@@ -141,67 +161,63 @@ static void CallJs_on_data(napi_env env, napi_value js_cb, void* context, void* 
 
 
 /**
- * This function is the callback invoked by the C-SDK when data arrives on the connection.
+ * 
  */
-ssize_t on_data(ziti_connection conn, uint8_t *buf, ssize_t len) {
+void on_client(ziti_connection serv, ziti_connection client, int status, ziti_client_ctx *clt_ctx) {
+
   napi_status status;
 
-  ConnAddonData* addon_data = (ConnAddonData*) ziti_conn_data(conn);
+  ListenAddonData* addon_data = (ListenAddonData*) ziti_conn_data(conn);
 
-  ZITI_NODEJS_LOG(INFO, "len: %zd, conn: %p", len, conn);
+  ZITI_NODEJS_LOG(INFO, "on_client: client: %p, status: %d, conn: %p", client, status);
 
-  if (len == ZITI_EOF) {
-    if (addon_data->isWebsocket) {
-      ZITI_NODEJS_LOG(DEBUG, "skipping ziti_close on ZITI_EOF due to isWebsocket=true");
-      return 0;
-    } else {
-      ziti_close(conn, NULL);
-      return 0;
+  if (status == ZITI_OK) {
+    const char *source_identity = clt_ctx->caller_id;
+    if (source_identity != NULL) {
+        ZITI_NODEJS_LOG(DEBUG, "on_client: incoming connection from '%s'\n", source_identity );
     }
-  }
-  else if (len < 0) {
-    ziti_close(conn, NULL);
-    return 0;
-  }
-  else {
-
-    OnDataItem* item = memset(malloc(sizeof(*item)), 0, sizeof(*item));
-    item->buf = buf;
-    item->buf = calloc(1, len);
-    memcpy(item->buf, buf, len);
-    item->len = len;
-
-    // if (addon_data->isWebsocket) {
-    //   hexDump("on_data", item->buf, item->len);
-    // }
-
-    // Initiate the call into the JavaScript callback. 
-    // The call into JavaScript will not have happened 
-    // when this function returns, but it will be queued.
-    status = napi_call_threadsafe_function(
-        addon_data->tsfn_on_data,        
-        item,  // Send the data we received from the service on over to the JS callback
-        napi_tsfn_blocking);
-    if (status != napi_ok) {
-      ZITI_NODEJS_LOG(ERROR, "Unable to napi_call_threadsafe_function");
+    else {
+        ZITI_NODEJS_LOG(DEBUG, "on_client: incoming connection from unidentified client" );
+    }
+    if (clt_ctx->app_data != NULL) {
+        ZITI_NODEJS_LOG(DEBUG, "on_client: got app data '%.*s'!\n", (int) clt_ctx->app_data_sz, clt_ctx->app_data );
     }
 
-    return len;
+    ziti_accept(client, on_client_connect, on_client_data);
+  
+  } else {
+    fprintf(stderr, "failed to accept client: %s(%d)\n", ziti_errorstr(status), status);
+    ZITI_NODEJS_LOG(DEBUG, "on_client: failed to accept client: %s(%d)\n", ziti_errorstr(status), status );
   }
+
+  OnClientItem* item = memset(malloc(sizeof(*item)), 0, sizeof(*item));
+  item->status = status;
+  item->clt_ctx = clt_ctx;
+
+  // Initiate the call into the JavaScript callback. 
+  // The call into JavaScript will not have happened 
+  // when this function returns, but it will be queued.
+  status = napi_call_threadsafe_function(
+      addon_data->tsfn_on_client,        
+      item,  // Send the client ctx we received over to the JS callback
+      napi_tsfn_blocking);
+  if (status != napi_ok) {
+    ZITI_NODEJS_LOG(ERROR, "Unable to napi_call_threadsafe_function");
+  }
+  
 }
 
 
 /**
  * 
  */
-void on_connect(ziti_connection conn, int status) {
+void on_listen(ziti_connection conn, int status) {
   napi_status nstatus;
 
-
-  ConnAddonData* addon_data = (ConnAddonData*) ziti_conn_data(conn);
+  ListenAddonData* addon_data = (ListenAddonData*) ziti_conn_data(conn);
   ziti_connection* the_conn = NULL;
 
-  ZITI_NODEJS_LOG(DEBUG, "conn: %p, status: %o, isWebsocket: %o", conn, status, addon_data->isWebsocket);
+  ZITI_NODEJS_LOG(DEBUG, "on_listen: conn: %p, status: %o", conn, status );
 
   if (status == ZITI_OK) {
 
@@ -211,35 +227,35 @@ void on_connect(ziti_connection conn, int status) {
     *the_conn = conn;
   }
 
-    ZITI_NODEJS_LOG(DEBUG, "the_conn: %p", the_conn);
+  ZITI_NODEJS_LOG(DEBUG, "the_conn: %p", the_conn);
 
   // Initiate the call into the JavaScript callback. 
   // The call into JavaScript will not have happened 
   // when this function returns, but it will be queued.
   nstatus = napi_call_threadsafe_function(
-      addon_data->tsfn_on_connect,
+      addon_data->tsfn_on_listen,
       the_conn,   // Send the ziti_connection over to the JS callback
       napi_tsfn_blocking);
-    if (nstatus != napi_ok) {
-      ZITI_NODEJS_LOG(ERROR, "Unable to napi_call_threadsafe_function");
-    }
+  if (nstatus != napi_ok) {
+    ZITI_NODEJS_LOG(ERROR, "Unable to napi_call_threadsafe_function");
+  }
 }
 
 
 /**
  * 
  */
-napi_value _ziti_dial(napi_env env, const napi_callback_info info) {
+napi_value _ziti_listen(napi_env env, const napi_callback_info info) {
 
   napi_status status;
-  size_t argc = 4;
-  napi_value args[4];
+  size_t argc = 3;
+  napi_value args[3];
   status = napi_get_cb_info(env, info, &argc, args, NULL, NULL);
   if (status != napi_ok) {
     napi_throw_error(env, NULL, "Failed to parse arguments");
   }
 
-  if (argc < 4) {
+  if (argc < 3) {
     napi_throw_error(env, "EINVAL", "Too few arguments");
     return NULL;
   }
@@ -253,28 +269,18 @@ napi_value _ziti_dial(napi_env env, const napi_callback_info info) {
   }
   ZITI_NODEJS_LOG(DEBUG, "ServiceName: %s", ServiceName);
 
-  // Obtain isWebsocket flag
-  bool isWebsocket = false;
-  status = napi_get_value_bool(env, args[1], &isWebsocket);
-  if (status != napi_ok) {
-    napi_throw_error(env, NULL, "Failed to get isWebsocket flag");
-  }
-  ZITI_NODEJS_LOG(DEBUG, "isWebsocket is: %o", isWebsocket);
+  // Obtain ptr to JS 'on_listen' callback function
+  napi_value js_on_listen = args[1];
+  napi_value work_name_listen;
 
-  // Obtain ptr to JS 'connect' callback function
-  napi_value js_connect_cb = args[2];
-  napi_value work_name_connect;
-
-  ConnAddonData* addon_data = memset(malloc(sizeof(*addon_data)), 0, sizeof(*addon_data));
-
-  addon_data->isWebsocket = isWebsocket;
+  ListenAddonData* addon_data = memset(malloc(sizeof(*addon_data)), 0, sizeof(*addon_data));
 
   // Create a string to describe this asynchronous operation.
   status = napi_create_string_utf8(
     env,
-    "N-API on_connect",
+    "N-API on_listen",
     NAPI_AUTO_LENGTH,
-    &work_name_connect);
+    &work_name_listen);
   if (status != napi_ok) {
     napi_throw_error(env, NULL, "Unable to napi_create_string_utf8");
   }
@@ -283,30 +289,30 @@ napi_value _ziti_dial(napi_env env, const napi_callback_info info) {
   // which we can call from a worker thread.
   status = napi_create_threadsafe_function(
       env,
-      js_connect_cb,
+      js_on_listen,
       NULL,
-      work_name_connect,
+      work_name_listen,
       0,
       1,
       NULL,
       NULL,
       NULL,
-      CallJs_on_connect,
-      &(addon_data->tsfn_on_connect));
+      CallJs_on_listen,
+      &(addon_data->tsfn_on_listen));
   if (status != napi_ok) {
     napi_throw_error(env, NULL, "Unable to napi_create_threadsafe_function");
   }
 
-  // Obtain ptr to JS 'data' callback function
-  napi_value js_data_cb = args[3];
-  napi_value work_name_data;
+  // Obtain ptr to JS 'on_client' callback function
+  napi_value js_on_client = args[2];
+  napi_value work_name_client;
 
   // Create a string to describe this asynchronous operation.
   status = napi_create_string_utf8(
     env,
-    "N-API on_data",
+    "N-API on_client",
     NAPI_AUTO_LENGTH,
-    &work_name_data);
+    &work_name_client);
   if (status != napi_ok) {
     napi_throw_error(env, NULL, "Unable to napi_create_string_utf8");
   }
@@ -315,22 +321,20 @@ napi_value _ziti_dial(napi_env env, const napi_callback_info info) {
   // which we can call from a worker thread.
   status = napi_create_threadsafe_function(
       env,
-      js_data_cb,
+      js_on_client,
       NULL,
-      work_name_data,
+      work_name_client,
       0,
       1,
       NULL,
       NULL,
       NULL,
-      CallJs_on_data,
-      &(addon_data->tsfn_on_data));
+      CallJs_on_client,
+      &(addon_data->tsfn_on_client));
   if (status != napi_ok) {
     napi_throw_error(env, NULL, "Unable to napi_create_threadsafe_function");
   }
   
-  ziti_set_timeout(ztx, 5*1000);
-
   // Init a Ziti connection object, and attach our add-on data to it so we can 
   // pass context around between our callbacks, as propagate it all the way out
   // to the JavaScript callbacks
@@ -341,13 +345,12 @@ napi_value _ziti_dial(napi_env env, const napi_callback_info info) {
   }
 
 
-  // Connect to the service
-  ZITI_NODEJS_LOG(DEBUG, "calling ziti_dial: %p", ztx);
-  rc = ziti_dial(conn, ServiceName, on_connect, on_data);
-  if (rc != ZITI_OK) {
-    napi_throw_error(env, NULL, "failure in 'ziti_dial");
-  }
-  ZITI_NODEJS_LOG(DEBUG, "returned from ziti_dial: %p", ztx);
+  // Start listening
+  ZITI_NODEJS_LOG(DEBUG, "calling ziti_listen_with_options: %p", ztx);
+  ziti_listen_opts listen_opts = {
+    .bind_using_edge_identity = false,
+  };
+  ziti_listen_with_options(conn, ServiceName, &listen_opts, on_listen, on_client);
 
   return NULL;
 }
@@ -357,18 +360,18 @@ napi_value _ziti_dial(napi_env env, const napi_callback_info info) {
 /**
  * 
  */
-void expose_ziti_dial(napi_env env, napi_value exports) {
+void expose_ziti_listen(napi_env env, napi_value exports) {
   napi_status status;
   napi_value fn;
 
-  status = napi_create_function(env, NULL, 0, _ziti_dial, NULL, &fn);
+  status = napi_create_function(env, NULL, 0, _ziti_listen, NULL, &fn);
   if (status != napi_ok) {
-    napi_throw_error(env, NULL, "Unable to wrap native function '_ziti_dial");
+    napi_throw_error(env, NULL, "Unable to wrap native function '_ziti_listen");
   }
 
-  status = napi_set_named_property(env, exports, "ziti_dial", fn);
+  status = napi_set_named_property(env, exports, "ziti_listen", fn);
   if (status != napi_ok) {
-    napi_throw_error(env, NULL, "Unable to populate exports for 'ziti_dial");
+    napi_throw_error(env, NULL, "Unable to populate exports for 'ziti_listen");
   }
 
 }
