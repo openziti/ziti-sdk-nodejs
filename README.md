@@ -38,8 +38,7 @@
 
 # Supported platforms
 
-The `ziti-sdk-nodejs` module works with the following Node.js versions:
-- v11.x
+The `@openziti/ziti-sdk-nodejs` module works with the following Node.js versions:
 - v12.x
 - v13.x
 - v14.x

@@ -30,9 +30,10 @@ jobs:
     strategy:
       matrix:
         config:
-          # - { name: "Win", os: windows-latest, cc: "cl",    cxx: "cl" }
-          - { name: "Lnx", os: ubuntu-18.04,   cc: "gcc",   cxx: "g++" }
-          - { name: "Mac", os: macos-latest,   cc: "clang", cxx: "clang++" }
+          # - { os: windows-latest, cc: "cl",    cxx: "cl" }
+          - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++", node: [ '12', '13', '14', '15', '16', '17' ] }
+          - { os: ubuntu-20.04,   cc: "gcc",   cxx: "g++", node: [ '18' ] }
+          - { os: macos-latest,   cc: "clang", cxx: "clang++", node: [ '12', '13', '14', '15', '16', '17', '18' ] }
         node: [ '12', '13', '14', '15', '16', '17', '18' ]
         architecture:
           - arm64
