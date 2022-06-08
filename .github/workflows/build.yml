@@ -27,22 +27,22 @@ jobs:
     env:
       BUILD_NUMBER: ${{ github.run_number }}
     
-      strategy:
-        matrix:
-          config:
-            # - { name: "Win", os: windows-latest, cc: "cl",    cxx: "cl" }
-            - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++" }
-            - { os: macos-latest,   cc: "clang", cxx: "clang++" }
-          node: [ '12', '13', '14', '15', '16', '17' ]
-          architecture:
-            - arm64
-            - x64
-          include:
-            - os: ubuntu-20.04
-              node: 18
-            - os: macos-latest
-              node: 18
-        fail-fast: false
+    strategy:
+      matrix:
+        config:
+          # - { name: "Win", os: windows-latest, cc: "cl",    cxx: "cl" }
+          - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++" }
+          - { os: macos-latest,   cc: "clang", cxx: "clang++" }
+        node: [ '12', '13', '14', '15', '16', '17' ]
+        architecture:
+          - arm64
+          - x64
+        include:
+          - os: ubuntu-20.04
+            node: 18
+          - os: macos-latest
+            node: 18
+      fail-fast: false
 
     steps:
 
