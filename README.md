@@ -38,9 +38,17 @@
 
 # Supported platforms
 
-The `ziti-sdk-nodejs` module works with Node.js v11.x, v12.x, v13.x, v14.x
+The `ziti-sdk-nodejs` module works with the following Node.js versions:
+- v11.x
+- v12.x
+- v13.x
+- v14.x
+- v15.x
+- v16.x
+- v17.x
+- v18.x
 
-Binaries for most Node versions and platforms are provided by default via [node-pre-gyp](https://github.com/mapbox/node-pre-gyp).
+Binaries for most Node versions and platforms are provided by default via [@mapbox/node-pre-gyp](https://github.com/mapbox/node-pre-gyp).
 
 # Installing
 
@@ -48,13 +56,21 @@ Binaries for most Node versions and platforms are provided by default via [node-
 npm i @openziti/ziti-sdk-nodejs
 ```
 
+Special note on previous package:
+
+On June 7, 2020 @openziti/ziti-sdk-nodejs@0.6.0 was released. Older, unscoped versions that are not part of the @openziti org are deprecated and only @openziti/ziti-sdk-nodejs will see updates going forward. To upgrade to the new package do:
+
+``` js
+npm uninstall ziti-sdk-nodejs --save
+npm install @openziti/ziti-sdk-nodejs --save
+```
 
 # Usage
 
 **Note:** the module must be [installed](#installing) before use.
 
 ``` js
-var ziti = require('ziti-sdk-nodejs');
+var ziti = require('@openziti/ziti-sdk-nodejs');
 
 const ziti_init = async (identity) => {
     return new Promise((resolve) => {

@@ -8,19 +8,18 @@
     # node v0.6.x doesn't give us its build variables,
     # but on Unix it was only possible to use the system OpenSSL library,
     # so default the variable to "true", v0.8.x node and up will overwrite it.
-    'node_shared_openssl%': 'true'
+    'node_shared_openssl%': 'true',
 
 	},
 
   "targets": [
     {
       'defines': [
-        'BUILD_DATE=<@(BUILD_DATE)',
-        'ZITI_BRANCH=<@(ZITI_BRANCH)',
-        'ZITI_COMMIT=<@(ZITI_COMMIT)',
-        'ZITI_VERSION=<@(ZITI_VERSION)',
-        'ZITI_OS=<@(ZITI_OS)',
-        'ZITI_ARCH=<@(ZITI_ARCH)',
+        'BUILD_DATE=<!(echo <!(date))',
+        'ZITI_BRANCH=<!(git branch --show-current)',
+        'ZITI_COMMIT=<!(git rev-parse --short HEAD)',
+        'ZITI_VERSION=<!(jq -r .version package.json)',
+        'ZITI_ARCH=<!(arch)',
       ],
 
       "target_name": "<(module_name)",
@@ -112,7 +111,8 @@
               "-fno-strict-aliasing",
               "-g",
               "-fno-pie",
-              "-DSOURCE_PATH_SIZE=3"
+              "-DSOURCE_PATH_SIZE=3",
+              "-DZITI_OS=macos"
             ],
             "OTHER_LDFLAGS": [
               "-g",
