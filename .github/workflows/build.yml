@@ -31,13 +31,21 @@ jobs:
       matrix:
         config:
           # - { name: "Win", os: windows-latest, cc: "cl",    cxx: "cl" }
-          - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++" }
-          - { os: macos-latest,   cc: "clang", cxx: "clang++" }
-        node: [ '12', '13', '14', '15', '16', '17', '18' ]
+          - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++", node: '12' }
+          - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++", node: '13' }
+          - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++", node: '14' }
+          - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++", node: '15' }
+          - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++", node: '16' }
+          - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++", node: '17' }
+          - { os: ubuntu-20.04,   cc: "gcc",   cxx: "g++", node: '18' }
+          - { os: macos-latest,   cc: "clang", cxx: "clang++", node: '12' }
+          - { os: macos-latest,   cc: "clang", cxx: "clang++", node: '13' }
+          - { os: macos-latest,   cc: "clang", cxx: "clang++", node: '14' }
+          - { os: macos-latest,   cc: "clang", cxx: "clang++", node: '15' }
+          - { os: macos-latest,   cc: "clang", cxx: "clang++", node: '16' }
+          - { os: macos-latest,   cc: "clang", cxx: "clang++", node: '17' }
+          - { os: macos-latest,   cc: "clang", cxx: "clang++", node: '18' }
         architecture: [x64, arm64]
-        exclude:
-          - os: ubuntu-18.04
-            node: 18
       fail-fast: false
 
     steps:
@@ -59,7 +67,7 @@ jobs:
     - name: Node Version
       uses: actions/setup-node@v2
       with:
-        node-version: ${{ matrix.node }}
+        node-version: ${{ matrix.config.node }}
     
     - name: Extract branch name
       shell: bash
@@ -201,7 +209,7 @@ jobs:
         ./node_modules/.bin/node-pre-gyp package unpublish publish
         sleep 5
       if: |
-        steps.extract_branch.outputs.branch == 'main' && matrix.config.os == 'ubuntu-18.04' && matrix.node != '14'
+        steps.extract_branch.outputs.branch == 'main' && matrix.config.os == 'ubuntu-18.04' && matrix.config.node != '14'
 
     - name: Install Binary
       run: |
@@ -220,4 +228,4 @@ jobs:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
       if: |
-        matrix.config.os == 'ubuntu-18.04' && matrix.node == '14' && steps.extract_branch.outputs.branch == 'main'
+        matrix.config.os == 'ubuntu-18.04' && matrix.config.node == '14' && steps.extract_branch.outputs.branch == 'main'
