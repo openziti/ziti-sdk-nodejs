@@ -37,11 +37,11 @@ jobs:
         architecture:
           - arm64
           - x64
-        # include:
-        #   - os: ubuntu-20.04
-        #     node: 18
-        #   - os: macos-latest
-        #     node: 18
+        include:
+          - { os: ubuntu-20.04,   cc: "gcc",   cxx: "g++" }
+            node: 18
+          - { os: macos-latest,   cc: "clang", cxx: "clang++" }
+            node: 18
       fail-fast: false
 
     steps:
