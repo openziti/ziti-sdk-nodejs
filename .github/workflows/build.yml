@@ -34,14 +34,14 @@ jobs:
           - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++" }
           - { os: macos-latest,   cc: "clang", cxx: "clang++" }
         node: [ '12', '13', '14', '15', '16', '17' ]
-        architecture:
-          - arm64
-          - x64
+        architecture: [x64, arm64]
         include:
-          - { os: ubuntu-20.04,   cc: "gcc",   cxx: "g++" }
-            node: 18
-          - { os: macos-latest,   cc: "clang", cxx: "clang++" }
-            node: 18
+          config:
+            - { os: ubuntu-20.04,   cc: "gcc",   cxx: "g++" }
+              node: 18
+              architecture: x64
+          # - { os: macos-latest,   cc: "clang", cxx: "clang++" }
+          #   node: 18
       fail-fast: false
 
     steps:
