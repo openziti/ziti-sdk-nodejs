@@ -36,10 +36,10 @@ jobs:
         node: [ '12', '13', '14', '15', '16', '17' ]
         architecture: [x64, arm64]
         include:
-          config:
+          - config:
             - { os: ubuntu-20.04,   cc: "gcc",   cxx: "g++" }
-              node: 18
-              architecture: x64
+          node: 18
+          architecture: x64
           # - { os: macos-latest,   cc: "clang", cxx: "clang++" }
           #   node: 18
       fail-fast: false
