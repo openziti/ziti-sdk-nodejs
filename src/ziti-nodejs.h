@@ -99,7 +99,7 @@ typedef struct {
 typedef struct {
   napi_async_work work;
   napi_threadsafe_function tsfn_on_listen;
-  napi_threadsafe_function tsfn_on_client;
+  napi_threadsafe_function tsfn_on_listen_client;
 } ListenAddonData;
 
 /**

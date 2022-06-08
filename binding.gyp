@@ -36,6 +36,7 @@
         "./src/Ziti_https_request_data.c",
         "./src/Ziti_https_request_end.c",
         "./src/ziti_init.c",
+        "./src/ziti_listen.c",
         "./src/ziti_service_available.c",
         "./src/ziti_shutdown.c",
         "./src/ziti_write.c",
