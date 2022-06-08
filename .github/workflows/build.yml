@@ -34,7 +34,7 @@ jobs:
           - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++" }
           - { os: ubuntu-20.04,   cc: "gcc",   cxx: "g++" }
           - { os: macos-latest,   cc: "clang", cxx: "clang++" }
-          node: [ '12', '13', '14', '15', '16', '17', '18' ] 
+        node: [ '12', '13', '14', '15', '16', '17', '18' ] 
         architecture:
           - arm64
           - x64
