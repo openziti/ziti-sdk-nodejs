@@ -36,7 +36,7 @@ jobs:
         node: [ '12', '13', '14', '15', '16', '17', '18' ]
         architecture: [x64, arm64]
         exclude:
-          - config.os: ubuntu-18.04
+          - os: ubuntu-18.04
             node: 18
       fail-fast: false
 
