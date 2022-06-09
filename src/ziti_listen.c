@@ -25,6 +25,18 @@ typedef struct OnClientItem {
 
 } OnClientItem;
 
+//
+typedef struct host_binding {
+
+  char *service_id;
+  char *service_name;
+  ziti_server_cfg_v1 *host_cfg;
+  ziti_connection server;
+  struct app_ctx *app;
+
+} host_binding;
+
+
 /**
  * This function is responsible for calling the JavaScript 'on_listen' callback function 
  * that was specified when the ziti_listen(...) was called from JavaScript.
@@ -39,46 +51,38 @@ static void CallJs_on_listen(napi_env env, napi_value js_cb, void* context, void
   // items are left over from earlier thread-safe calls from the worker thread.
   // When env is NULL, we simply skip over the call into Javascript
   if (env != NULL) {
-    napi_value undefined, js_conn;
+    napi_value undefined, js_rc;
 
-    ZITI_NODEJS_LOG(INFO, "data: %p", data);
+    ZITI_NODEJS_LOG(INFO, "CallJs_on_listen: data: %lld", (int64_t)data);
 
-    // Convert the ziti_connection to a napi_value.
-    if (NULL != data) {
-      // Retrieve the ziti_connection from the item created by the worker thread.
-      ziti_connection conn = *(ziti_connection*)data;
-      status = napi_create_int64(env, (int64_t)conn, &js_conn);
-      if (status != napi_ok) {
-        napi_throw_error(env, NULL, "Unable to napi_create_int64");
-      }
-    } else {
-      status = napi_get_undefined(env, &js_conn) == napi_ok;
-      if (status != napi_ok) {
-        napi_throw_error(env, NULL, "Unable to napi_get_undefined (1)");
-      }
+    // Retrieve the rc created by the worker thread.
+    int64_t rc = (int64_t)data;
+    status = napi_create_int64(env, (int64_t)rc, &js_rc);
+    if (status != napi_ok) {
+      napi_throw_error(env, NULL, "Failed to napi_create_int64");
     }
 
     // Retrieve the JavaScript `undefined` value so we can use it as the `this`
     // value of the JavaScript function call.
     status = napi_get_undefined(env, &undefined);
     if (status != napi_ok) {
-      napi_throw_error(env, NULL, "Unable to napi_get_undefined (2)");
+      napi_throw_error(env, NULL, "Unable to napi_get_undefined");
     }
 
-    ZITI_NODEJS_LOG(INFO, "calling JS callback...");
+    ZITI_NODEJS_LOG(INFO, "calling JS on_listen callback...");
 
-    // Call the JavaScript function and pass it the ziti_connection
+    // Call the JavaScript function and pass it the rc
     status = napi_call_function(
         env,
         undefined,
         js_cb,
         1,
-        &js_conn,
+        &js_rc,
         NULL
       );
-    ZITI_NODEJS_LOG(INFO, "returned from JS callback...");
+    ZITI_NODEJS_LOG(INFO, "returned from JS on_listen callback...");
     if (status != napi_ok) {
-      napi_throw_error(env, NULL, "Unable to napi_call_function");
+      napi_throw_error(env, NULL, "Failed to napi_call_function");
     }
   }
 }
@@ -103,8 +107,7 @@ static void CallJs_on_listen_client(napi_env env, napi_value js_cb, void* contex
   // items.
   if (env != NULL) {
 
-    napi_value undefined, js_buffer;
-    void* result_data;
+    napi_value undefined;
 
     // const obj = {}
     napi_value js_client_item, js_clt_ctx, js_status;
@@ -122,7 +125,7 @@ static void CallJs_on_listen_client(napi_env env, napi_value js_cb, void* contex
     if (rc != napi_ok) {
       napi_throw_error(env, "EINVAL", "failure to set named property status");
     }
-    ZITI_NODEJS_LOG(DEBUG, "status: %zd", item->status);
+    ZITI_NODEJS_LOG(DEBUG, "status: %d", item->status);
 
     // obj.clt_ctx = clt_ctx
     napi_create_int64(env, (int64_t)item->clt_ctx, &js_clt_ctx);
@@ -158,8 +161,9 @@ static void CallJs_on_listen_client(napi_env env, napi_value js_cb, void* contex
 }
 
 
-static ssize_t on_listen_client_data(ziti_connection clt, uint8_t *data, ssize_t len) {
+static ssize_t on_listen_client_data(ziti_connection clt, const unsigned char *data, ssize_t len) {
   // impl me
+  return 0;
 }
 
 static void on_listen_client_connect(ziti_connection clt, int status) {
@@ -176,7 +180,7 @@ void on_listen_client(ziti_connection serv, ziti_connection client, int status, 
 
   ListenAddonData* addon_data = (ListenAddonData*) ziti_conn_data(serv);
 
-  ZITI_NODEJS_LOG(INFO, "on_listen_client: client: %p, status: %d, conn: %p", client, status);
+  ZITI_NODEJS_LOG(INFO, "on_listen_client: client: %p, status: %d", client, status);
 
   if (status == ZITI_OK) {
     const char *source_identity = clt_ctx->caller_id;
@@ -222,26 +226,22 @@ void on_listen(ziti_connection conn, int status) {
   napi_status nstatus;
 
   ListenAddonData* addon_data = (ListenAddonData*) ziti_conn_data(conn);
-  ziti_connection* the_conn = NULL;
-
-  ZITI_NODEJS_LOG(DEBUG, "on_listen: conn: %p, status: %o", conn, status );
+  host_binding *b = ziti_conn_data(conn);
 
   if (status == ZITI_OK) {
-
-    // Save the 'ziti_connection' to the heap. The JavaScript marshaller (CallJs)
-    // will free this item after having sent it to JavaScript.
-    the_conn = malloc(sizeof(ziti_connection));
-    *the_conn = conn;
+    ZITI_NODEJS_LOG(DEBUG, "on_listen: successfully bound to service[%s]", b->service_name );
   }
-
-  ZITI_NODEJS_LOG(DEBUG, "the_conn: %p", the_conn);
+  else {
+    ZITI_NODEJS_LOG(DEBUG, "on_listen: failed to bind to service[%s]\n", b->service_name );
+    ziti_close(conn, NULL);
+  }
 
   // Initiate the call into the JavaScript callback. 
   // The call into JavaScript will not have happened 
   // when this function returns, but it will be queued.
   nstatus = napi_call_threadsafe_function(
       addon_data->tsfn_on_listen,
-      the_conn,   // Send the ziti_connection over to the JS callback
+      (void*)(int64_t)status,   // Send the status over to the JS callback
       napi_tsfn_blocking);
   if (nstatus != napi_ok) {
     ZITI_NODEJS_LOG(ERROR, "Unable to napi_call_threadsafe_function");

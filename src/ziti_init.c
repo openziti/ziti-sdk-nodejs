@@ -56,7 +56,7 @@ static void CallJs(napi_env env, napi_value js_cb, void* context, void* data) {
     status = napi_get_undefined(env, &undefined);
 
     // Retrieve the rc created by the worker thread.
-    int rc = (int)data;
+    int64_t rc = (int64_t)data;
     status = napi_create_int64(env, (int64_t)rc, &js_rc);
     if (status != napi_ok) {
       napi_throw_error(env, NULL, "Failed to napi_create_int64");

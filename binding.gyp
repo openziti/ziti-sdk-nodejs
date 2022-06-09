@@ -106,18 +106,19 @@
             "GCC_ENABLE_PASCAL_STRINGS": "NO",        # No -mpascal-strings
             "GCC_THREADSAFE_STATICS": "NO",           # -fno-threadsafe-statics
             "PREBINDING": "NO",                       # No -Wl,-prebind
-            "MACOSX_DEPLOYMENT_TARGET": "10.15",      # -mmacosx-version-min=10.14
+            "MACOSX_DEPLOYMENT_TARGET": "12",         # -mmacosx-version-min=10.14
             "USE_HEADERMAP": "NO",
             "OTHER_CFLAGS": [
               "-fno-strict-aliasing",
               "-g",
               "-fno-pie",
               "-DSOURCE_PATH_SIZE=3",
-              "-DZITI_OS=macos"
+              "-DZITI_OS=macos",
+              "-DCXXFLAGS=-mmacosx-version-min=11",
             ],
             "OTHER_LDFLAGS": [
               "-g",
-              "-mmacosx-version-min=10.15",
+              "-mmacosx-version-min=11",
             ],
             "WARNING_CFLAGS": [
               "-Wall",
