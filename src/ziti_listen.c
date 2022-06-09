@@ -21,6 +21,7 @@ limitations under the License.
 typedef struct OnClientItem {
 
   int status;
+  ziti_connection client;
   ziti_client_ctx *clt_ctx;
 
 } OnClientItem;
@@ -100,6 +101,7 @@ static void CallJs_on_listen_client(napi_env env, napi_value js_cb, void* contex
 
   // Retrieve the OnClientItem created by the worker thread.
   OnClientItem* item = (OnClientItem*)data;
+  ziti_client_ctx* clt_ctx = item->clt_ctx;
 
   // env and js_cb may both be NULL if Node.js is in its cleanup phase, and
   // items are left over from earlier thread-safe calls from the worker thread.
@@ -110,13 +112,26 @@ static void CallJs_on_listen_client(napi_env env, napi_value js_cb, void* contex
     napi_value undefined;
 
     // const obj = {}
-    napi_value js_client_item, js_clt_ctx, js_status;
+    napi_value js_client_item, js_client, js_clt_ctx, js_status, js_caller_id, js_buffer;
+    void* result_data;
+
+    // Retrieve the JavaScript `undefined` value so we can use it as the `this`
+    // value of the JavaScript function call.
+    status = napi_get_undefined(env, &undefined);
+    if (status != napi_ok) {
+      napi_throw_error(env, NULL, "Unable to napi_get_undefined (3)");
+    }
+
     int rc = napi_create_object(env, &js_client_item);
     if (rc != napi_ok) {
       napi_throw_error(env, "EINVAL", "failure to create object");
     }
+    rc = napi_create_object(env, &js_clt_ctx);
+    if (rc != napi_ok) {
+      napi_throw_error(env, "EINVAL", "failure to create object");
+    }
 
-    // obj.code = status
+    // js_client_item.status = status
     rc = napi_create_int32(env, item->status, &js_status);
     if (rc != napi_ok) {
       napi_throw_error(env, "EINVAL", "failure to create resp.status");
@@ -127,23 +142,48 @@ static void CallJs_on_listen_client(napi_env env, napi_value js_cb, void* contex
     }
     ZITI_NODEJS_LOG(DEBUG, "status: %d", item->status);
 
-    // obj.clt_ctx = clt_ctx
-    napi_create_int64(env, (int64_t)item->clt_ctx, &js_clt_ctx);
+    // js_client_item.client = client
+    napi_create_int64(env, (int64_t)item->client, &js_client);
     if (rc != napi_ok) {
       napi_throw_error(env, "EINVAL", "failure to create resp.req");
     }
-    rc = napi_set_named_property(env, js_client_item, "clt_ctx", js_clt_ctx);
+    rc = napi_set_named_property(env, js_client_item, "client", js_client);
     if (rc != napi_ok) {
       napi_throw_error(env, "EINVAL", "failure to set named property req");
     }
-    ZITI_NODEJS_LOG(DEBUG, "js_clt_ctx: %p", item->clt_ctx);
+    ZITI_NODEJS_LOG(DEBUG, "client: %p", item->client);
 
-    // Retrieve the JavaScript `undefined` value so we can use it as the `this`
-    // value of the JavaScript function call.
-    status = napi_get_undefined(env, &undefined);
-    if (status != napi_ok) {
-      napi_throw_error(env, NULL, "Unable to napi_get_undefined (3)");
+    // js_clt_ctx.caller_id = clt_ctx->caller_id
+    rc = napi_create_string_utf8(env, (const char*)clt_ctx->caller_id, strlen(clt_ctx->caller_id), &js_caller_id);
+    if (rc != napi_ok) {
+      napi_throw_error(env, "EINVAL", "failure to create js_clt_ctx.caller_id");
     }
+    rc = napi_set_named_property(env, js_clt_ctx, "caller_id", js_caller_id);
+    if (rc != napi_ok) {
+      napi_throw_error(env, "EINVAL", "failure to set named property caller_id");
+    }
+    ZITI_NODEJS_LOG(DEBUG, "status: %s", clt_ctx->caller_id);
+
+    // js_clt_ctx.app_data = clt_ctx->app_data
+    if (NULL != clt_ctx->app_data) {
+      rc = napi_create_buffer_copy(env, clt_ctx->app_data_sz, (const void*)clt_ctx->app_data, (void**)&result_data, &js_buffer);
+      if (rc != napi_ok) {
+        napi_throw_error(env, "EINVAL", "failure to create js_clt_ctx.app_data");
+      }
+      rc = napi_set_named_property(env, js_clt_ctx, "app_data", js_buffer);
+      if (rc != napi_ok) {
+        napi_throw_error(env, "EINVAL", "failure to set named property app_data");
+      }
+    } else {
+      rc = napi_set_named_property(env, js_clt_ctx, "app_data", undefined);
+    }
+
+    // js_client_item.clt_ctx = js_clt_ctx
+    rc = napi_set_named_property(env, js_client_item, "clt_ctx", js_clt_ctx);
+    if (rc != napi_ok) {
+      napi_throw_error(env, "EINVAL", "failure to set named property js_clt_ctx");
+    }
+    ZITI_NODEJS_LOG(DEBUG, "js_clt_ctx: %p", item->clt_ctx);
 
     // Call the JavaScript function and pass it the data
     status = napi_call_function(
@@ -161,14 +201,14 @@ static void CallJs_on_listen_client(napi_env env, napi_value js_cb, void* contex
 }
 
 
-static ssize_t on_listen_client_data(ziti_connection clt, const unsigned char *data, ssize_t len) {
-  // impl me
-  return 0;
-}
+// static ssize_t on_listen_client_data(ziti_connection clt, const unsigned char *data, ssize_t len) {
+//   // impl me
+//   return 0;
+// }
 
-static void on_listen_client_connect(ziti_connection clt, int status) {
-  // impl me
-}
+// static void on_listen_client_connect(ziti_connection clt, int status) {
+//   // impl me
+// }
 
 
 /**
@@ -194,15 +234,15 @@ void on_listen_client(ziti_connection serv, ziti_connection client, int status, 
         ZITI_NODEJS_LOG(DEBUG, "on_listen_client: got app data '%.*s'!\n", (int) clt_ctx->app_data_sz, clt_ctx->app_data );
     }
 
-    ziti_accept(client, on_listen_client_connect, on_listen_client_data);
+    // ziti_accept(client, on_listen_client_connect, on_listen_client_data);
   
   } else {
-    fprintf(stderr, "failed to accept client: %s(%d)\n", ziti_errorstr(status), status);
     ZITI_NODEJS_LOG(DEBUG, "on_listen_client: failed to accept client: %s(%d)\n", ziti_errorstr(status), status );
   }
 
   OnClientItem* item = memset(malloc(sizeof(*item)), 0, sizeof(*item));
   item->status = status;
+  item->client = client;
   item->clt_ctx = clt_ctx;
 
   // Initiate the call into the JavaScript callback. 
