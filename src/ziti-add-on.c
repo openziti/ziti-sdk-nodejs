@@ -1,5 +1,5 @@
 /*
-Copyright 2019-2020 Netfoundry, Inc.
+Copyright Netfoundry, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -71,6 +71,7 @@ napi_value Init(napi_env env, napi_value exports) {
   expose_ziti_enroll(env, exports);
   expose_ziti_hello(env, exports);
   expose_ziti_init(env, exports);
+  expose_ziti_listen(env, exports);
   expose_ziti_service_available(env, exports);
   expose_ziti_shutdown(env, exports);
   expose_ziti_write(env, exports);

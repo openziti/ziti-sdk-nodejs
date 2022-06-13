@@ -1,5 +1,5 @@
 /*
-Copyright 2019-2020 Netfoundry, Inc.
+Copyright Netfoundry, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ limitations under the License.
 // An item that will be generated here and passed into the JavaScript on_data callback
 typedef struct OnDataItem {
 
-  uint8_t *buf;
+  const unsigned char *buf;
   int len;
 
 } OnDataItem;
@@ -139,11 +139,10 @@ static void CallJs_on_data(napi_env env, napi_value js_cb, void* context, void* 
 
 
 
-
 /**
  * This function is the callback invoked by the C-SDK when data arrives on the connection.
  */
-ssize_t on_data(ziti_connection conn, uint8_t *buf, ssize_t len) {
+long on_data(struct ziti_conn *conn, const unsigned char *buf, long len) {
   napi_status status;
 
   ConnAddonData* addon_data = (ConnAddonData*) ziti_conn_data(conn);
@@ -168,7 +167,7 @@ ssize_t on_data(ziti_connection conn, uint8_t *buf, ssize_t len) {
     OnDataItem* item = memset(malloc(sizeof(*item)), 0, sizeof(*item));
     item->buf = buf;
     item->buf = calloc(1, len);
-    memcpy(item->buf, buf, len);
+    memcpy((void*)item->buf, buf, len);
     item->len = len;
 
     // if (addon_data->isWebsocket) {

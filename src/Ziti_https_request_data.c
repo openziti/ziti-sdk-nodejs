@@ -1,5 +1,5 @@
 /*
-Copyright 2019-2020 Netfoundry, Inc.
+Copyright Netfoundry, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ static void CallJs_on_req_body(napi_env env, napi_value js_cb, void* context, vo
     ZITI_NODEJS_LOG(DEBUG, "status: %zd", item->status);
 
     // obj.body = body
-    rc = napi_create_int32(env, (int32_t)item->body, &js_body);
+    rc = napi_create_int32(env, (int64_t)item->body, &js_body);
     if (rc != napi_ok) {
       napi_throw_error(env, "EINVAL", "failure to create resp.body");
     }

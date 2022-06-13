@@ -1,5 +1,5 @@
 /*
-Copyright 2019-2020 Netfoundry, Inc.
+Copyright Netfoundry, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -97,6 +97,20 @@ typedef struct {
  * 
  */
 typedef struct {
+  char *service_name;
+  int64_t js_arb_data;
+  ziti_connection server;
+  napi_async_work work;
+  napi_threadsafe_function tsfn_on_listen;
+  napi_threadsafe_function tsfn_on_listen_client;
+  napi_threadsafe_function tsfn_on_listen_client_connect;
+  napi_threadsafe_function tsfn_on_listen_client_data;
+} ListenAddonData;
+
+/**
+ * 
+ */
+typedef struct {
   napi_async_work work;
   napi_threadsafe_function tsfn_on_connect;
   napi_threadsafe_function tsfn_on_data;
@@ -189,6 +203,7 @@ extern void expose_ziti_dial(napi_env env, napi_value exports);
 extern void expose_ziti_enroll(napi_env env, napi_value exports);
 extern void expose_ziti_hello(napi_env env, napi_value exports);
 extern void expose_ziti_init(napi_env env, napi_value exports);
+extern void expose_ziti_listen(napi_env env, napi_value exports);
 extern void expose_ziti_service_available(napi_env env, napi_value exports);
 extern void expose_ziti_shutdown(napi_env env, napi_value exports);
 extern void expose_ziti_write(napi_env env, napi_value exports);
