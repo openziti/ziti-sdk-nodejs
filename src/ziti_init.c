@@ -269,7 +269,6 @@ napi_value _ziti_init(napi_env env, const napi_callback_info info) {
 
   // Create and set up the consumer thread
   if (NULL == thread_loop) {  // Spawn the loop only once
-    ZITI_NODEJS_LOG(DEBUG, "calling uv_loop_new()");
     thread_loop = uv_loop_new();
     uv_async_init(thread_loop, &async, (uv_async_cb)consumer_notify);
     uv_thread_create(&thread, (uv_thread_cb)child_thread, thread_loop);
@@ -288,6 +287,8 @@ napi_value _ziti_init(napi_env env, const napi_callback_info info) {
   opts->metrics_type = INSTANT;
 
   int rc = ziti_init_opts(opts, thread_loop);
+
+  ZITI_NODEJS_LOG(DEBUG, "ziti_init_opts rc: %d", rc);
 
   status = napi_create_int32(env, rc, &jsRetval);
   if (status != napi_ok) {

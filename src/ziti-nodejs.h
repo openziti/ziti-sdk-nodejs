@@ -97,9 +97,14 @@ typedef struct {
  * 
  */
 typedef struct {
+  char *service_name;
+  int64_t js_arb_data;
+  ziti_connection server;
   napi_async_work work;
   napi_threadsafe_function tsfn_on_listen;
   napi_threadsafe_function tsfn_on_listen_client;
+  napi_threadsafe_function tsfn_on_listen_client_connect;
+  napi_threadsafe_function tsfn_on_listen_client_data;
 } ListenAddonData;
 
 /**
