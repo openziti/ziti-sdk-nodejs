@@ -228,4 +228,4 @@ jobs:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
       if: |
-        matrix.config.os == 'ubuntu-18.04' && matrix.config.node == '14' && steps.extract_branch.outputs.branch == 'main'
+        matrix.config.os == 'ubuntu-18.04' && matrix.config.node == '14' && matrix.architecture == 'x64' && steps.extract_branch.outputs.branch == 'main'
