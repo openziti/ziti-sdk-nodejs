@@ -197,19 +197,12 @@ jobs:
       run: |
         npm run build:cleanup
 
-    - name: Publish Binary to S3 (Mac)
+    - name: Publish Binary to S3 (for all OS's, Node versions, and architectures)
       run: |
         ./node_modules/.bin/node-pre-gyp package unpublish publish
         sleep 5
-      if: |
-        steps.extract_branch.outputs.branch == 'main' && matrix.config.os == 'macOS-latest'
-
-    - name: Publish Binary to S3 (Linux)
-      run: |
-        ./node_modules/.bin/node-pre-gyp package unpublish publish
-        sleep 5
-      if: |
-        steps.extract_branch.outputs.branch == 'main' && matrix.config.os == 'ubuntu-18.04' && matrix.config.node != '14'
+      # if: |
+        # steps.extract_branch.outputs.branch == 'main' 
 
     - name: Install Binary
       run: |
