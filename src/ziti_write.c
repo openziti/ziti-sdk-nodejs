@@ -32,6 +32,8 @@ typedef struct WriteItem {
 static void CallJs_on_write(napi_env env, napi_value js_cb, void* context, void* data) {
   napi_status status;
 
+  ZITI_NODEJS_LOG(DEBUG, "CallJs_on_write entered");
+
   // This parameter is not used.
   (void) context;
 
@@ -106,6 +108,8 @@ static void on_write(ziti_connection conn, ssize_t status, void *ctx) {
 
   ConnAddonData* addon_data = (ConnAddonData*) ziti_conn_data(conn);
 
+  ZITI_NODEJS_LOG(DEBUG, "on_write cb entered: addon_data: %p", addon_data);
+
   WriteItem* item = memset(malloc(sizeof(*item)), 0, sizeof(*item));
   item->conn = conn;
   item->status = status;
@@ -164,6 +168,8 @@ napi_value _ziti_write(napi_env env, const napi_callback_info info) {
 
   // Obtain ptr to JS 'write' callback function
   napi_value js_write_cb = args[2];
+  ZITI_NODEJS_LOG(DEBUG, "js_write_cb: %p", js_write_cb);
+
   napi_value work_name;
 
   // Create a string to describe this asynchronous operation.
@@ -195,7 +201,9 @@ napi_value _ziti_write(napi_env env, const napi_callback_info info) {
   }
 
   // Now, call the C-SDK to actually write the data over to the service
+  ZITI_NODEJS_LOG(DEBUG, "call ziti_write");
   ziti_write(conn, chunk, bufferLength, on_write, NULL);
+  ZITI_NODEJS_LOG(DEBUG, "back from ziti_write");
 
   return NULL;
 }

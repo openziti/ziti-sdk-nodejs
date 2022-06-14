@@ -30,7 +30,9 @@ const Ziti_http_request = async (url, method, headers) => {
                 // on_resp_data callback
                 (obj) => {
                     console.log('----------- Now inside Ziti_http_request on_resp_data callback ----------, obj is: \n%o', obj);
-                    console.log('----------- obj.body is: \n%o', obj.body.toString());
+                    if (obj.body) {
+                        console.log('----------- obj.body is: \n%o', obj.body.toString());
+                    }
                 },
             );
 
@@ -167,21 +169,21 @@ const sendChunk = (req) => {
             process.exit(-1);
         });
 
-        console.log('inside JS main(), req is (%o)', req);
+        // console.log('inside JS main(), req is (%o)', req);
 
 
         // setTimeout( async () => {
         
-        for (let i=0; i<3; i++ ) {
+        // for (let i=0; i<3; i++ ) {
 
-            let req2 = await Ziti_http_request(url, method, []).catch((err) => {
-                console.log('Ziti_http_request failed with error (%o)', err);
-                process.exit(-1);
-            });
+        //     let req2 = await Ziti_http_request(url, method, []).catch((err) => {
+        //         console.log('Ziti_http_request failed with error (%o)', err);
+        //         process.exit(-1);
+        //     });
     
-            console.log('inside JS main() setTimeout(), req is (%o)', req2);
+        //     console.log('inside JS main() setTimeout(), req is (%o)', req2);
 
-        }
+        // }
 
         // }, 100);
     

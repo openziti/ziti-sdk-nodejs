@@ -50,7 +50,7 @@ static void CallJs_on_listen_client_data(napi_env env, napi_value js_cb, void* c
   if (env != NULL) {
 
     // const obj = {}
-    napi_value undefined, js_client_item, js_client, js_buffer;
+    napi_value undefined, js_client_item, js_client, js_buffer, js_arb_data;
     void* result_data;
 
     // Retrieve the JavaScript `undefined` value so we can use it as the `this`
@@ -63,6 +63,21 @@ static void CallJs_on_listen_client_data(napi_env env, napi_value js_cb, void* c
     int rc = napi_create_object(env, &js_client_item);
     if (rc != napi_ok) {
       napi_throw_error(env, "EINVAL", "failure to create object");
+    }
+
+    // js_client_item.js_arb_data = js_arb_data
+    if (item->js_arb_data) {
+      rc = napi_create_int64(env, item->js_arb_data, &js_arb_data);
+      if (rc != napi_ok) {
+        napi_throw_error(env, "EINVAL", "failure to create obj.js_arb_data");
+      }
+      rc = napi_set_named_property(env, js_client_item, "js_arb_data", js_arb_data);
+      if (rc != napi_ok) {
+        napi_throw_error(env, "EINVAL", "failure to set named property status");
+      }
+      ZITI_NODEJS_LOG(DEBUG, "js_arb_data: %lld", item->js_arb_data);
+    } else {
+      rc = napi_set_named_property(env, js_client_item, "js_arb_data", undefined);
     }
 
     // js_client_item.client = client
@@ -472,13 +487,13 @@ void on_listen_client(ziti_connection serv, ziti_connection client, int status, 
 
     const char *source_identity = clt_ctx->caller_id;
     if (source_identity != NULL) {
-        ZITI_NODEJS_LOG(DEBUG, "on_listen_client: incoming connection from '%s'\n", source_identity );
+        ZITI_NODEJS_LOG(DEBUG, "on_listen_client: incoming connection from '%s'", source_identity );
     }
     else {
         ZITI_NODEJS_LOG(DEBUG, "on_listen_client: incoming connection from unidentified client" );
     }
     if (clt_ctx->app_data != NULL) {
-        ZITI_NODEJS_LOG(DEBUG, "on_listen_client: got app data '%.*s'!\n", (int) clt_ctx->app_data_sz, clt_ctx->app_data );
+        ZITI_NODEJS_LOG(DEBUG, "on_listen_client: got app data '%.*s'!", (int) clt_ctx->app_data_sz, clt_ctx->app_data );
     }
 
     ziti_accept(client, on_listen_client_connect, on_listen_client_data);
@@ -715,7 +730,7 @@ napi_value _ziti_listen(napi_env env, const napi_callback_info info) {
   }
 
   // Start listening
-  ZITI_NODEJS_LOG(DEBUG, "calling ziti_listen_with_options: %p", ztx);
+  ZITI_NODEJS_LOG(DEBUG, "calling ziti_listen_with_options: %p, addon_data: %p", ztx, addon_data);
   ziti_listen_opts listen_opts = {
     .bind_using_edge_identity = false,
   };
