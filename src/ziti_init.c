@@ -17,11 +17,6 @@ limitations under the License.
 #include "ziti-nodejs.h"
 
 ziti_context ztx = NULL;
-uv_loop_t *loop = NULL;
-
-uv_thread_t thread;
-uv_async_t async;
-
 
 typedef struct {
   napi_async_work work;
@@ -185,16 +180,6 @@ static void on_ziti_event(ziti_context _ztx, const ziti_event_t *event) {
 }
 
 
-
-static void child_thread(void *data){
-    uv_loop_t *thread_loop = (uv_loop_t *) data;
-
-    //Start this loop
-    uv_run(thread_loop, UV_RUN_DEFAULT);
-}
-
-static void consumer_notify(uv_async_t *handle, int status) { }
-
 /**
  * 
  */
@@ -265,13 +250,6 @@ napi_value _ziti_init(napi_env env, const napi_callback_info info) {
       &(addon_data->tsfn));
   if (status != napi_ok) {
     napi_throw_error(env, NULL, "Failed to napi_create_threadsafe_function");
-  }
-
-  // Create and set up the consumer thread
-  if (NULL == thread_loop) {  // Spawn the loop only once
-    thread_loop = uv_loop_new();
-    uv_async_init(thread_loop, &async, (uv_async_cb)consumer_notify);
-    uv_thread_create(&thread, (uv_thread_cb)child_thread, thread_loop);
   }
 
   // Light this candle!

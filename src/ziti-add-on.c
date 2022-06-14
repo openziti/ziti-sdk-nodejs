@@ -21,9 +21,6 @@ extern void set_signal_handler();
 
 napi_value Init(napi_env env, napi_value exports) {
 
-  //
-  thread_loop = NULL;
-
   if (uv_mutex_init(&client_pool_lock))
     abort();
 
@@ -64,6 +61,12 @@ napi_value Init(napi_env env, napi_value exports) {
 #  endif
 
 #endif
+
+  napi_status status = napi_get_uv_event_loop(env, &thread_loop);
+  if (status != napi_ok) {
+    ZITI_NODEJS_LOG(ERROR, "napi_get_uv_event_loop failed, status: %d", status);
+    abort();
+  }
 
   // Expose some Ziti SDK functions to JavaScript
   expose_ziti_close(env, exports);

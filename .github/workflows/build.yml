@@ -30,7 +30,7 @@ jobs:
     strategy:
       matrix:
         config:
-          # - { name: "Win", os: windows-latest, cc: "cl",    cxx: "cl" }
+          # - { os: windows-latest, cc: "cl",    cxx: "cl", node: '16' }
           - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++", node: '12' }
           - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++", node: '13' }
           - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++", node: '14' }
@@ -197,19 +197,12 @@ jobs:
       run: |
         npm run build:cleanup
 
-    - name: Publish Binary to S3 (Mac)
+    - name: Publish Binary to S3 (for all OS's, Node versions, and architectures)
       run: |
         ./node_modules/.bin/node-pre-gyp package unpublish publish
         sleep 5
       if: |
-        steps.extract_branch.outputs.branch == 'main' && matrix.config.os == 'macOS-latest'
-
-    - name: Publish Binary to S3 (Linux)
-      run: |
-        ./node_modules/.bin/node-pre-gyp package unpublish publish
-        sleep 5
-      if: |
-        steps.extract_branch.outputs.branch == 'main' && matrix.config.os == 'ubuntu-18.04' && matrix.config.node != '14'
+        steps.extract_branch.outputs.branch == 'main' 
 
     - name: Install Binary
       run: |
@@ -228,4 +221,4 @@ jobs:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
       if: |
-        matrix.config.os == 'ubuntu-18.04' && matrix.config.node == '14' && matrix.architecture == 'x64' && steps.extract_branch.outputs.branch == 'main'
+        matrix.config.os == 'ubuntu-18.04' && matrix.config.node == '16' && matrix.architecture == 'x64' && steps.extract_branch.outputs.branch == 'main'
