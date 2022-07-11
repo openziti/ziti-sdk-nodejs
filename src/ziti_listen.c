@@ -128,7 +128,7 @@ static void CallJs_on_listen_client_data(napi_env env, napi_value js_cb, void* c
 
 static ssize_t on_listen_client_data(ziti_connection client, const uint8_t *data, ssize_t len) {
 
-  ZITI_NODEJS_LOG(DEBUG, "on_listen_client_data: client: %p, data: %p, len: %zu", client, data, len);
+  ZITI_NODEJS_LOG(DEBUG, "on_listen_client_data: client: %p, data: %p, len: %zd", client, data, len);
 
   ListenAddonData* addon_data = (ListenAddonData*) ziti_conn_data(client);
 
@@ -145,7 +145,7 @@ static ssize_t on_listen_client_data(ziti_connection client, const uint8_t *data
   if (len > 0) {
     /* NOP */
   }
-  else if (len == ZITI_EOF) {
+  else if ((len == ZITI_EOF) || (len == ZITI_CONN_CLOSED)) {
       ZITI_NODEJS_LOG(DEBUG, "on_listen_client_data: client disconnected");
       ziti_close_write(client);
   }
