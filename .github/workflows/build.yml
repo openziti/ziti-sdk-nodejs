@@ -30,21 +30,21 @@ jobs:
     strategy:
       matrix:
         config:
-          # - { os: windows-latest, cc: "cl",    cxx: "cl", node: '16' }
-          - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++", node: '12' }
-          - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++", node: '13' }
-          - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++", node: '14' }
-          - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++", node: '15' }
-          - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++", node: '16' }
-          - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++", node: '17' }
-          - { os: ubuntu-20.04,   cc: "gcc",   cxx: "g++", node: '18' }
-          - { os: macos-latest,   cc: "clang", cxx: "clang++", node: '12' }
-          - { os: macos-latest,   cc: "clang", cxx: "clang++", node: '13' }
-          - { os: macos-latest,   cc: "clang", cxx: "clang++", node: '14' }
-          - { os: macos-latest,   cc: "clang", cxx: "clang++", node: '15' }
-          - { os: macos-latest,   cc: "clang", cxx: "clang++", node: '16' }
-          - { os: macos-latest,   cc: "clang", cxx: "clang++", node: '17' }
-          - { os: macos-latest,   cc: "clang", cxx: "clang++", node: '18' }
+          - { os: windows-2019,   cc: "cl",    cxx: "cl",  node: '16' }
+          # - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++", node: '12' }
+          # - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++", node: '13' }
+          # - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++", node: '14' }
+          # - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++", node: '15' }
+          # - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++", node: '16' }
+          # - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++", node: '17' }
+          # - { os: ubuntu-20.04,   cc: "gcc",   cxx: "g++", node: '18' }
+          # - { os: macos-latest,   cc: "clang", cxx: "clang++", node: '12' }
+          # - { os: macos-latest,   cc: "clang", cxx: "clang++", node: '13' }
+          # - { os: macos-latest,   cc: "clang", cxx: "clang++", node: '14' }
+          # - { os: macos-latest,   cc: "clang", cxx: "clang++", node: '15' }
+          # - { os: macos-latest,   cc: "clang", cxx: "clang++", node: '16' }
+          # - { os: macos-latest,   cc: "clang", cxx: "clang++", node: '17' }
+          # - { os: macos-latest,   cc: "clang", cxx: "clang++", node: '18' }
         architecture: [x64, arm64]
       fail-fast: false
 
