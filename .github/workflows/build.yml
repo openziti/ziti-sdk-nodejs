@@ -95,7 +95,7 @@ jobs:
       uses: crazy-max/ghaction-chocolatey@v1
       with:
         args: install ninja
-      if: matrix.config.os == 'windows-latest'
+      if: matrix.config.os == 'windows-2019'
 
     - name: gcc version
       run: |
@@ -136,7 +136,7 @@ jobs:
         cmake -E make_directory ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
         cmake -S ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c -B ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build -DUSE_OPENSSL=on -DOPENSSL_ROOT_DIR=C:\vcpkg\packages\openssl_x64-windows
         cmake --build ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
-      if: matrix.config.os == 'windows-latest'
+      if: matrix.config.os == 'windows-2019'
 
     # - name: Build (embedded) C-SDK Phase-I (Windows)
     #   shell: cmd
@@ -146,7 +146,7 @@ jobs:
     #     call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
     #     vcpkg install openssl-windows:x64-windows
     #     cmake -G "NMake Makefiles" -DUSE_OPENSSL=on -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_VERBOSE_MAKEFILE=OFF -DOPENSSL_ROOT_DIR=C:\vcpkg\packages\openssl_x64-windows ..
-    #   if: matrix.config.os == 'windows-latest'
+    #   if: matrix.config.os == 'windows-2019'
 
 
 
@@ -166,7 +166,7 @@ jobs:
     #     call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
     #     nmake ziti
     #     powershell "(Get-Childitem uv_mbed.lib -Recurse -ErrorAction SilentlyContinue).Fullname"
-    #   if: matrix.config.os == 'windows-latest'
+    #   if: matrix.config.os == 'windows-2019'
 
 
     #
@@ -187,7 +187,7 @@ jobs:
         cd ${{ runner.workspace }}/${{ github.event.repository.name }}
         npm install --build-from-source --cd=%CD%
       if: |
-        matrix.config.os == 'windows-latest'
+        matrix.config.os == 'windows-2019'
 
     - name: Hello test
       run: |
