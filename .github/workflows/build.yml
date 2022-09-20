@@ -28,6 +28,7 @@ jobs:
       BUILD_NUMBER: ${{ github.run_number }}
     
     strategy:
+      max-parallel: 5
       matrix:
         config:
           # - { os: windows-latest, cc: "cl",    cxx: "cl", node: '16' }
