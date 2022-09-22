@@ -30,6 +30,7 @@ limitations under the License.
 #include <node_api.h>
 
 #include <ziti/ziti.h>
+#include <ziti/ziti_log.h>
 #include "utils.h"
 
 
@@ -205,6 +206,7 @@ extern void expose_ziti_hello(napi_env env, napi_value exports);
 extern void expose_ziti_init(napi_env env, napi_value exports);
 extern void expose_ziti_listen(napi_env env, napi_value exports);
 extern void expose_ziti_service_available(napi_env env, napi_value exports);
+extern void expose_ziti_set_log_level(napi_env env, napi_value exports);
 extern void expose_ziti_shutdown(napi_env env, napi_value exports);
 extern void expose_ziti_write(napi_env env, napi_value exports);
 extern void expose_ziti_https_request(napi_env env, napi_value exports);

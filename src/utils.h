@@ -44,21 +44,21 @@ extern FILE *ziti_nodejs_debug_out;
 
 
 /// for windows compilation NOGDI needs to be set:
-#define DEBUG_LEVELS(XX) \
-    XX(NONE) \
-    XX(ERROR) /*WINDOWS - see comment above wrt NOGDI*/ \
-    XX(WARN) \
-    XX(INFO) \
-    XX(DEBUG) \
-    XX(VERBOSE) \
-    XX(TRACE)
+// #define DEBUG_LEVELS(XX) \
+//     XX(NONE) \
+//     XX(ERROR) /*WINDOWS - see comment above wrt NOGDI*/ \
+//     XX(WARN) \
+//     XX(INFO) \
+//     XX(DEBUG) \
+//     XX(VERBOSE) \
+//     XX(TRACE)
 
 
-enum DebugLevel {
-#define _level(n) n,
-    DEBUG_LEVELS(_level)
-#undef _level
-};
+// enum DebugLevel {
+// #define _level(n) n,
+//     DEBUG_LEVELS(_level)
+// #undef _level
+// };
 
 // #define container_of(ptr, type, member) ((type *) ((ptr) - offsetof(type, member)))
 

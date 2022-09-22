@@ -16,6 +16,7 @@ limitations under the License.
 
 #include <uv.h>
 #include "utils.h"
+#include <ziti/ziti_log.h>
 
 
 #if !defined(BUILD_DATE)
@@ -43,7 +44,7 @@ limitations under the License.
 #define ZITI_COMMIT sha
 #endif
 
-#define to_str(x) str(x)
+// #define to_str(x) str(x)
 #define str(x) #x
 
 
@@ -69,7 +70,7 @@ const char* ziti_nodejs_git_commit() {
     return to_str(ZITI_COMMIT);
 }
 
-int ziti_nodejs_debug_level = INFO;
+int ziti_nodejs_debug_level = ZITI_LOG_DEFAULT_LEVEL;
 FILE *ziti_nodejs_debug_out;
 
 #if _WIN32

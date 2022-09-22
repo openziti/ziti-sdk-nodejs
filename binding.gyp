@@ -38,6 +38,7 @@
         "./src/ziti_init.c",
         "./src/ziti_listen.c",
         "./src/ziti_service_available.c",
+        "./src/ziti_set_log_level.c",
         "./src/ziti_shutdown.c",
         "./src/ziti_write.c",
         "./src/ziti_websocket_connect.c",
@@ -106,7 +107,7 @@
             "GCC_ENABLE_PASCAL_STRINGS": "NO",        # No -mpascal-strings
             "GCC_THREADSAFE_STATICS": "NO",           # -fno-threadsafe-statics
             "PREBINDING": "NO",                       # No -Wl,-prebind
-            "MACOSX_DEPLOYMENT_TARGET": "12",         # -mmacosx-version-min=10.14
+            "MACOSX_DEPLOYMENT_TARGET": "10.14",         # -mmacosx-version-min=10.14
             "USE_HEADERMAP": "NO",
             "OTHER_CFLAGS": [
               "-fno-strict-aliasing",
