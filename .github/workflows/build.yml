@@ -202,7 +202,7 @@ jobs:
         ./node_modules/.bin/node-pre-gyp package unpublish publish
         sleep 5
       if: |
-        steps.extract_branch.outputs.branch == 'main' 
+        steps.extract_branch.outputs.branch == 'main' &&  !(matrix.config.os == 'ubuntu-18.04' && matrix.config.node == '16' && matrix.architecture == 'x64' && steps.extract_branch.outputs.branch == 'main')
 
     - name: Install Binary
       run: |

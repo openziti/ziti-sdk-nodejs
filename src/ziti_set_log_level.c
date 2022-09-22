@@ -45,7 +45,7 @@ napi_value _ziti_set_log_level(napi_env env, const napi_callback_info info) {
   ZITI_NODEJS_LOG(DEBUG, "js_log_level: %lld", js_log_level);
 
   ziti_nodejs_debug_level = js_log_level;
-  ziti_log_set_level(js_log_level);
+  ziti_log_set_level(js_log_level, NULL);
 
   status = napi_create_int32(env, 0, &jsRetval);
   if (status != napi_ok) {
