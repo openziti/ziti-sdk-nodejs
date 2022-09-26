@@ -8,7 +8,7 @@
     <br>
     <br>
     <b>
-    A NodeJS-based SDK for delivering secure applications over a [Ziti Network](https://openziti.io)
+    A NodeJS-based SDK for delivering secure applications over a <a href="https://openziti.io">Ziti Network</a>
     <br>
     <br>
     <b>Part of the <a href="https://openziti.io/about">OpenZiti</a> ecosystem</b>
