@@ -17,7 +17,7 @@ limitations under the License.
 #include "ziti-nodejs.h"
 #include <ziti/ziti_src.h>
 
-static const unsigned int U1 = 1;
+// static const unsigned int U1 = 1;
 
 /**
  *  Number of hosts we can have client pools for
@@ -30,6 +30,7 @@ enum { listMapCapacity = 50 };
 enum { perKeyListMapCapacity = 25 };
 
 struct ListMap* HttpsClientListMap;
+struct ListMap* ServiceToHostnameListMap = NULL;
 
 struct key_value {
     char* key;
@@ -40,6 +41,11 @@ struct ListMap {
   struct   key_value kvPairs[listMapCapacity];
   size_t   count;
   uv_sem_t sem;
+};
+
+struct hostname_port {
+    char* hostname;
+    int   port;
 };
 
 struct ListMap* newListMap() {
@@ -166,7 +172,11 @@ static void allocate_client(uv_work_t* req) {
 
       HttpsClient* httpsClient = calloc(1, sizeof *httpsClient);
       httpsClient->scheme_host_port = strdup(addon_data->scheme_host_port);
+
+      ZITI_NODEJS_LOG(DEBUG, "addon_data->service is: %s", addon_data->service);
       ziti_src_init(thread_loop, &(httpsClient->ziti_src), addon_data->service, ztx );
+
+      ZITI_NODEJS_LOG(DEBUG, "addon_data->scheme_host_port is: %s", addon_data->scheme_host_port);
       um_http_init_with_src(thread_loop, &(httpsClient->client), addon_data->scheme_host_port, (um_src_t *)&(httpsClient->ziti_src) );
 
       listMapInsert(clientListMap, addon_data->scheme_host_port, (void*)httpsClient);
@@ -199,6 +209,61 @@ static void allocate_client(uv_work_t* req) {
   }
 }
 
+
+struct hostname_port* getHostnamePortForService(char* key) {
+
+  ZITI_NODEJS_LOG(DEBUG, "getHostnamePortForService() entered, key: %s", key);
+
+  struct hostname_port* value = NULL;
+
+  if (NULL != ServiceToHostnameListMap) {
+
+    for (size_t i = 0 ; i < ServiceToHostnameListMap->count && value == NULL ; ++i) {
+      if (strcmp(ServiceToHostnameListMap->kvPairs[i].key, key) == 0) {
+        value = ServiceToHostnameListMap->kvPairs[i].value;
+        ZITI_NODEJS_LOG(DEBUG, "getHostnamePortForService() found value->hostname is: [%s], port is: [%d]", value->hostname, value->port);
+      }
+    }
+  }
+
+  ZITI_NODEJS_LOG(DEBUG, "getHostnamePortForService() returning value '%p'", value);
+
+  return value;
+}
+
+
+/**
+ * 
+ */
+void track_service_to_hostname(char* service_name, char* hostname, int port) {
+
+  ZITI_NODEJS_LOG(DEBUG, "track_service_to_hostname() entered, service_name: %s hostname: %s port: %d", service_name, hostname, port);
+
+  if (NULL == ServiceToHostnameListMap) {
+    ServiceToHostnameListMap = newListMap();
+  }
+
+  struct hostname_port* value = getHostnamePortForService(service_name);
+
+  if (NULL == value) {
+
+    value = calloc(1, sizeof(*value));
+    value->hostname = strdup(hostname);
+    value->port = port;
+
+    listMapInsert(ServiceToHostnameListMap, service_name, (void*)value);
+
+    ZITI_NODEJS_LOG(DEBUG, "track_service_to_hostname() inserting service_name: %s hostname: %s port: %d", service_name, hostname, port);
+
+  } else {
+
+    value->hostname = strdup(hostname);
+    value->port = port;
+
+    ZITI_NODEJS_LOG(DEBUG, "track_service_to_hostname() updating service_name: %s hostname: %s port: %d", service_name, hostname, port);
+
+  }
+}
 
 
 /**
@@ -657,12 +722,13 @@ void on_client(uv_work_t* req, int status) {
 /**
  * Initiate an HTTPS request
  * 
- * @param {string}   [0] url
+ * @param {string}   [0] serviceName
  * @param {string}   [1] method
- * @param {string[]} [2] headers;                  Array of strings of the form "name:value"
- * @param {func}     [3] JS on_req  callback;      This is invoked from 'on_client' function above
- * @param {func}     [4] JS on_resp callback;      This is invoked from 'on_resp' function above
- * @param {func}     [5] JS on_resp_data callback; This is invoked from 'on_resp_data' function above
+ * @param {string}   [2] path
+ * @param {string[]} [3] headers;                  Array of strings of the form "name:value"
+ * @param {func}     [4] JS on_req  callback;      This is invoked from 'on_client' function above
+ * @param {func}     [5] JS on_resp callback;      This is invoked from 'on_resp' function above
+ * @param {func}     [6] JS on_resp_data callback; This is invoked from 'on_resp_data' function above
  * 
  * @returns {um_http_req_t} req  This allows the JS to subsequently write the Body to the request (see _Ziti_http_request_data)
 
@@ -672,7 +738,6 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
   napi_status status;
   size_t result;
   napi_value jsRetval;
-  char* query = "";
   int rc;
 
   ZITI_NODEJS_LOG(DEBUG, "entered");
@@ -681,14 +746,15 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
     HttpsClientListMap = newListMap();
   }
 
-  size_t argc = 6;
-  napi_value args[6];
+  size_t argc = 7;
+  napi_value args[7];
   status = napi_get_cb_info(env, info, &argc, args, NULL, NULL);
   if (status != napi_ok) {
     napi_throw_error(env, NULL, "Failed to parse arguments");
+    return NULL;
   }
 
-  if (argc < 6) {
+  if (argc < 7) {
     napi_throw_error(env, "EINVAL", "Too few arguments");
     return NULL;
   }
@@ -697,87 +763,76 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
   ZITI_NODEJS_LOG(DEBUG, "allocated addon_data : %p", addon_data);
   addon_data->env = env;
 
-  // Obtain url length
-  size_t url_len;
-  status = napi_get_value_string_utf8(env, args[0], NULL, 0, &url_len);
+  // Obtain serviceName length
+  size_t serviceName_len;
+  status = napi_get_value_string_utf8(env, args[0], NULL, 0, &serviceName_len);
   if (status != napi_ok) {
-    napi_throw_error(env, "EINVAL", "url is not a string");
+    napi_throw_error(env, "EINVAL", "serviceName is not a string");
+    return NULL;
   }
 
-  // Obtain url
-  char* url = calloc(1, url_len+2);
-  status = napi_get_value_string_utf8(env, args[0], url, url_len+1, &result);
+  // Obtain serviceName
+  char* serviceName = calloc(1, serviceName_len+2);
+  status = napi_get_value_string_utf8(env, args[0], serviceName, serviceName_len+1, &result);
   if (status != napi_ok) {
-    napi_throw_error(env, "EINVAL", "Failed to obtain url");
+    napi_throw_error(env, "EINVAL", "Failed to obtain serviceName");
+    return NULL;
   }
 
-  ZITI_NODEJS_LOG(DEBUG, "url: %s", url);
+  struct hostname_port* hostname_port = getHostnamePortForService(serviceName);
 
-  struct http_parser_url url_parse = {0};
-  rc = http_parser_parse_url(url, strlen(url), false, &url_parse);
-  if (rc != 0) {
-    napi_throw_error(env, "EINVAL", "Failed to parse url");
+  if (NULL == hostname_port) {
+    napi_throw_error(env, "EINVAL", "Unknown serviceName");
+    return NULL;
   }
 
-  if (url_parse.field_set & (U1 << (unsigned int) UF_HOST)) {
-    addon_data->service = strndup(url + url_parse.field_data[UF_HOST].off, url_parse.field_data[UF_HOST].len);
-  }
-  else {
-    ZITI_NODEJS_LOG(ERROR, "invalid URL: no host");
-    napi_throw_error(env, "EINVAL", "invalid URL: no host");
-  }
+  addon_data->service = strdup(serviceName);
 
-  ZITI_NODEJS_LOG(DEBUG, "service: %s", addon_data->service);
-
-  if (url_parse.field_set & (U1 << (unsigned int) UF_PATH)) {
-    addon_data->path = strndup(url + url_parse.field_data[UF_PATH].off, url_parse.field_data[UF_PATH].len);
+  if (hostname_port->port == 443) {
+    addon_data->scheme_host_port = strdup("https://");
+  } else {
+    addon_data->scheme_host_port = strdup("http://");
   }
-  else {
-    ZITI_NODEJS_LOG(ERROR, "invalid URL: no path");
-    napi_throw_error(env, "EINVAL", "invalid URL: no path");
-  }
-
-  ZITI_NODEJS_LOG(DEBUG, "path: [%s]", addon_data->path);
-
-  if (url_parse.field_set & (U1 << (unsigned int) UF_QUERY)) {
-    query = strndup(url + url_parse.field_data[UF_QUERY].off, url_parse.field_data[UF_QUERY].len);
-    ZITI_NODEJS_LOG(DEBUG, "query: [%s]", query);
-    char* expanded_path = calloc(1, strlen(addon_data->path)+strlen(query)+2);
-
-    strcat(expanded_path, addon_data->path);
-    strcat(expanded_path, "?");
-    strcat(expanded_path, query);
-    ZITI_NODEJS_LOG(DEBUG, "expanded_path: [%s]", expanded_path);
-    free(addon_data->path);
-    addon_data->path = expanded_path;
-  }
-  else {
-    ZITI_NODEJS_LOG(DEBUG, "URL: no query found");
-  }
-  ZITI_NODEJS_LOG(DEBUG, "adjusted path: [%s]", addon_data->path);
-
-  addon_data->scheme_host_port = strndup(url + url_parse.field_data[UF_SCHEMA].off, url_parse.field_data[UF_PATH].off);
+  strcat(addon_data->scheme_host_port, hostname_port->hostname);
 
   ZITI_NODEJS_LOG(DEBUG, "scheme_host_port: %s", addon_data->scheme_host_port);
-
 
   // Obtain method length
   size_t method_len;
   status = napi_get_value_string_utf8(env, args[1], NULL, 0, &method_len);
   if (status != napi_ok) {
     napi_throw_error(env, "EINVAL", "method is not a string");
+    return NULL;
   }
   // Obtain method
   addon_data->method = calloc(1, method_len+2);
   status = napi_get_value_string_utf8(env, args[1], addon_data->method, method_len+1, &result);
   if (status != napi_ok) {
     napi_throw_error(env, "EINVAL", "Failed to obtain method");
+    return NULL;
   }
 
   ZITI_NODEJS_LOG(DEBUG, "method: %s", addon_data->method);
 
+  // Obtain path length
+  size_t path_len;
+  status = napi_get_value_string_utf8(env, args[2], NULL, 0, &path_len);
+  if (status != napi_ok) {
+    napi_throw_error(env, "EINVAL", "path is not a string");
+    return NULL;
+  }
+  // Obtain path
+  addon_data->path = calloc(1, path_len+2);
+  status = napi_get_value_string_utf8(env, args[2], addon_data->path, path_len+1, &result);
+  if (status != napi_ok) {
+    napi_throw_error(env, "EINVAL", "Failed to obtain path");
+    return NULL;
+  }
+
+  ZITI_NODEJS_LOG(DEBUG, "path: %s", addon_data->path);
+
   // Obtain ptr to JS on_req callback function
-  napi_value js_cb = args[3];
+  napi_value js_cb = args[4];
   napi_value work_name;
 
 
@@ -789,6 +844,7 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
   rc = napi_create_string_utf8(env, "on_req", NAPI_AUTO_LENGTH, &work_name);
   if (rc != napi_ok) {
     napi_throw_error(env, "EINVAL", "Failed to create string");
+    return NULL;
   }
 
   // Convert the callback retrieved from JavaScript into a thread-safe function (tsfn) 
@@ -808,16 +864,18 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
   );
   if (rc != napi_ok) {
     napi_throw_error(env, "EINVAL", "Failed to create threadsafe_function");
+    return NULL;
   }
   ZITI_NODEJS_LOG(DEBUG, "napi_create_threadsafe_function addon_data->tsfn_on_req() : %p", addon_data->tsfn_on_req);
 
   // Obtain ptr to JS on_resp callback function
-  napi_value js_cb2 = args[4];
+  napi_value js_cb2 = args[5];
 
   // Create a string to describe this asynchronous operation.
   rc = napi_create_string_utf8(env, "on_resp", NAPI_AUTO_LENGTH, &work_name);
   if (rc != napi_ok) {
     napi_throw_error(env, "EINVAL", "Failed to create string");
+    return NULL;
   }
 
   // Convert the callback retrieved from JavaScript into a thread-safe function (tsfn) 
@@ -837,17 +895,19 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
   );
   if (rc != napi_ok) {
     napi_throw_error(env, "EINVAL", "Failed to create threadsafe_function");
+    return NULL;
   }
   ZITI_NODEJS_LOG(DEBUG, "napi_create_threadsafe_function addon_data->tsfn_on_resp() : %p", addon_data->tsfn_on_resp);
 
 
   // Obtain ptr to JS on_resp_data callback function
-  napi_value js_cb3 = args[5];
+  napi_value js_cb3 = args[6];
 
   // Create a string to describe this asynchronous operation.
   rc = napi_create_string_utf8(env, "on_resp_data", NAPI_AUTO_LENGTH, &work_name);
   if (rc != napi_ok) {
     napi_throw_error(env, "EINVAL", "Failed to create string");
+    return NULL;
   }
 
   // Convert the callback retrieved from JavaScript into a thread-safe function (tsfn) 
@@ -867,6 +927,7 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
   );
   if (rc != napi_ok) {
     napi_throw_error(env, "EINVAL", "Failed to create threadsafe_function");
+    return NULL;
   }
   ZITI_NODEJS_LOG(DEBUG, "napi_create_threadsafe_function addon_data->tsfn_on_resp_body() : %p", addon_data->tsfn_on_resp_body);
 
@@ -874,17 +935,19 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
   // Capture headers
   //
   uint32_t i;
-  status = napi_get_array_length(env, args[2], &addon_data->headers_array_length);
+  status = napi_get_array_length(env, args[3], &addon_data->headers_array_length);
   if (status != napi_ok) {
     napi_throw_error(env, "EINVAL", "Failed to obtain headers array");
+    return NULL;
   }
   ZITI_NODEJS_LOG(DEBUG, "headers_array_length: %d", addon_data->headers_array_length);
   for (i = 0; i < addon_data->headers_array_length; i++) {
 
     napi_value headers_array_element;
-    status = napi_get_element(env, args[2], i, &headers_array_element);
+    status = napi_get_element(env, args[3], i, &headers_array_element);
     if (status != napi_ok) {
       napi_throw_error(env, "EINVAL", "Failed to obtain headers element");
+      return NULL;
     }
 
     // Obtain element length
@@ -892,6 +955,7 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
     status = napi_get_value_string_utf8(env, headers_array_element, NULL, 0, &element_len);
     if (status != napi_ok) {
       napi_throw_error(env, "EINVAL", "header arry element is not a string");
+      return NULL;
     }
     ZITI_NODEJS_LOG(DEBUG, "element_len: %zd", element_len);
 
@@ -906,16 +970,19 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
     status = napi_get_value_string_utf8(env, headers_array_element, header_element, element_len+1, &result);
     if (status != napi_ok) {
       napi_throw_error(env, "EINVAL", "Failed to obtain element");
+      return NULL;
     }
     ZITI_NODEJS_LOG(DEBUG, "header_element: %s", header_element);
 
     char * header_name = strtok(header_element, ":");
     if (NULL == header_name) {
       napi_throw_error(env, "EINVAL", "Failed to split header element");
+      return NULL;
     }
     char * header_value = strtok(NULL, ":");
     if (strlen(header_value) < 1) {
       napi_throw_error(env, "EINVAL", "Failed to split header element");
+      return NULL;
     }
 
     addon_data->header_name[i] = strdup(header_name);
@@ -938,6 +1005,7 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
   status = napi_create_int64(env, (int64_t)0, &jsRetval);
   if (status != napi_ok) {
     napi_throw_error(env, NULL, "Unable to create return value");
+    return NULL;
   }
   return jsRetval;
 }
