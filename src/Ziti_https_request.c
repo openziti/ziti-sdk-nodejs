@@ -17,7 +17,6 @@ limitations under the License.
 #include "ziti-nodejs.h"
 #include <ziti/ziti_src.h>
 
-// static const unsigned int U1 = 1;
 
 /**
  *  Number of hosts we can have client pools for
@@ -173,8 +172,13 @@ static void allocate_client(uv_work_t* req) {
       HttpsClient* httpsClient = calloc(1, sizeof *httpsClient);
       httpsClient->scheme_host_port = strdup(addon_data->scheme_host_port);
 
-      ZITI_NODEJS_LOG(DEBUG, "addon_data->service is: %s", addon_data->service);
-      ziti_src_init(thread_loop, &(httpsClient->ziti_src), addon_data->service, ztx );
+      if (addon_data->haveURL) {
+        ZITI_NODEJS_LOG(DEBUG, "URL specified, so pasing NULL to ziti_src_init");
+        ziti_src_init(thread_loop, &(httpsClient->ziti_src), addon_data->service, ztx );
+      } else {
+        ZITI_NODEJS_LOG(DEBUG, "addon_data->service is: %s", addon_data->service);
+        ziti_src_init(thread_loop, &(httpsClient->ziti_src), addon_data->service, ztx );
+      }
 
       ZITI_NODEJS_LOG(DEBUG, "addon_data->scheme_host_port is: %s", addon_data->scheme_host_port);
       um_http_init_with_src(thread_loop, &(httpsClient->client), addon_data->scheme_host_port, (um_src_t *)&(httpsClient->ziti_src) );
@@ -722,7 +726,7 @@ void on_client(uv_work_t* req, int status) {
 /**
  * Initiate an HTTPS request
  * 
- * @param {string}   [0] serviceName
+ * @param {string}   [0] serviceName | URL
  * @param {string}   [1] method
  * @param {string}   [2] path
  * @param {string[]} [3] headers;                  Array of strings of the form "name:value"
@@ -779,23 +783,51 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
     return NULL;
   }
 
-  struct hostname_port* hostname_port = getHostnamePortForService(serviceName);
-
-  if (NULL == hostname_port) {
-    napi_throw_error(env, "EINVAL", "Unknown serviceName");
-    return NULL;
-  }
-
-  addon_data->service = strdup(serviceName);
-
-  if (hostname_port->port == 443) {
-    addon_data->scheme_host_port = strdup("https://");
+  bool haveURL = false;
+  struct http_parser_url url_parse = {0};
+  rc = http_parser_parse_url(serviceName, strlen(serviceName), false, &url_parse);
+  if (rc == 0) {
+    haveURL = true;
+    ZITI_NODEJS_LOG(DEBUG, "serviceName IS a URL");
   } else {
-    addon_data->scheme_host_port = strdup("http://");
+    ZITI_NODEJS_LOG(DEBUG, "serviceName is NOT a URL");
   }
-  strcat(addon_data->scheme_host_port, hostname_port->hostname);
 
-  ZITI_NODEJS_LOG(DEBUG, "scheme_host_port: %s", addon_data->scheme_host_port);
+  struct hostname_port* hostname_port = NULL;
+
+  if (haveURL) {
+
+    addon_data->scheme_host_port = strdup(serviceName);
+
+  } else {
+
+    hostname_port = getHostnamePortForService(serviceName);
+    if (NULL == hostname_port) {
+      napi_throw_error(env, "EINVAL", "Unknown serviceName");
+      return NULL;
+    }
+    addon_data->service = strdup(serviceName);
+
+    ZITI_NODEJS_LOG(DEBUG, "addon_data->service: %s", addon_data->service);
+
+    addon_data->scheme_host_port = calloc(1, 100);
+
+    if (hostname_port->port == 443) {
+      strcat(addon_data->scheme_host_port, "https://");
+      strcat(addon_data->scheme_host_port, hostname_port->hostname);
+    } else {
+      strcat(addon_data->scheme_host_port, "http://");
+      strcat(addon_data->scheme_host_port, hostname_port->hostname);
+      strcat(addon_data->scheme_host_port, ":");
+      char sport[8];
+      sprintf(sport, "%d", hostname_port->port);
+      strcat(addon_data->scheme_host_port, sport);
+    }
+  }
+
+  addon_data->haveURL = haveURL;
+
+  ZITI_NODEJS_LOG(DEBUG, "scheme_host_port: %s, haveURL: %d", addon_data->scheme_host_port, haveURL);
 
   // Obtain method length
   size_t method_len;

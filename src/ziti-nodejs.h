@@ -177,6 +177,7 @@ struct HttpsAddonData {
   HttpsRespItem* item;
   HttpsReq* httpsReq;
   uv_work_t uv_req;
+  bool haveURL;
   char* service;
   char* scheme_host_port;
   char* method;
