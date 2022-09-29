@@ -1,13 +1,13 @@
 <p align="center" width="100%">
 OpenZiti is a free and open source project focused on bringing zero trust to any application.
+     <br>
+The project provides all the pieces required to implement or integrate zero trust into your solutions.
 <br/>
 <br/>
 Please star us.
 <br/>
 <a href="https://github.com/openziti/ziti/stargazers"><img src="https://img.shields.io/github/stars/openziti/ziti?style=flat" ></a>
 <br/>
-     <br>
-The project provides all the pieces required to implement or integrate zero trust into your solutions.
      <br>
 </p>
 
@@ -21,7 +21,7 @@ The project provides all the pieces required to implement or integrate zero trus
     <br>
     <br>
     <b>
-    A NodeJS-based SDK for delivering secure applications over a <a href="https://openziti.io">Ziti Network</a>
+    This repo hosts the OpenZiti SDK for NodeJS, and is designed to help you deliver secure applications over a <a href="https://openziti.io">OpenZiti Network</a>
     <br>
     <br>
     <b>Part of the <a href="https://openziti.io/about">OpenZiti</a> ecosystem</b>
@@ -46,6 +46,9 @@ The project provides all the pieces required to implement or integrate zero trus
 
 ---
 
+# Associated Article(s)
+For more context on this SDK, you may be interested in this
+[article concerning how to secure NodeJS applications](https://openziti.io/securing-nodejs-applications)
 
 
 
@@ -64,8 +67,13 @@ Binaries for most Node versions and platforms are provided by default via [@mapb
 
 # Installing
 
+NPM
 ``` js
 npm i @openziti/ziti-sdk-nodejs
+```
+or Yarn
+``` js
+yarn add @openziti/ziti-sdk-nodejs
 ```
 
 Special note on previous package:
@@ -81,6 +89,59 @@ npm install @openziti/ziti-sdk-nodejs --save
 
 **Note:** the module must be [installed](#installing) before use.
 
+ESM example (client-side)
+``` js
+import ziti from '@openziti/ziti-sdk-nodejs';
+
+// Somehow provide path to identity file, e.g. via env var
+const zitiIdentityFile  = process.env.ZITI_IDENTITY_FILE;
+// Authenticate ourselves onto the Ziti network
+await ziti.init( zitiIdentityFile ).catch(( err ) => { /* probably exit */ });
+
+const on_resp_data = ( obj ) => {
+    console.log(`response is: ${obj.body.toString('utf8')}`);
+};
+
+// Perform an HTTP GET request to a dark OpenZiti web service
+ziti.httpRequest(
+  'myDarkWebService', 
+  'GET', 
+  '/',              // path
+  ['Accept: application/json' ], // headers
+  undefined,        // optional on_req cb 
+  undefined,        // optional on_req_data cb
+  on_resp_data      // optional on_resp_data cb
+);
+
+```
+
+ESM example (server-side ExpressJS)
+``` js
+import ziti from '@openziti/ziti-sdk-nodejs';
+import express from 'express';
+let app = ziti.express( express, zitiServiceName );
+app.listen(ignored, function() { ... }
+
+/**
+
+That's right.
+
+With only a single-line code change (the ziti.express call), your web server is now capable
+of being invisible to malicious attackers on the internet, and only accessible to your 
+trusted remote users.
+
+Nothing else in your existing ExpressJS web server code needs to change!
+
+Existing routing, middleware, etc., all operates the same as it always did... 
+but now you enjoy the comfort of knowing that if a connection comes in, it is from 
+a trusted identity on the client side.
+
+No malicious actors can see your dark web server, and thus, no malicious actors can attack it.
+
+*/
+```
+
+CJS example (client-side)
 ``` js
 var ziti = require('@openziti/ziti-sdk-nodejs');
 
@@ -147,6 +208,9 @@ const ziti_write = (conn, data) => {
 
 # Ziti NodeJS SDK - Setup for Development
 
+NOTE: You don't need to compile this SDK in order to use it (we publish pre-built binaries for your OS, NodeJS version, and CPU architecture).
+The following information applies only if you are doing development on the SDK itself.
+
 The following steps should get your NodeJS SDK for Ziti building. The Ziti NodeJS SDK is a native addon for Node JS,
 and is written in C. C development is specific to your operating system and tool chain used. These steps should work 
 properly for you but if your OS has variations you may need to adapt these steps accordingly.
@@ -172,11 +236,10 @@ $ npm run build
 
 Getting Help
 ------------
-Please use these community resources for getting help. We use GitHub [issues](https://github.com/NetFoundry/ziti-sdk-nodejs/issues) 
+Please use these community resources for getting help. We use GitHub [issues](https://github.com/openziti/ziti-sdk-nodejs/issues) 
 for tracking bugs and feature requests and have limited bandwidth to address them.
 
-- Read the [docs](https://netfoundry.github.io/ziti-doc/ziti/overview.html)
-- Join our [Developer Community](https://developer.netfoundry.io)
+- Read the [docs](https://openziti.github.io/ziti/overview.html)
 - Participate in discussion on [Discourse](https://openziti.discourse.group/)
 
 
