@@ -127,11 +127,14 @@ app.listen(ignored, function() { ... }
 That's right.
 
 With only a single-line code change (the ziti.express call), your web server is now capable
-of being invisible to malicious attackers on the internet, and only accessible to your trusted remote users.
+of being invisible to malicious attackers on the internet, and only accessible to your 
+trusted remote users.
 
 Nothing else in your existing ExpressJS web server code needs to change!
 
-Existing routing, middleware, etc., all operates the same as it always did... but now you enjoy the comfort of knowing that if a connection comes in, it is from a trusted identity on the client side.
+Existing routing, middleware, etc., all operates the same as it always did... 
+but now you enjoy the comfort of knowing that if a connection comes in, it is from 
+a trusted identity on the client side.
 
 No malicious actors can see your dark web server, and thus, no malicious actors can attack it.
 
