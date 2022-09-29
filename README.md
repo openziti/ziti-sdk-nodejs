@@ -1,4 +1,17 @@
 <p align="center" width="100%">
+OpenZiti is a free and open source project focused on bringing zero trust to any application.
+<br/>
+<br/>
+Please star us.
+<br/>
+<a href="https://github.com/openziti/ziti/stargazers"><img src="https://img.shields.io/github/stars/openziti/ziti?style=flat" ></a>
+<br/>
+     <br>
+The project provides all the pieces required to implement or integrate zero trust into your solutions.
+     <br>
+</p>
+
+<p align="center" width="100%">
 <a href="https://openziti.io"><img src="ziti.png" width="100"></a>
 </p>
 

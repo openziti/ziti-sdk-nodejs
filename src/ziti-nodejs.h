@@ -177,6 +177,7 @@ struct HttpsAddonData {
   HttpsRespItem* item;
   HttpsReq* httpsReq;
   uv_work_t uv_req;
+  bool haveURL;
   char* service;
   char* scheme_host_port;
   char* method;
@@ -218,6 +219,7 @@ extern void expose_ziti_websocket_write(napi_env env, napi_value exports);
 //
 extern int um_websocket_init_with_src (uv_loop_t *loop, um_websocket_t *ws, um_src_t *src);
 
+extern void track_service_to_hostname(char* service_name, char* hostname, int port);
 
 #ifdef __cplusplus
 }

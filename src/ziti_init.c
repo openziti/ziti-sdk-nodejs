@@ -153,6 +153,77 @@ static void on_ziti_event(ziti_context _ztx, const ziti_event_t *event) {
               // service_check_cb(ztx, *sp, ZITI_OK, app_ctx);
           }
       }
+
+      if (event->event.service.changed != NULL) {
+          for (ziti_service **sp = event->event.service.changed; *sp != NULL; sp++) {
+              // service_check_cb(ztx, *sp, ZITI_OK, app_ctx);
+          }
+      }
+
+      //
+      for (int i = 0; event->event.service.added && event->event.service.added[i] != NULL; i++) {
+
+        ziti_service *s = event->event.service.added[i];
+        ziti_intercept_cfg_v1 *intercept = alloc_ziti_intercept_cfg_v1();
+        ziti_client_cfg_v1 clt_cfg = {
+          .hostname = {0},
+          .port = 0
+        };
+
+        if (ziti_service_get_config(s, ZITI_INTERCEPT_CFG_V1, intercept, (int (*)(void *, const char *, size_t))parse_ziti_intercept_cfg_v1) == ZITI_OK) {
+
+          const ziti_address *range_addr;
+          MODEL_LIST_FOREACH(range_addr, intercept->addresses) {
+            ziti_port_range *p;
+            MODEL_LIST_FOREACH(p, intercept->port_ranges) {
+                int lowport = p->low;
+                while (lowport <= p->high) {
+                  track_service_to_hostname(s->name, (char *)range_addr->addr.hostname, lowport);
+                  lowport++;
+                }
+            }
+          }
+
+        } else if (ziti_service_get_config(s, ZITI_CLIENT_CFG_V1, &clt_cfg, (int (*)(void *, const char *, unsigned long))parse_ziti_client_cfg_v1) == ZITI_OK) {
+            track_service_to_hostname(s->name, clt_cfg.hostname.addr.hostname, clt_cfg.port);
+        }
+
+        free_ziti_intercept_cfg_v1(intercept);
+        free(intercept);
+      }
+
+      for (int i = 0; event->event.service.changed && event->event.service.changed[i] != NULL; i++) {
+
+        ziti_service *s = event->event.service.changed[i];
+        ziti_intercept_cfg_v1 *intercept = alloc_ziti_intercept_cfg_v1();
+        ziti_client_cfg_v1 clt_cfg = {
+          .hostname = {0},
+          .port = 0
+        };
+
+        if (ziti_service_get_config(s, ZITI_INTERCEPT_CFG_V1, intercept, (int (*)(void *, const char *, size_t))parse_ziti_intercept_cfg_v1) == ZITI_OK) {
+
+          const ziti_address *range_addr;
+          MODEL_LIST_FOREACH(range_addr, intercept->addresses) {
+            ziti_port_range *p;
+            MODEL_LIST_FOREACH(p, intercept->port_ranges) {
+                int lowport = p->low;
+                while (lowport <= p->high) {
+                  track_service_to_hostname(s->name, (char *)range_addr->addr.hostname, lowport);
+                  lowport++;
+                }
+            }
+          }
+
+        } else if (ziti_service_get_config(s, ZITI_CLIENT_CFG_V1, &clt_cfg, (int (*)(void *, const char *, unsigned long))parse_ziti_client_cfg_v1) == ZITI_OK) {
+            track_service_to_hostname(s->name, clt_cfg.hostname.addr.hostname, clt_cfg.port);
+        }
+
+        free_ziti_intercept_cfg_v1(intercept);
+        free(intercept);
+      }
+
+
       break;
 
     case ZitiRouterEvent:
