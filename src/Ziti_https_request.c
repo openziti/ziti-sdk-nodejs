@@ -726,9 +726,9 @@ void on_client(uv_work_t* req, int status) {
 /**
  * Initiate an HTTPS request
  * 
- * @param {string}   [0] serviceName | URL
+ * @param {string}   [0] serviceName | url         Ziti service name or HTTP origin
  * @param {string}   [1] method
- * @param {string}   [2] path
+ * @param {string}   [2] path                      path part of the URL including query params
  * @param {string[]} [3] headers;                  Array of strings of the form "name:value"
  * @param {func}     [4] JS on_req  callback;      This is invoked from 'on_client' function above
  * @param {func}     [5] JS on_resp callback;      This is invoked from 'on_resp' function above
