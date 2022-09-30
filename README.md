@@ -104,13 +104,13 @@ const on_resp_data = ( obj ) => {
 
 // Perform an HTTP GET request to a dark OpenZiti web service
 ziti.httpRequest(
-  'myDarkWebService', 
-  'GET', 
-  '/',              // path
+  'myDarkWebService',            // OpenZiti Service name or HTTP origin part of the URL
+  'GET',
+  '/',                           // path part of the URL including query params
   ['Accept: application/json' ], // headers
-  undefined,        // optional on_req cb 
-  undefined,        // optional on_req_data cb
-  on_resp_data      // optional on_resp_data cb
+  undefined,                     // optional on_req cb 
+  undefined,                     // optional on_req_data cb
+  on_resp_data                   // optional on_resp_data cb
 );
 
 ```
