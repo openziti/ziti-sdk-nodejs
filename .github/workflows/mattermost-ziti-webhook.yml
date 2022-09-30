@@ -13,7 +13,7 @@ on:
 
 jobs:
   mattermost-ziti-webhook:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     name: POST Webhook
     env:
       ZITI_LOG: 99
