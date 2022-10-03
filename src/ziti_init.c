@@ -21,6 +21,8 @@ ziti_context ztx = NULL;
 typedef struct {
   napi_async_work work;
   napi_threadsafe_function tsfn;
+  int zitiContextEventStatus;
+  bool on_init_cb_invoked;
 } AddonData;
 
 
@@ -129,16 +131,8 @@ static void on_ziti_event(ziti_context _ztx, const ziti_event_t *event) {
           ZITI_NODEJS_LOG(ERROR, "Failed to connect to controller: %s", event->event.ctx.err);
       }
 
-      // Initiate the call into the JavaScript callback. 
-      // The call into JavaScript will not have happened 
-      // when this function returns, but it will be queued.
-      nstatus = napi_call_threadsafe_function(
-          addon_data->tsfn,
-          (void*) (long) event->event.ctx.ctrl_status,
-          napi_tsfn_blocking);
-      if (nstatus != napi_ok) {
-        ZITI_NODEJS_LOG(ERROR, "Unable to napi_call_threadsafe_function");
-      }
+      addon_data->zitiContextEventStatus = event->event.ctx.ctrl_status;
+
       break;
 
     case ZitiServiceEvent:
@@ -223,6 +217,15 @@ static void on_ziti_event(ziti_context _ztx, const ziti_event_t *event) {
         free(intercept);
       }
 
+      // Initiate the call into the JavaScript 'on_init' callback, now that we know about all the services
+      ZITI_NODEJS_LOG(DEBUG, "addon_data->on_init_cb_invoked %o", addon_data->on_init_cb_invoked);
+      if (!addon_data->on_init_cb_invoked) {
+        nstatus = napi_call_threadsafe_function(
+            addon_data->tsfn,
+            (void*) (long) addon_data->zitiContextEventStatus,
+            napi_tsfn_blocking);
+        addon_data->on_init_cb_invoked = true;
+      }
 
       break;
 
@@ -293,7 +296,7 @@ napi_value _ziti_init(napi_env env, const napi_callback_info info) {
   // Obtain ptr to JS callback function
   napi_value js_cb = args[1];
   napi_value work_name;
-  AddonData* addon_data = malloc(sizeof(AddonData));
+  AddonData* addon_data = calloc(1, sizeof(AddonData));
 
   // Create a string to describe this asynchronous operation.
   status = napi_create_string_utf8(
