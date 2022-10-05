@@ -16,7 +16,8 @@
     "start": "node main.js ./config/identity.json chapel-hill",
     "install": "node-pre-gyp install --fallback-to-build",
     "install-dbg": "npm install --build-from-source --clang=1 --debug",
-    "publish": "node-pre-gyp package publish"
+    "publish": "node-pre-gyp package publish",
+    "docs": "jsdoc2md -t README.hbs lib/*.js > README.md"
   },
   "repository": {
     "type": "git",
@@ -48,7 +49,10 @@
     "url": "http://netfoundry.io"
   },
   "devDependencies": {
-    "aws-sdk": "^2.823.0"
+    "aws-sdk": "^2.823.0",
+    "docdash": "^1.2.0",
+    "jsdoc": "^3.6.11",
+    "jsdoc-to-markdown": "^7.1.1"
   },
   "dependencies": {
     "@mapbox/node-pre-gyp": "^1.0.8"
