@@ -750,15 +750,15 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
     HttpsClientListMap = newListMap();
   }
 
-  size_t argc = 7;
-  napi_value args[7];
+  size_t argc = 8;
+  napi_value args[8];
   status = napi_get_cb_info(env, info, &argc, args, NULL, NULL);
   if (status != napi_ok) {
     napi_throw_error(env, NULL, "Failed to parse arguments");
     return NULL;
   }
 
-  if (argc < 7) {
+  if (argc < 8) {
     napi_throw_error(env, "EINVAL", "Too few arguments");
     return NULL;
   }
@@ -767,39 +767,86 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
   ZITI_NODEJS_LOG(DEBUG, "allocated addon_data : %p", addon_data);
   addon_data->env = env;
 
-  // Obtain serviceName length
-  size_t serviceName_len;
-  status = napi_get_value_string_utf8(env, args[0], NULL, 0, &serviceName_len);
-  if (status != napi_ok) {
-    napi_throw_error(env, "EINVAL", "serviceName is not a string");
+  bool serviceNameSpecified = false;
+
+  // Determine if the serviceName arg was specified
+  napi_valuetype valuetype;
+  status = napi_typeof(env, args[0], &valuetype);
+  if (valuetype != napi_undefined) {
+    ZITI_NODEJS_LOG(DEBUG, "serviceName is specified");
+    serviceNameSpecified = true;
+  }
+
+  bool schemeHostPortSpecified = false;
+
+  // Determine if the schemeHostPort arg was specified
+  status = napi_typeof(env, args[1], &valuetype);
+  if (valuetype != napi_undefined) {
+    ZITI_NODEJS_LOG(DEBUG, "schemeHostPort is specified");
+    schemeHostPortSpecified = true;
+  }
+
+  if (serviceNameSpecified && schemeHostPortSpecified) {
+    napi_throw_error(env, "EINVAL", "both serviceName and schemeHostPort were specified; they are mutually exclusive");
+    return NULL;
+  }
+  if (!serviceNameSpecified && !schemeHostPortSpecified) {
+    napi_throw_error(env, "EINVAL", "both serviceName and schemeHostPort were unspecified; must specify one");
     return NULL;
   }
 
-  // Obtain serviceName
-  char* serviceName = calloc(1, serviceName_len+2);
-  status = napi_get_value_string_utf8(env, args[0], serviceName, serviceName_len+1, &result);
-  if (status != napi_ok) {
-    napi_throw_error(env, "EINVAL", "Failed to obtain serviceName");
-    return NULL;
+  char* serviceName;
+
+  if (serviceNameSpecified) {
+    // Obtain serviceName length
+    size_t serviceName_len;
+    status = napi_get_value_string_utf8(env, args[0], NULL, 0, &serviceName_len);
+    if (status != napi_ok) {
+      napi_throw_error(env, "EINVAL", "serviceName is not a string");
+      return NULL;
+    }
+
+    // Obtain serviceName
+    serviceName = calloc(1, serviceName_len+2);
+    status = napi_get_value_string_utf8(env, args[0], serviceName, serviceName_len+1, &result);
+    if (status != napi_ok) {
+      napi_throw_error(env, "EINVAL", "Failed to obtain serviceName");
+      return NULL;
+    }
   }
 
-  bool haveURL = false;
-  struct http_parser_url url_parse = {0};
-  rc = http_parser_parse_url(serviceName, strlen(serviceName), false, &url_parse);
-  if (rc == 0) {
-    haveURL = true;
-    ZITI_NODEJS_LOG(DEBUG, "serviceName IS a URL");
-  } else {
-    ZITI_NODEJS_LOG(DEBUG, "serviceName is NOT a URL");
-  }
+  char* schemeHostPort;
 
-  struct hostname_port* hostname_port = NULL;
+  if (schemeHostPortSpecified) {
+    // Obtain schemeHostPort length
+    size_t schemeHostPort_len;
+    status = napi_get_value_string_utf8(env, args[1], NULL, 0, &schemeHostPort_len);
+    if (status != napi_ok) {
+      napi_throw_error(env, "EINVAL", "schemeHostPort is not a string");
+      return NULL;
+    }
 
-  if (haveURL) {
+    // Obtain schemeHostPort
+    schemeHostPort = calloc(1, schemeHostPort_len+2);
+    status = napi_get_value_string_utf8(env, args[1], schemeHostPort, schemeHostPort_len+1, &result);
+    if (status != napi_ok) {
+      napi_throw_error(env, "EINVAL", "Failed to obtain schemeHostPort");
+      return NULL;
+    }
+  
+    struct http_parser_url url_parse = {0};
+    rc = http_parser_parse_url(schemeHostPort, strlen(schemeHostPort), false, &url_parse);
+    if (rc != 0) {
+      napi_throw_error(env, "EINVAL", "schemeHostPort is not a valid URL");
+      return NULL;
+    }
 
-    addon_data->scheme_host_port = strdup(serviceName);
+    addon_data->scheme_host_port = strdup(schemeHostPort);
+    addon_data->haveURL = true;
 
-  } else {
+  } else if (serviceNameSpecified) {
+
+    struct hostname_port* hostname_port = NULL;
 
     hostname_port = getHostnamePortForService(serviceName);
     if (NULL == hostname_port) {
@@ -825,20 +872,18 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
     }
   }
 
-  addon_data->haveURL = haveURL;
-
-  ZITI_NODEJS_LOG(DEBUG, "scheme_host_port: %s, haveURL: %d", addon_data->scheme_host_port, haveURL);
+  ZITI_NODEJS_LOG(DEBUG, "scheme_host_port: %s, haveURL: %d", addon_data->scheme_host_port, addon_data->haveURL);
 
   // Obtain method length
   size_t method_len;
-  status = napi_get_value_string_utf8(env, args[1], NULL, 0, &method_len);
+  status = napi_get_value_string_utf8(env, args[2], NULL, 0, &method_len);
   if (status != napi_ok) {
     napi_throw_error(env, "EINVAL", "method is not a string");
     return NULL;
   }
   // Obtain method
   addon_data->method = calloc(1, method_len+2);
-  status = napi_get_value_string_utf8(env, args[1], addon_data->method, method_len+1, &result);
+  status = napi_get_value_string_utf8(env, args[2], addon_data->method, method_len+1, &result);
   if (status != napi_ok) {
     napi_throw_error(env, "EINVAL", "Failed to obtain method");
     return NULL;
@@ -848,14 +893,14 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
 
   // Obtain path length
   size_t path_len;
-  status = napi_get_value_string_utf8(env, args[2], NULL, 0, &path_len);
+  status = napi_get_value_string_utf8(env, args[3], NULL, 0, &path_len);
   if (status != napi_ok) {
     napi_throw_error(env, "EINVAL", "path is not a string");
     return NULL;
   }
   // Obtain path
   addon_data->path = calloc(1, path_len+2);
-  status = napi_get_value_string_utf8(env, args[2], addon_data->path, path_len+1, &result);
+  status = napi_get_value_string_utf8(env, args[3], addon_data->path, path_len+1, &result);
   if (status != napi_ok) {
     napi_throw_error(env, "EINVAL", "Failed to obtain path");
     return NULL;
@@ -864,7 +909,7 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
   ZITI_NODEJS_LOG(DEBUG, "path: %s", addon_data->path);
 
   // Obtain ptr to JS on_req callback function
-  napi_value js_cb = args[4];
+  napi_value js_cb = args[5];
   napi_value work_name;
 
 
@@ -901,7 +946,7 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
   ZITI_NODEJS_LOG(DEBUG, "napi_create_threadsafe_function addon_data->tsfn_on_req() : %p", addon_data->tsfn_on_req);
 
   // Obtain ptr to JS on_resp callback function
-  napi_value js_cb2 = args[5];
+  napi_value js_cb2 = args[6];
 
   // Create a string to describe this asynchronous operation.
   rc = napi_create_string_utf8(env, "on_resp", NAPI_AUTO_LENGTH, &work_name);
@@ -933,7 +978,7 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
 
 
   // Obtain ptr to JS on_resp_data callback function
-  napi_value js_cb3 = args[6];
+  napi_value js_cb3 = args[7];
 
   // Create a string to describe this asynchronous operation.
   rc = napi_create_string_utf8(env, "on_resp_data", NAPI_AUTO_LENGTH, &work_name);
@@ -967,7 +1012,7 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
   // Capture headers
   //
   uint32_t i;
-  status = napi_get_array_length(env, args[3], &addon_data->headers_array_length);
+  status = napi_get_array_length(env, args[4], &addon_data->headers_array_length);
   if (status != napi_ok) {
     napi_throw_error(env, "EINVAL", "Failed to obtain headers array");
     return NULL;
@@ -976,7 +1021,7 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
   for (i = 0; i < addon_data->headers_array_length; i++) {
 
     napi_value headers_array_element;
-    status = napi_get_element(env, args[3], i, &headers_array_element);
+    status = napi_get_element(env, args[4], i, &headers_array_element);
     if (status != napi_ok) {
       napi_throw_error(env, "EINVAL", "Failed to obtain headers element");
       return NULL;
