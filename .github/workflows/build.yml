@@ -71,7 +71,7 @@ jobs:
     
     - name: Extract branch name
       shell: bash
-      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+      run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
       id: extract_branch
 
     - name: Print branch name
@@ -81,7 +81,7 @@ jobs:
 
     - name: Get current date
       id: date
-      run: echo "##[set-output name=date;]$(echo $(date))"
+      run: echo "date=$(date)" >> $GITHUB_OUTPUT
 
     - name: Install Ninja (Linux)
       run: sudo apt-get install -y ninja-build
