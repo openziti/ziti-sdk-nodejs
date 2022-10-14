@@ -31,12 +31,12 @@ jobs:
       matrix:
         config:
           # - { os: windows-latest, cc: "cl",    cxx: "cl", node: '16' }
-          - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++", node: '12' }
-          - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++", node: '13' }
-          - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++", node: '14' }
-          - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++", node: '15' }
-          - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++", node: '16' }
-          - { os: ubuntu-18.04,   cc: "gcc",   cxx: "g++", node: '17' }
+          - { os: ubuntu-20.04,   cc: "gcc",   cxx: "g++", node: '12' }
+          - { os: ubuntu-20.04,   cc: "gcc",   cxx: "g++", node: '13' }
+          - { os: ubuntu-20.04,   cc: "gcc",   cxx: "g++", node: '14' }
+          - { os: ubuntu-20.04,   cc: "gcc",   cxx: "g++", node: '15' }
+          - { os: ubuntu-20.04,   cc: "gcc",   cxx: "g++", node: '16' }
+          - { os: ubuntu-20.04,   cc: "gcc",   cxx: "g++", node: '17' }
           - { os: ubuntu-20.04,   cc: "gcc",   cxx: "g++", node: '18' }
           - { os: macos-latest,   cc: "clang", cxx: "clang++", node: '12' }
           - { os: macos-latest,   cc: "clang", cxx: "clang++", node: '13' }
@@ -85,7 +85,7 @@ jobs:
 
     - name: Install Ninja (Linux)
       run: sudo apt-get install -y ninja-build
-      if: matrix.config.os == 'ubuntu-18.04' || matrix.config.os == 'ubuntu-20.04'
+      if: matrix.config.os == 'ubuntu-20.04'
 
     - name: Install Ninja (Mac)
       run: brew install ninja
@@ -119,8 +119,7 @@ jobs:
         mkdir ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
         cd ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
         cmake -G Ninja -DUSE_OPENSSL=on -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.config.cxx }} ..
-      if: |
-        matrix.config.os == 'ubuntu-18.04' || matrix.config.os == 'ubuntu-20.04'
+      if: matrix.config.os == 'ubuntu-20.04'
 
     - name: Build (embedded) C-SDK Phase-I ( Mac)
       run: |
@@ -155,7 +154,6 @@ jobs:
         cd ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
         cmake --build . --target all
       if: |
-        matrix.config.os == 'ubuntu-18.04' || 
         matrix.config.os == 'ubuntu-20.04' ||
         matrix.config.os == 'macOS-latest'
 
@@ -178,7 +176,6 @@ jobs:
       env:
         BUILD_DATE: ${{ steps.date.outputs.date }}
       if: |
-        matrix.config.os == 'ubuntu-18.04' ||
         matrix.config.os == 'ubuntu-20.04' ||
         matrix.config.os == 'macOS-latest'
 
@@ -202,7 +199,7 @@ jobs:
         ./node_modules/.bin/node-pre-gyp package unpublish publish
         sleep 5
       if: |
-        steps.extract_branch.outputs.branch == 'main' &&  !(matrix.config.os == 'ubuntu-18.04' && matrix.config.node == '16' && matrix.architecture == 'x64' && steps.extract_branch.outputs.branch == 'main')
+        steps.extract_branch.outputs.branch == 'main' &&  !(matrix.config.os == 'ubuntu-20.04' && matrix.config.node == '16' && matrix.architecture == 'x64' && steps.extract_branch.outputs.branch == 'main')
 
     - name: Install Binary
       run: |
@@ -221,4 +218,4 @@ jobs:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
       if: |
-        matrix.config.os == 'ubuntu-18.04' && matrix.config.node == '16' && matrix.architecture == 'x64' && steps.extract_branch.outputs.branch == 'main'
+        matrix.config.os == 'ubuntu-20.04' && matrix.config.node == '16' && matrix.architecture == 'x64' && steps.extract_branch.outputs.branch == 'main'
