@@ -1,3 +1,5 @@
+![Ziggy using the ziti-sdk-nodejs](https://raw.githubusercontent.com/openziti/branding/main/images/banners/Node.jpg)
+
 <p align="center" width="100%">
 OpenZiti is a free and open source project focused on bringing zero trust to any application.
      <br>
