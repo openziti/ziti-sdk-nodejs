@@ -16,15 +16,19 @@ limitations under the License.
 
 #include "ziti-nodejs.h"
 
+#include <ziti/ziti.h>
+
 
 /**
  * 
  */
-napi_value _ziti_hello(napi_env env, const napi_callback_info info) {
+napi_value _ziti_sdk_version(napi_env env, const napi_callback_info info) {
   napi_value jsRetval = NULL;
   napi_status status = napi_generic_failure;
 
-  status = napi_create_string_utf8(env, "ziti", NAPI_AUTO_LENGTH, &jsRetval);
+  const ziti_version *ver = ziti_get_version();
+
+  status = napi_create_string_utf8(env, ver->version, NAPI_AUTO_LENGTH, &jsRetval);
   if (status != napi_ok) return NULL;
 
   return jsRetval;
@@ -34,18 +38,18 @@ napi_value _ziti_hello(napi_env env, const napi_callback_info info) {
 /**
  * 
  */
-void expose_ziti_hello(napi_env env, napi_value exports) {
+void expose_ziti_sdk_version(napi_env env, napi_value exports) {
   napi_status status;
   napi_value fn;
 
-  status = napi_create_function(env, NULL, 0, _ziti_hello, NULL, &fn);
+  status = napi_create_function(env, NULL, 0, _ziti_sdk_version, NULL, &fn);
   if (status != napi_ok) {
-    napi_throw_error(env, NULL, "Unable to wrap native function '_ziti_hello");
+    napi_throw_error(env, NULL, "Unable to wrap native function '_ziti_sdk_version");
   }
 
-  status = napi_set_named_property(env, exports, "ziti_hello", fn);
+  status = napi_set_named_property(env, exports, "ziti_sdk_version", fn);
   if (status != napi_ok) {
-    napi_throw_error(env, NULL, "Unable to populate exports for 'ziti_hello");
+    napi_throw_error(env, NULL, "Unable to populate exports for 'ziti_sdk_version");
   }
 
 }

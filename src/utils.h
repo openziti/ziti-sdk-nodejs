@@ -34,7 +34,7 @@ extern void nodejs_hexDump(char *desc, void *addr, int len);
 typedef const char *(*fmt_error_t)(int);
 typedef int *(*cond_error_t)(int);
 
-#define __FILENAME_NODEJS__ (&__FILE__[SOURCE_PATH_SIZE])
+#define __FILENAME_NODEJS__ (__FILENAME__)
 
 
 extern void init_nodejs_debug();
