@@ -13,11 +13,10 @@
     "configure": "cmake-js configure",
     "start": "node main.js ./config/identity.json chapel-hill",
     "install:old": "node-pre-gyp install --fallback-to-build",
-    "install": "cmake-js build",
+    "install": "cmake-js build -- --target ziti_sdk_nodejs",
     "install-dbg": "npm install --build-from-source --clang=1 --debug",
     "publish": "node-pre-gyp package publish",
-    "docs": "jsdoc2md -t API_REFERENCE.hbs lib/*.js > API_REFERENCE.md",
-    "build:cmake": "cmake-js build"
+    "docs": "jsdoc2md -t API_REFERENCE.hbs lib/*.js > API_REFERENCE.md"
   },
   "repository": {
     "type": "git",

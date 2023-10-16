@@ -173,10 +173,6 @@ jobs:
       run: |
         node tests/hello.js
 
-    - name: Cleanup
-      run: |
-        npm run build:cleanup
-
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4
       if: env.AWS_KEY_ID != ''
