@@ -26,6 +26,7 @@ jobs:
 
     env:
       BUILD_NUMBER: ${{ github.run_number }}
+      AWS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
     
     strategy:
       matrix:
@@ -38,13 +39,6 @@ jobs:
       fail-fast: false
 
     steps:
-
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
 
     - name: Checkout
       uses: actions/checkout@v4
@@ -183,6 +177,14 @@ jobs:
       run: |
         npm run build:cleanup
 
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      if: env.AWS_KEY_ID != ''
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
     - name: Publish Binary to S3 (for all OS's, Node versions, and architectures)
       run: |
         ./node_modules/.bin/node-pre-gyp package unpublish publish
@@ -198,6 +200,7 @@ jobs:
         steps.extract_branch.outputs.branch == 'main'
 
     - name: Fetch Binary info
+      if: env.AWS_KEY_ID != ''
       run: |
         ./node_modules/.bin/node-pre-gyp info
 
