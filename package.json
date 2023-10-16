@@ -49,12 +49,12 @@
     "url": "http://netfoundry.io"
   },
   "devDependencies": {
-    "aws-sdk": "^2.823.0",
+    "aws-sdk": "^2.1473.0",
     "docdash": "^1.2.0",
     "jsdoc": "^3.6.11",
     "jsdoc-to-markdown": "^7.1.1"
   },
   "dependencies": {
-    "@mapbox/node-pre-gyp": "^1.0.8"
+    "@mapbox/node-pre-gyp": "^1.0.11"
   }
 }

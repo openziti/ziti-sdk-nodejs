@@ -45,7 +45,7 @@ jobs:
       with:
         fetch-depth: 0
         submodules: 'recursive'
-        token: ${{ secrets.ZITI_CI_GH_TOKEN }}
+        # token: ${{ secrets.ZITI_CI_GH_TOKEN }}
 
     - name: Node Version
       uses: actions/setup-node@v3
