@@ -50,7 +50,7 @@ static void CallJs_on_connect(napi_env env, napi_value js_cb, void* context, voi
     if (NULL != data) {
 
       // Retrieve the websocket from the item created by the worker thread.
-      um_websocket_t* websocket = (um_websocket_t*)data;
+      tlsuv_websocket_t* websocket = (tlsuv_websocket_t*)data;
 
       status = napi_create_int64(env, (int64_t)websocket, &js_ws);
       if (status != napi_ok) {
@@ -176,11 +176,11 @@ static void CallJs_on_data(napi_env env, napi_value js_cb, void* context, void* 
 
 static void on_connect(uv_connect_t *req, int status) {
   ZITI_NODEJS_LOG(DEBUG, "=========on_connect: req: %p, status: %d", req, status);
-  um_websocket_t *ws = (um_websocket_t *) req->handle;
+  tlsuv_websocket_t *ws = (tlsuv_websocket_t *) req->handle;
   WSAddonData* addon_data = (WSAddonData*) ws->data;
   ZITI_NODEJS_LOG(DEBUG, "websocket: %p, addon_data: %p", ws, addon_data);
 
-  um_websocket_t* the_websocket = NULL;
+  tlsuv_websocket_t* the_websocket = NULL;
 
   if (status == ZITI_OK) {
     // Save the 'websocket' to the heap. The JavaScript marshaller (CallJs)
@@ -203,7 +203,7 @@ static void on_connect(uv_connect_t *req, int status) {
 
 
 static void on_ws_read(uv_stream_t *stream, ssize_t status, const uv_buf_t *buf) {
-  um_websocket_t *ws = (um_websocket_t*)stream;
+  tlsuv_websocket_t *ws = (tlsuv_websocket_t*)stream;
   ZITI_NODEJS_LOG(DEBUG, "=========on_ws_read: ws: %p, status: %zd", stream, status);
   WSAddonData* addon_data = (WSAddonData*) ws->data;
   ZITI_NODEJS_LOG(DEBUG, "=========on_ws_read: ws: %p, addon_data: %p", ws, addon_data);
@@ -417,17 +417,17 @@ napi_value _ziti_websocket_connect(napi_env env, const napi_callback_info info) 
 
   // Crank up the websocket
   ziti_src_init(thread_loop, &(addon_data->ziti_src), addon_data->service, ztx );
-  um_websocket_init_with_src(thread_loop, &(addon_data->ws), &(addon_data->ziti_src));
+  tlsuv_websocket_init_with_src(thread_loop, &(addon_data->ws), &(addon_data->ziti_src));
 
   // Add Cookies to request
   for (int i = 0; i < (int)addon_data->headers_array_length; i++) {
-    um_http_req_header(addon_data->ws.req, addon_data->header_name[i], addon_data->header_value[i]);
+    tlsuv_http_req_header(addon_data->ws.req, addon_data->header_name[i], addon_data->header_value[i]);
     free(addon_data->header_name[i]);
     free(addon_data->header_value[i]);
   }
 
   addon_data->ws.data = addon_data;  // Pass our addon data around so we can eventually find our way back to the JS callback
-  rc = um_websocket_connect(&(addon_data->req), &(addon_data->ws), url, on_connect, on_ws_read);
+  rc = tlsuv_websocket_connect(&(addon_data->req), &(addon_data->ws), url, on_connect, on_ws_read);
   if (rc != ZITI_OK) {
     napi_throw_error(env, NULL, "failure in 'ziti_conn_init");
   }

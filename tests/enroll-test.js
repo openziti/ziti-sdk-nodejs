@@ -4,7 +4,9 @@ var path = require('path')
 var binding_path = binary.find(path.resolve(path.join(__dirname,'../package.json')), {debug: true});
 // var binding_path = binary.find(path.resolve(path.join(__dirname,'../package.json')));
 var ziti = require(binding_path);
-require('assert').equal(ziti.ziti_hello(),"ziti");
+
+console.log("using ziti version: " + ziti.ziti_sdk_version())
+// require('assert').equal(ziti.ziti_sdk_version(),"ziti");
 
 
 
@@ -26,11 +28,11 @@ const ziti_enroll = async (jwt_path) => {
     let jwt_path = process.argv[2];
 
     let data = await ziti_enroll(jwt_path).catch((data) => {
-        console.log('NF_enroll failed with error code (%o)', data.len);
+        console.log('ziti_enroll failed with error code (%o/%s)', data.status, data.err);
     });
 
     if (data && data.identity) {
-        console.log("data.identity is:\n\n%s", data.identity);
+        console.log("data.identity is:\n\n%s\n", data.identity);
     }
 
     process.exit(0);

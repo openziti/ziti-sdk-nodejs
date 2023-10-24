@@ -19,7 +19,7 @@ limitations under the License.
 
 // An item that will be generated here and passed into the JavaScript write callback
 typedef struct WSWriteItem {
-  um_websocket_t *ws;
+  tlsuv_websocket_t *ws;
   ssize_t status;
 } WSWriteItem;
 
@@ -149,7 +149,7 @@ napi_value _ziti_websocket_write(napi_env env, const napi_callback_info info) {
   if (status != napi_ok) {
     napi_throw_error(env, NULL, "Failed to get Conn");
   }
-  um_websocket_t *ws = (um_websocket_t*)js_ws;
+  tlsuv_websocket_t *ws = (tlsuv_websocket_t*)js_ws;
   ZITI_NODEJS_LOG(DEBUG, "========= ws: %p", ws);
 
   WSAddonData* addon_data = (WSAddonData*) ws->data;
@@ -207,7 +207,7 @@ napi_value _ziti_websocket_write(napi_env env, const napi_callback_info info) {
   b.base = chunk;
   b.len = bufferLength;
 
-  um_websocket_write(wr, &(addon_data->ws), &b, on_write);
+  tlsuv_websocket_write(wr, &(addon_data->ws), &b, on_write);
 
   return NULL;
 }
