@@ -69,6 +69,12 @@ jobs:
     - name: Install CMake/Ninja
       uses: lukka/get-cmake@latest
 
+    - name: Run VCPKG
+      uses: lukka/run-vcpkg@v11
+      with:
+        # tag: 2023.10.19
+        vcpkgGitCommitId: '8eb57355a4ffb410a2e94c07b4dca2dffbee8e50'
+
     - name: gcc version
       run: |
         gcc --version
