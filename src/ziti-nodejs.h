@@ -203,7 +203,7 @@ extern uv_mutex_t client_pool_lock;
 extern void expose_ziti_close(napi_env env, napi_value exports);
 extern void expose_ziti_dial(napi_env env, napi_value exports);
 extern void expose_ziti_enroll(napi_env env, napi_value exports);
-extern void expose_ziti_hello(napi_env env, napi_value exports);
+extern void expose_ziti_sdk_version(napi_env env, napi_value exports);
 extern void expose_ziti_init(napi_env env, napi_value exports);
 extern void expose_ziti_listen(napi_env env, napi_value exports);
 extern void expose_ziti_service_available(napi_env env, napi_value exports);

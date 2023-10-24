@@ -97,28 +97,28 @@ jobs:
         npm --version
 
 
-    - name: Build (embedded) C-SDK Phase-I (Linux)
-      run: |
-        mkdir ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
-        cd ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
-        cmake -G Ninja -DUSE_OPENSSL=on -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.config.cxx }} ..
-      if: matrix.config.os == 'ubuntu-20.04'
-
-    - name: Build (embedded) C-SDK Phase-I ( Mac)
-      run: |
-        mkdir ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
-        cd ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
-        cmake -G Ninja -DUSE_OPENSSL=on -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.config.cxx }} -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl -DOPENSSL_LIBRARIES=/usr/local/opt/openssl/lib ..
-      if: |
-        matrix.config.os == 'macOS-latest'
-
-    - name: Build (embedded) C-SDK Phase-I (Windows)
-      run: |
-        vcpkg install openssl-windows:x64-windows
-        cmake -E make_directory ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
-        cmake -S ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c -B ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build -DUSE_OPENSSL=on -DOPENSSL_ROOT_DIR=C:\vcpkg\packages\openssl_x64-windows
-        cmake --build ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
-      if: matrix.config.os == 'windows-latest'
+#    - name: Build (embedded) C-SDK Phase-I (Linux)
+#      run: |
+#        mkdir ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
+#        cd ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
+#        cmake -G Ninja -DUSE_OPENSSL=on -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.config.cxx }} ..
+#      if: matrix.config.os == 'ubuntu-20.04'
+#
+#    - name: Build (embedded) C-SDK Phase-I ( Mac)
+#      run: |
+#        mkdir ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
+#        cd ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
+#        cmake -G Ninja -DUSE_OPENSSL=on -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.config.cxx }} -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl -DOPENSSL_LIBRARIES=/usr/local/opt/openssl/lib ..
+#      if: |
+#        matrix.config.os == 'macOS-latest'
+#
+#    - name: Build (embedded) C-SDK Phase-I (Windows)
+#      run: |
+#        vcpkg install openssl-windows:x64-windows
+#        cmake -E make_directory ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
+#        cmake -S ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c -B ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build -DUSE_OPENSSL=on -DOPENSSL_ROOT_DIR=C:\vcpkg\packages\openssl_x64-windows
+#        cmake --build ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
+#      if: matrix.config.os == 'windows-latest'
 
     # - name: Build (embedded) C-SDK Phase-I (Windows)
     #   shell: cmd
@@ -131,14 +131,14 @@ jobs:
     #   if: matrix.config.os == 'windows-latest'
 
 
-
-    - name: Build (embedded) C-SDK Phase-II (Linux | Mac)
-      run: |
-        cd ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
-        cmake --build . --target all
-      if: |
-        matrix.config.os == 'ubuntu-20.04' ||
-        matrix.config.os == 'macOS-latest'
+#
+#    - name: Build (embedded) C-SDK Phase-II (Linux | Mac)
+#      run: |
+#        cd ${{ runner.workspace }}/${{ github.event.repository.name }}/deps/ziti-sdk-c/build
+#        cmake --build . --target all
+#      if: |
+#        matrix.config.os == 'ubuntu-20.04' ||
+#        matrix.config.os == 'macOS-latest'
 
     # - name: Build (embedded) C-SDK Phase-II (Windows)
     #   shell: cmd
@@ -172,10 +172,6 @@ jobs:
     - name: Hello test
       run: |
         node tests/hello.js
-
-    - name: Cleanup
-      run: |
-        npm run build:cleanup
 
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4

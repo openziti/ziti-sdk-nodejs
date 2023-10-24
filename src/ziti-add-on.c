@@ -72,7 +72,7 @@ napi_value Init(napi_env env, napi_value exports) {
   expose_ziti_close(env, exports);
   expose_ziti_dial(env, exports);
   expose_ziti_enroll(env, exports);
-  expose_ziti_hello(env, exports);
+  expose_ziti_sdk_version(env, exports);
   expose_ziti_init(env, exports);
   expose_ziti_listen(env, exports);
   expose_ziti_service_available(env, exports);
