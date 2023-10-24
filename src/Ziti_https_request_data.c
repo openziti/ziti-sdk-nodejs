@@ -103,7 +103,7 @@ static void CallJs_on_req_body(napi_env env, napi_value js_cb, void* context, vo
 /**
  * 
  */
-void on_req_body(um_http_req_t *req, const char *body, ssize_t status) {
+void on_req_body(tlsuv_http_req_t *req, const char *body, ssize_t status) {
 
   ZITI_NODEJS_LOG(DEBUG, "status: %zd, body: %p", status, body);
 
@@ -113,8 +113,8 @@ void on_req_body(um_http_req_t *req, const char *body, ssize_t status) {
   HttpsReqBodyItem* item = calloc(1, sizeof(*item));
   ZITI_NODEJS_LOG(DEBUG, "new HttpsReqBodyItem is: %p", item);
   
-  //  Grab everything off the um_http_resp_t that we need to eventually pass on to the JS on_resp_body callback.
-  //  If we wait until CallJs_on_resp_body is invoked to do that work, the um_http_resp_t may have already been free'd by the C-SDK
+  //  Grab everything off the tlsuv_http_resp_t that we need to eventually pass on to the JS on_resp_body callback.
+  //  If we wait until CallJs_on_resp_body is invoked to do that work, the tlsuv_http_resp_t may have already been free'd by the C-SDK
 
   item->req = req;
   item->body = (void*)body;
@@ -158,15 +158,15 @@ napi_value _Ziti_http_request_data(napi_env env, const napi_callback_info info) 
     return NULL;
   }
 
-  // Obtain um_http_req_t
+  // Obtain tlsuv_http_req_t
   int64_t js_req;
   status = napi_get_value_int64(env, args[0], &js_req);
   if (status != napi_ok) {
     napi_throw_error(env, NULL, "Failed to get Req");
   }
-  // um_http_req_t *r = (um_http_req_t*)js_req;
+  // tlsuv_http_req_t *r = (tlsuv_http_req_t*)js_req;
   HttpsReq* httpsReq = (HttpsReq*)js_req;
-  um_http_req_t *r = httpsReq->req;
+  tlsuv_http_req_t *r = httpsReq->req;
 
   ZITI_NODEJS_LOG(DEBUG, "req: %p", r);
 
@@ -227,7 +227,7 @@ napi_value _Ziti_http_request_data(napi_env env, const napi_callback_info info) 
   ZITI_NODEJS_LOG(DEBUG, "napi_create_threadsafe_function addon_data->tsfn_on_req_body() : %p", addon_data->tsfn_on_req_body);
 
   // Now, call the C-SDK to actually write the data over to the service
-  um_http_req_data(r, chunk, bufferLength, on_req_body );
+  tlsuv_http_req_data(r, chunk, bufferLength, on_req_body );
 
   return NULL;
 }

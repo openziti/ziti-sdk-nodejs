@@ -121,7 +121,7 @@ void on_ziti_enroll(const ziti_config *cfg, int status, const char *err, void *c
   item->status = status;
 
   if (NULL != err) {
-    item->err = calloc(1, strlen(err));
+    item->err = calloc(1, strlen(err) + 1);
     strcpy(item->err, err);
   } else {
     item->err = NULL;
@@ -130,7 +130,7 @@ void on_ziti_enroll(const ziti_config *cfg, int status, const char *err, void *c
   if (status == ZITI_OK) {
     size_t len;
     char *output_buf = ziti_config_to_json(cfg, 0, &len);
-    item->json_salvo = calloc(1, len);
+    item->json_salvo = calloc(1, len + 1);
     strcpy(item->json_salvo, output_buf);
   }
 

@@ -39,23 +39,23 @@ napi_value _Ziti_http_request_end(napi_env env, const napi_callback_info info) {
     return NULL;
   }
 
-  // Obtain um_http_req_t
+  // Obtain tlsuv_http_req_t
   int64_t js_req;
   status = napi_get_value_int64(env, args[0], &js_req);
   if (status != napi_ok) {
     napi_throw_error(env, NULL, "Failed to get Req");
   }
   HttpsReq* httpsReq = (HttpsReq*)js_req;
-  um_http_req_t *r = httpsReq->req;
+  tlsuv_http_req_t *r = httpsReq->req;
 
   ZITI_NODEJS_LOG(DEBUG, "req: %p", r);
 
   // TEMP hack to work around an issue still being debugged
   ZITI_NODEJS_LOG(DEBUG, "httpsReq->on_resp_has_fired: %o", httpsReq->on_resp_has_fired);
   if (httpsReq->on_resp_has_fired) {
-    ZITI_NODEJS_LOG(DEBUG, "seems as though on_resp has previously fired... skipping call to um_http_req_end");
+    ZITI_NODEJS_LOG(DEBUG, "seems as though on_resp has previously fired... skipping call to tlsuv_http_req_end");
   } else {
-    um_http_req_end(r);
+    tlsuv_http_req_end(r);
   }
 
   return NULL;

@@ -20,10 +20,10 @@ limitations under the License.
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
-#include <uv_mbed/uv_mbed.h>
-#include <uv_mbed/um_http.h>
-#include <uv_mbed/um_websocket.h>
-#include <uv_mbed/tcp_src.h>
+#include <tlsuv/tlsuv.h>
+#include <tlsuv/http.h>
+#include <tlsuv/websocket.h>
+#include <tlsuv/tcp_src.h>
 
 #include <node_version.h>
 #define NAPI_EXPERIMENTAL
@@ -116,8 +116,8 @@ typedef struct {
   napi_threadsafe_function tsfn_on_connect;
   napi_threadsafe_function tsfn_on_data;
   napi_threadsafe_function tsfn_on_write;
-  um_src_t ziti_src;
-  um_websocket_t ws;
+  tlsuv_src_t ziti_src;
+  tlsuv_websocket_t ws;
   uv_connect_t req;
   uint32_t headers_array_length;
   char* header_name[100];
@@ -128,22 +128,22 @@ typedef struct {
 
 // An item that will be passed into the JavaScript on_resp callback
 typedef struct HttpsRespItem {
-  um_http_req_t *req;
+  tlsuv_http_req_t *req;
   int code;
   char* status;
-  um_http_hdr *headers;
+  tlsuv_http_hdr *headers;
 } HttpsRespItem;
 
 // An item that will be passed into the JavaScript on_resp_body callback
 typedef struct HttpsRespBodyItem {
-  um_http_req_t *req;
+  tlsuv_http_req_t *req;
   const void *body;
   ssize_t len;
 } HttpsRespBodyItem;
 
 // An item that will be passed into the JavaScript on_req_body callback
 typedef struct HttpsReqBodyItem {
-  um_http_req_t *req;
+  tlsuv_http_req_t *req;
   const void *body;
   ssize_t status;
 } HttpsReqBodyItem;
@@ -152,7 +152,7 @@ typedef struct HttpsReqBodyItem {
 typedef struct HttpsAddonData HttpsAddonData;
 
 typedef struct HttpsReq {
-  um_http_req_t *req;
+  tlsuv_http_req_t *req;
   bool on_resp_has_fired;
   int respCode;
   HttpsAddonData *addon_data;
@@ -160,16 +160,16 @@ typedef struct HttpsReq {
 
 typedef struct {
   char* scheme_host_port;
-  um_http_t client;
-  um_src_t ziti_src;
+  tlsuv_http_t client;
+  tlsuv_src_t ziti_src;
   bool active;
   bool purge;
 } HttpsClient;
 
 struct HttpsAddonData {
   napi_env env;
-  um_http_t client;
-  um_http_req_t ziti_src;
+  tlsuv_http_t client;
+  tlsuv_http_req_t ziti_src;
   napi_threadsafe_function tsfn_on_req;
   napi_threadsafe_function tsfn_on_resp;
   napi_threadsafe_function tsfn_on_resp_body;
@@ -217,7 +217,7 @@ extern void expose_ziti_websocket_connect(napi_env env, napi_value exports);
 extern void expose_ziti_websocket_write(napi_env env, napi_value exports);
 
 //
-extern int um_websocket_init_with_src (uv_loop_t *loop, um_websocket_t *ws, um_src_t *src);
+extern int tlsuv_websocket_init_with_src (uv_loop_t *loop, tlsuv_websocket_t *ws, tlsuv_src_t *src);
 
 extern void track_service_to_hostname(char* service_name, char* hostname, int port);
 

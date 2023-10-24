@@ -131,7 +131,7 @@ static int purge_and_replace_bad_clients(struct ListMap* clientListMap, HttpsAdd
       httpsClient = calloc(1, sizeof *httpsClient);
       httpsClient->scheme_host_port = strdup(addon_data->scheme_host_port);
       ziti_src_init(thread_loop, &(httpsClient->ziti_src), addon_data->service, ztx );
-      um_http_init_with_src(thread_loop, &(httpsClient->client), addon_data->scheme_host_port, (um_src_t *)&(httpsClient->ziti_src) );
+      tlsuv_http_init_with_src(thread_loop, &(httpsClient->client), addon_data->scheme_host_port, (tlsuv_src_t *)&(httpsClient->ziti_src) );
 
       clientListMap->kvPairs[i].value = httpsClient;
 
@@ -181,7 +181,7 @@ static void allocate_client(uv_work_t* req) {
       }
 
       ZITI_NODEJS_LOG(DEBUG, "addon_data->scheme_host_port is: %s", addon_data->scheme_host_port);
-      um_http_init_with_src(thread_loop, &(httpsClient->client), addon_data->scheme_host_port, (um_src_t *)&(httpsClient->ziti_src) );
+      tlsuv_http_init_with_src(thread_loop, &(httpsClient->client), addon_data->scheme_host_port, (tlsuv_src_t *)&(httpsClient->ziti_src) );
 
       listMapInsert(clientListMap, addon_data->scheme_host_port, (void*)httpsClient);
 
@@ -360,7 +360,7 @@ static void CallJs_on_resp_body(napi_env env, napi_value js_cb, void* context, v
 /**
  * 
  */
-void on_resp_body(um_http_req_t *req, const char *body, ssize_t len) {
+void on_resp_body(tlsuv_http_req_t *req, const char *body, ssize_t len) {
 
   // ZITI_NODEJS_LOG(DEBUG, "len: %zd, body is: \n>>>>>%s<<<<<", len, body);
   ZITI_NODEJS_LOG(DEBUG, "body: %p", body);
@@ -372,8 +372,8 @@ void on_resp_body(um_http_req_t *req, const char *body, ssize_t len) {
   HttpsRespBodyItem* item = calloc(1, sizeof(*item));
   ZITI_NODEJS_LOG(DEBUG, "new HttpsRespBodyItem is: %p", item);
   
-  //  Grab everything off the um_http_resp_t that we need to eventually pass on to the JS on_resp_body callback.
-  //  If we wait until CallJs_on_resp_body is invoked to do that work, the um_http_resp_t may have already been free'd by the C-SDK
+  //  Grab everything off the tlsuv_http_resp_t that we need to eventually pass on to the JS on_resp_body callback.
+  //  If we wait until CallJs_on_resp_body is invoked to do that work, the tlsuv_http_resp_t may have already been free'd by the C-SDK
 
   item->req = req;
 
@@ -478,7 +478,7 @@ static void CallJs_on_resp(napi_env env, napi_value js_cb, void* context, void* 
     ZITI_NODEJS_LOG(DEBUG, "status: %s", item->status);
 
     // const headers = {}
-    um_http_hdr *h;
+    tlsuv_http_hdr *h;
     int i = 0;
     napi_value js_headers, js_header_value;
     napi_value js_cookies_array = NULL;
@@ -549,7 +549,7 @@ static void CallJs_on_resp(napi_env env, napi_value js_cb, void* context, void* 
 /**
  * 
  */
-void on_resp(um_http_resp_t *resp, void *data) {
+void on_resp(tlsuv_http_resp_t *resp, void *data) {
   ZITI_NODEJS_LOG(DEBUG, "resp: %p", resp);
 
   HttpsAddonData* addon_data = (HttpsAddonData*) data;
@@ -561,8 +561,8 @@ void on_resp(um_http_resp_t *resp, void *data) {
   HttpsRespItem* item = calloc(1, sizeof(*item));
   ZITI_NODEJS_LOG(DEBUG, "new HttpsRespItem is: %p", item);
   
-  //  Grab everything off the um_http_resp_t that we need to eventually pass on to the JS on_resp callback.
-  //  If we wait until CallJs_on_resp is invoked to do that work, the um_http_resp_t may have already been free'd by the C-SDK
+  //  Grab everything off the tlsuv_http_resp_t that we need to eventually pass on to the JS on_resp callback.
+  //  If we wait until CallJs_on_resp is invoked to do that work, the tlsuv_http_resp_t may have already been free'd by the C-SDK
 
   item->req = resp->req;
   ZITI_NODEJS_LOG(DEBUG, "item->req: %p", item->req);
@@ -574,13 +574,13 @@ void on_resp(um_http_resp_t *resp, void *data) {
   ZITI_NODEJS_LOG(DEBUG, "item->status: %s", item->status);
 
   int header_cnt = 0;
-  um_http_hdr *h;
+  tlsuv_http_hdr *h;
   LIST_FOREACH(h, &resp->headers, _next) {
     header_cnt++;
   }
   ZITI_NODEJS_LOG(DEBUG, "header_cnt: %d", header_cnt);
 
-  item->headers = calloc(header_cnt + 1, sizeof(um_http_hdr));
+  item->headers = calloc(header_cnt + 1, sizeof(tlsuv_http_hdr));
   header_cnt = 0;
   LIST_FOREACH(h, &resp->headers, _next) {
     item->headers[header_cnt].name = strdup(h->name);
@@ -692,7 +692,7 @@ void on_client(uv_work_t* req, int status) {
   ZITI_NODEJS_LOG(DEBUG, "client is: [%p]", addon_data->httpsClient);
 
   // Initiate the request:   HTTP -> TLS -> Ziti -> Service 
-  um_http_req_t *r = um_http_req(
+  tlsuv_http_req_t *r = tlsuv_http_req(
     &(addon_data->httpsClient->client),
     addon_data->method,
     addon_data->path,
@@ -705,7 +705,7 @@ void on_client(uv_work_t* req, int status) {
 
   // Add headers to request
   for (int i = 0; i < (int)addon_data->headers_array_length; i++) {
-    um_http_req_header(r, addon_data->header_name[i], addon_data->header_value[i]);
+    tlsuv_http_req_header(r, addon_data->header_name[i], addon_data->header_value[i]);
     // free(addon_data->header_name[i]);
     // free(addon_data->header_value[i]);
   }
@@ -734,7 +734,7 @@ void on_client(uv_work_t* req, int status) {
  * @param {func}     [5] JS on_resp callback;      This is invoked from 'on_resp' function above
  * @param {func}     [6] JS on_resp_data callback; This is invoked from 'on_resp_data' function above
  * 
- * @returns {um_http_req_t} req  This allows the JS to subsequently write the Body to the request (see _Ziti_http_request_data)
+ * @returns {tlsuv_http_req_t} req  This allows the JS to subsequently write the Body to the request (see _Ziti_http_request_data)
 
  */
 napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
