@@ -1,5 +1,5 @@
 /*
-Copyright Netfoundry, Inc.
+Copyright NetFoundry, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef NF_ZITI_ADD_ON_H
-#define NF_ZITI_ADD_ON_H
+#ifndef ZITI_ADD_ON_H
+#define ZITI_ADD_ON_H
 
 #include <stdio.h>
 #include <assert.h>
@@ -225,4 +225,4 @@ extern void track_service_to_hostname(char* service_name, char* hostname, int po
 }
 #endif
 
-#endif /* NF_ZITI_ADD_ON_H */
+#endif /* ZITI_ADD_ON_H */

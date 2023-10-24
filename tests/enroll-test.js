@@ -28,11 +28,11 @@ const ziti_enroll = async (jwt_path) => {
     let jwt_path = process.argv[2];
 
     let data = await ziti_enroll(jwt_path).catch((data) => {
-        console.log('NF_enroll failed with error code (%o/%s)', data.status, data.err);
+        console.log('ziti_enroll failed with error code (%o/%s)', data.status, data.err);
     });
 
     if (data && data.identity) {
-        console.log("data.identity is:\n\n%s", data.identity);
+        console.log("data.identity is:\n\n%s\n", data.identity);
     }
 
     process.exit(0);
