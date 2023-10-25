@@ -167,6 +167,7 @@ jobs:
 #        matrix.config.os == 'windows-latest'
 
     - name: Hello test
+      if: matrix.architecture == 'x64'
       run: |
         node tests/hello.js
 
