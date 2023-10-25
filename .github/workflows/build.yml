@@ -183,6 +183,14 @@ jobs:
       run: |
         node tests/hello.js
 
+    - name: upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ziti_nodejs_${{ matrix.config.target }}_${{ matrix.architecture }}_nodev${{ matrix.node_ver }}
+        path: |
+          ./build/Release/ziti_sdk_nodejs.node
+          if-no-files-found: error
+
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4
       if: env.AWS_KEY_ID != ''
