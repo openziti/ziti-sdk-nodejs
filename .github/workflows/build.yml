@@ -21,7 +21,7 @@ jobs:
   #  Do a clean build, test, and publish
   # -------------------------------------------------------------------------------
   build:
-    name: Build for Node-${{ matrix.node_ver }} ${{ matrix.architecture }} ${{ matrix.config.os }}
+    name: Build for Node-${{ matrix.node_ver }} ${{ matrix.config.target }}/${{ matrix.architecture }}
     runs-on: ${{ matrix.config.os }}
 
     env:
@@ -32,8 +32,8 @@ jobs:
       matrix:
         config:
           # - { os: windows-latest, cc: "cl",    cxx: "cl", node: '16' }
-          - { os: ubuntu-20.04,   cc: "gcc",   cxx: "g++" }
-          - { os: macos-latest,   cc: "clang", cxx: "clang++" }
+          - { os: ubuntu-20.04,   target: "linux" }
+          - { os: macos-latest,   target: "macos" }
         architecture: [x64, arm64]
         node_ver: [ 16, 18, 19, 20]
       fail-fast: false
@@ -152,17 +152,19 @@ jobs:
         cd ${{ runner.workspace }}/${{ github.event.repository.name }}
         npm install --build-from-source --BUILD_DATE="$BUILD_DATE" --ZITI_BRANCH="`git branch --show-current`" --ZITI_COMMIT="`git rev-parse --short HEAD`" --ZITI_VERSION="`jq -r .version package.json`" --ZITI_OS="$RUNNER_OS" --ZITI_ARCH="x64"
       env:
+        PRESET: ci-${{ matrix.config.target }}-${{ matrix.architecture }}
         BUILD_DATE: ${{ steps.date.outputs.date }}
       if: |
         matrix.config.os == 'ubuntu-20.04' ||
         matrix.config.os == 'macOS-latest'
 
-    - name: Build NodeJS-SDK (Windows)
-      run: |
-        cd ${{ runner.workspace }}/${{ github.event.repository.name }}
-        npm install --build-from-source --cd=%CD%
-      if: |
-        matrix.config.os == 'windows-latest'
+# disabled for now
+#    - name: Build NodeJS-SDK (Windows)
+#      run: |
+#        cd ${{ runner.workspace }}/${{ github.event.repository.name }}
+#        npm install --build-from-source --cd=%CD%
+#      if: |
+#        matrix.config.os == 'windows-latest'
 
     - name: Hello test
       run: |

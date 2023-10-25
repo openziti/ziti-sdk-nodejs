@@ -41,7 +41,7 @@
       "cacheVariables": {
         "VCPKG_TARGET_ARCHITECTURE": "arm64",
         "VCPKG_TARGET_TRIPLET": "arm64-osx",
-        "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/toolchains/macOS-arm64.cmake"
+        "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/deps/ziti-sdk-c/toolchains/macOS-arm64.cmake"
       }
     },
     {
@@ -53,7 +53,7 @@
       "inherits": "ci-linux-x64",
       "cacheVariables": {
         "VCPKG_TARGET_TRIPLET": "arm64-linux",
-        "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/toolchains/Linux-arm64.cmake"
+        "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/deps/ziti-sdk-c/toolchains/Linux-arm64.cmake"
       }
     },
     {
@@ -61,7 +61,7 @@
       "inherits": "ci-linux-x64",
       "cacheVariables": {
         "VCPKG_TARGET_TRIPLET": "arm-linux",
-        "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/toolchains/Linux-arm.cmake"
+        "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/deps/ziti-sdk-c/toolchains/Linux-arm.cmake"
       }
     }
   ]
