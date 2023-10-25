@@ -1,0 +1,68 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 23
+  },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": false,
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "CMAKE_C_EXTENSIONS": "ON",
+        "CMAKE_C_STANDARD": "99",
+        "CMAKE_C_STANDARD_REQUIRED": "ON",
+        "CMAKE_CXX_EXTENSIONS": "OFF",
+        "CMAKE_CXX_STANDARD": "11",
+        "CMAKE_CXX_STANDARD_REQUIRED": "ON",
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "ci",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/build",
+      "inherits": [
+        "base"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "ci-macOS-x64",
+      "inherits": [ "ci" ]
+    },
+    {
+      "name": "ci-macOS-arm64",
+      "inherits": [ "ci" ],
+      "cacheVariables": {
+        "VCPKG_TARGET_ARCHITECTURE": "arm64",
+        "VCPKG_TARGET_TRIPLET": "arm64-osx",
+        "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/toolchains/macOS-arm64.cmake"
+      }
+    },
+    {
+      "name": "ci-linux-x64",
+      "inherits": [ "ci" ]
+    },
+    {
+      "name": "ci-linux-arm64",
+      "inherits": "ci-linux-x64",
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "arm64-linux",
+        "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/toolchains/Linux-arm64.cmake"
+      }
+    },
+    {
+      "name": "ci-linux-arm",
+      "inherits": "ci-linux-x64",
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "arm-linux",
+        "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/toolchains/Linux-arm.cmake"
+      }
+    }
+  ]
+}
