@@ -54,10 +54,10 @@ jobs:
         # token: ${{ secrets.ZITI_CI_GH_TOKEN }}
 
     - name: Get crossbuild tools
-      if: matrix.config.target == 'linux' || matrix.architecture != 'x64'
+      if: matrix.config.target == 'linux' && matrix.architecture != 'x64'
       run: |
-        apt update 
-        apt install -y crossbuild-essential-${{ matrix.architecture }}
+        sudo apt update -y
+        sudo apt install -y crossbuild-essential-${{ matrix.architecture }}
 
     - name: Node Version
       uses: actions/setup-node@v3
