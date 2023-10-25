@@ -162,9 +162,14 @@ jobs:
     - name: Build NodeJS-SDK (Linux | Mac)
       run: |
         cd ${{ runner.workspace }}/${{ github.event.repository.name }}
-        npm install --build-from-source --BUILD_DATE="$BUILD_DATE" --ZITI_BRANCH="`git branch --show-current`" --ZITI_COMMIT="`git rev-parse --short HEAD`" --ZITI_VERSION="`jq -r .version package.json`" --ZITI_OS="$RUNNER_OS" --ZITI_ARCH="x64"
+        # TODO move this into CMake process
+        # --BUILD_DATE="$BUILD_DATE" --ZITI_BRANCH="`git branch --show-current`" 
+        # --ZITI_COMMIT="`git rev-parse --short HEAD`" --ZITI_VERSION="`jq -r .version package.json`" 
+        # --ZITI_OS="$RUNNER_OS" --ZITI_ARCH="x64"
+        npm install --build-from-source
       env:
         PRESET: ci-${{ matrix.config.target }}-${{ matrix.architecture }}
+        TARGET_ARCH: ${{ matrix.architecture }}
         BUILD_DATE: ${{ steps.date.outputs.date }}
       if: |
         matrix.config.os == 'ubuntu-20.04' ||
