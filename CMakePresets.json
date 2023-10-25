@@ -32,11 +32,11 @@
       }
     },
     {
-      "name": "ci-macOS-x64",
+      "name": "ci-macos-x64",
       "inherits": [ "ci" ]
     },
     {
-      "name": "ci-macOS-arm64",
+      "name": "ci-macos-arm64",
       "inherits": [ "ci" ],
       "cacheVariables": {
         "VCPKG_TARGET_ARCHITECTURE": "arm64",

@@ -23,6 +23,7 @@ jobs:
   build:
     name: Build for Node-${{ matrix.node_ver }} ${{ matrix.config.target }}/${{ matrix.architecture }}
     runs-on: ${{ matrix.config.os }}
+    container: ${{ matrix.config.container }}
 
     env:
       BUILD_NUMBER: ${{ github.run_number }}
@@ -32,7 +33,7 @@ jobs:
       matrix:
         config:
           # - { os: windows-latest, cc: "cl",    cxx: "cl", node: '16' }
-          - { os: ubuntu-20.04,   target: "linux" }
+          - { os: ubuntu-20.04,   target: "linux", container: "openziti/ziti-builder:1.0.7" }
           - { os: macos-latest,   target: "macos" }
         architecture: [x64, arm64]
         node_ver: [ 16, 18, 19, 20]
