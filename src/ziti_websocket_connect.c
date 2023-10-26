@@ -280,14 +280,14 @@ napi_value _ziti_websocket_connect(napi_env env, const napi_callback_info info) 
 
   WSAddonData* addon_data = memset(malloc(sizeof(*addon_data)), 0, sizeof(*addon_data));
 
-  struct http_parser_url url_parse = {0};
-  int rc = http_parser_parse_url(url, strlen(url), false, &url_parse);
+  struct tlsuv_url_s url_parse = {0};
+  int rc = tlsuv_parse_url(&url_parse, url);
   if (rc != 0) {
     napi_throw_error(env, "EINVAL", "Failed to parse url");
   }
 
-  if (url_parse.field_set & (U1 << (unsigned int) UF_HOST)) {
-    addon_data->service = strndup(url + url_parse.field_data[UF_HOST].off, url_parse.field_data[UF_HOST].len);
+  if (url_parse.hostname) {
+    addon_data->service = strndup(url_parse.hostname, url_parse.hostname_len);
   }
   else {
     ZITI_NODEJS_LOG(ERROR, "invalid URL: no host");

@@ -834,8 +834,8 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
       return NULL;
     }
   
-    struct http_parser_url url_parse = {0};
-    rc = http_parser_parse_url(schemeHostPort, strlen(schemeHostPort), false, &url_parse);
+    struct tlsuv_url_s url_parse = {0};
+    rc = tlsuv_parse_url(&url_parse, schemeHostPort);
     if (rc != 0) {
       napi_throw_error(env, "EINVAL", "schemeHostPort is not a valid URL");
       return NULL;

@@ -1,0 +1,14 @@
+{
+  "name": "ziti",
+  "version-semver": "1.0.0",
+  "dependencies": [
+    "libuv",
+    "openssl",
+    "zlib",
+    "llhttp",
+    "libsodium"
+  ],
+  "features": {
+  },
+  "builtin-baseline": "f14984af3738e69f197bf0e647a8dca12de92996"
+}

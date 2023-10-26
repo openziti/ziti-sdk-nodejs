@@ -118,9 +118,6 @@ static void on_ziti_event(ziti_context _ztx, const ziti_event_t *event) {
   switch (event->type) {
 
     case ZitiContextEvent:
-      // Set the global ztx context variable
-      ztx = _ztx;
-
       if (event->event.ctx.ctrl_status == ZITI_OK) {
         const ziti_version *ctrl_ver = ziti_get_controller_version(_ztx);
         const ziti_identity *proxy_id = ziti_get_identity(_ztx);
@@ -258,96 +255,106 @@ static void on_ziti_event(ziti_context _ztx, const ziti_event_t *event) {
  * 
  */
 napi_value _ziti_init(napi_env env, const napi_callback_info info) {
-  napi_status status;
-  napi_value jsRetval;
+    napi_status status;
+    napi_value jsRetval;
 
-  ZITI_NODEJS_LOG(DEBUG, "initializing");
+    ZITI_NODEJS_LOG(DEBUG, "initializing");
 
-  // uv_mbed_set_debug(TRACE, stdout);
+    // uv_mbed_set_debug(TRACE, stdout);
 
-  size_t argc = 2;
-  napi_value args[2];
-  status = napi_get_cb_info(env, info, &argc, args, NULL, NULL);
-  if (status != napi_ok) {
-    napi_throw_error(env, NULL, "Failed to parse arguments");
-  }
+    size_t argc = 2;
+    napi_value args[2];
+    status = napi_get_cb_info(env, info, &argc, args, NULL, NULL);
+    if (status != napi_ok) {
+        napi_throw_error(env, NULL, "Failed to parse arguments");
+    }
 
-  if (argc < 2) {
-    napi_throw_error(env, "EINVAL", "Too few arguments");
-    return NULL;
-  }
+    if (argc < 2) {
+        napi_throw_error(env, "EINVAL", "Too few arguments");
+        return NULL;
+    }
 
-  // Obtain length of location of identity file
-  size_t result;
-  size_t config_path_len;
-  status = napi_get_value_string_utf8(env, args[0], NULL, 0, &config_path_len);
-  if (status != napi_ok) {
-    napi_throw_error(env, "EINVAL", "location of identity file is not a string");
-  }
-  // Obtain length of location of identity file
-  char* config_file_name = calloc(1, config_path_len+2);
-  status = napi_get_value_string_utf8(env, args[0], config_file_name, config_path_len+1, &result);
-  if (status != napi_ok) {
-    napi_throw_error(env, "EINVAL", "Failed to obtain location of identity file");
-  }
+    // Obtain length of location of identity file
+    size_t result;
+    size_t config_path_len;
+    status = napi_get_value_string_utf8(env, args[0], NULL, 0, &config_path_len);
+    if (status != napi_ok) {
+        napi_throw_error(env, "EINVAL", "location of identity file is not a string");
+    }
+    // Obtain length of location of identity file
+    char *config_file_name = calloc(1, config_path_len + 2);
+    status = napi_get_value_string_utf8(env, args[0], config_file_name, config_path_len + 1, &result);
+    if (status != napi_ok) {
+        napi_throw_error(env, "EINVAL", "Failed to obtain location of identity file");
+    }
 
-  ZITI_NODEJS_LOG(DEBUG, "config_file_name: %s", config_file_name);
+    ZITI_NODEJS_LOG(DEBUG, "config_file_name: %s", config_file_name);
 
-  // Obtain ptr to JS callback function
-  napi_value js_cb = args[1];
-  napi_value work_name;
-  AddonData* addon_data = calloc(1, sizeof(AddonData));
+    // Obtain ptr to JS callback function
+    napi_value js_cb = args[1];
+    napi_value work_name;
+    AddonData *addon_data = calloc(1, sizeof(AddonData));
 
-  // Create a string to describe this asynchronous operation.
-  status = napi_create_string_utf8(
-    env,
-    "N-API on_ziti_init",
-    NAPI_AUTO_LENGTH,
-    &work_name);
-  if (status != napi_ok) {
-    napi_throw_error(env, NULL, "Failed to napi_create_string_utf8");
-  }
+    // Create a string to describe this asynchronous operation.
+    status = napi_create_string_utf8(
+            env,
+            "N-API on_ziti_init",
+            NAPI_AUTO_LENGTH,
+            &work_name);
+    if (status != napi_ok) {
+        napi_throw_error(env, NULL, "Failed to napi_create_string_utf8");
+    }
 
-  // Convert the callback retrieved from JavaScript into a thread-safe function (tsfn) 
-  // which we can call from a worker thread.
-  status = napi_create_threadsafe_function(
-      env,
-      js_cb,
-      NULL,
-      work_name,
-      0,
-      1,
-      NULL,
-      NULL,
-      NULL,
-      CallJs,
-      &(addon_data->tsfn));
-  if (status != napi_ok) {
-    napi_throw_error(env, NULL, "Failed to napi_create_threadsafe_function");
-  }
+    // Convert the callback retrieved from JavaScript into a thread-safe function (tsfn)
+    // which we can call from a worker thread.
+    status = napi_create_threadsafe_function(
+            env,
+            js_cb,
+            NULL,
+            work_name,
+            0,
+            1,
+            NULL,
+            NULL,
+            NULL,
+            CallJs,
+            &(addon_data->tsfn));
+    if (status != napi_ok) {
+        napi_throw_error(env, NULL, "Failed to napi_create_threadsafe_function");
+    }
 
-  // Light this candle!
-  ziti_options *opts = calloc(1, sizeof(ziti_options));
+    ziti_config cfg = {0};
 
-  opts->config = config_file_name;
-  opts->events = ZitiContextEvent|ZitiServiceEvent|ZitiRouterEvent;
-  opts->event_cb = on_ziti_event;
-  opts->refresh_interval = 60;
-  opts->router_keepalive = 10;
-  opts->app_ctx = addon_data;
-  opts->config_types = ALL_CONFIG_TYPES;
-  opts->metrics_type = INSTANT;
+    int rc = ziti_load_config(&cfg, config_file_name);
+    ZITI_NODEJS_LOG(DEBUG, "ziti_load_config => %d", rc);
+    if (rc != ZITI_OK) goto done;
 
-  int rc = ziti_init_opts(opts, thread_loop);
+    rc = ziti_context_init(&ztx, &cfg);
+    ZITI_NODEJS_LOG(DEBUG, "ziti_context_init => %d", rc);
+    if (rc != ZITI_OK) goto done;
 
-  ZITI_NODEJS_LOG(DEBUG, "ziti_init_opts rc: %d", rc);
+    ziti_options opts = {
+            .events = ZitiContextEvent | ZitiServiceEvent | ZitiRouterEvent,
+            .event_cb = on_ziti_event,
+            .refresh_interval = 60,
+            .app_ctx = addon_data,
+            .config_types = ALL_CONFIG_TYPES,
+            .metrics_type = INSTANT,
+    };
+    rc = ziti_context_set_options(ztx, &opts);
+    ZITI_NODEJS_LOG(DEBUG, "ziti_context_set_options => %d", rc);
+    if (rc != ZITI_OK) goto done;
 
-  status = napi_create_int32(env, rc, &jsRetval);
-  if (status != napi_ok) {
-    napi_throw_error(env, NULL, "Unable to create return value");
-  }
+    rc = ziti_context_run(ztx, thread_loop);
+    ZITI_NODEJS_LOG(DEBUG, "ziti_context_run => %d", rc);
 
-  return jsRetval;
+    done:
+    status = napi_create_int32(env, rc, &jsRetval);
+    if (status != napi_ok) {
+        napi_throw_error(env, NULL, "Unable to create return value");
+    }
+
+    return jsRetval;
 }
 
 
