@@ -17,6 +17,7 @@ limitations under the License.
 #include <uv.h>
 #include "utils.h"
 #include <ziti/ziti_log.h>
+#include <build_config.h>
 
 
 #if !defined(BUILD_DATE)
@@ -33,10 +34,6 @@ limitations under the License.
 
 #if !defined(ZITI_VERSION)
 #define ZITI_VERSION unknown
-#endif
-
-#if !defined(ZITI_BUILDNUM)
-#define ZITI_BUILDNUM local
 #endif
 
 #if !defined(ZITI_BRANCH)
@@ -59,7 +56,7 @@ const char* ziti_nodejs_get_version(int verbose) {
                "\n\t";
 
     }
-    return to_str(ZITI_VERSION) "-" to_str(ZITI_BUILDNUM);
+    return to_str(ZITI_VERSION);
 }
 
 const char* ziti_nodejs_git_branch() {
