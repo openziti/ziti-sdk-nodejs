@@ -10,6 +10,7 @@
     "build:configure:windows": "configure",
     "build:configure:linux:darwin": "./configure",
     "build:make": "cmake-js build",
+    "build:package": "node-pre-gyp package",
     "clean": "cmake-js clean",
     "test": "echo \"Error: no test specified\"",
     "install": "node-pre-gyp install || npm run build",
