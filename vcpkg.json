@@ -2,7 +2,11 @@
   "name": "ziti",
   "version-semver": "1.0.0",
   "dependencies": [
-    "libuv",
+    {
+      "name": "libuv",
+      "platform": "!windows",
+      "$comment": "on windows we link against node binary and Cmake.js provides libuv headers"
+    },
     "openssl",
     "zlib",
     "llhttp",

@@ -106,3 +106,7 @@ dist
 .vscode/
 .DS_Store
 /CMakeUserPresets.json
+
+# Jetbrains tools
+.idea/
+cmake-build-*

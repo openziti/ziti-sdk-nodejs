@@ -6,6 +6,19 @@
   },
   "configurePresets": [
     {
+      "name": "base-win64",
+      "hidden": false,
+      "inherits": [ "base" ],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "x64-windows-static"
+      }
+    },
+    {
       "name": "base",
       "hidden": false,
       "generator": "Ninja",
@@ -62,6 +75,17 @@
       "cacheVariables": {
         "VCPKG_TARGET_TRIPLET": "arm-linux",
         "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/deps/ziti-sdk-c/toolchains/Linux-arm.cmake"
+      }
+    },
+    {
+      "name": "ci-windows-x64",
+      "inherits": [ "ci", "base-win64"]
+    },
+    {
+      "name": "ci-windows-arm64",
+      "inherits": [ "ci-windows-x64" ],
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "arm64-windows-static-md"
       }
     }
   ]

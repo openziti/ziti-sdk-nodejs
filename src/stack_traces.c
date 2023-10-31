@@ -32,11 +32,11 @@ on windows: gcc -g stack_traces.c -limagehlp
 #include <node_api.h>
 
 #ifdef _WIN32
-  #include <windows.h>
-  #include <imagehlp.h>
+#   include <windows.h>
+#   include <imagehlp.h>
 #else
-  #include <err.h>
-  #include <execinfo.h>
+#   include <err.h>
+#   include <execinfo.h>
 #endif
 
 #include <ziti/ziti.h>
@@ -69,15 +69,31 @@ int addr2line(char const * const program_name, void const * const addr)
 
     STACKFRAME frame = { 0 };
 
+    DWORD machType;
+
     /* setup initial stack frame */
+#if _M_IX86
+    machType = IMAGE_FILE_MACHINE_I386;
     frame.AddrPC.Offset         = context->Eip;
     frame.AddrPC.Mode           = AddrModeFlat;
     frame.AddrStack.Offset      = context->Esp;
     frame.AddrStack.Mode        = AddrModeFlat;
     frame.AddrFrame.Offset      = context->Ebp;
     frame.AddrFrame.Mode        = AddrModeFlat;
+#elif _M_X64
+    machType = IMAGE_FILE_MACHINE_AMD64;
+    frame.AddrPC.Offset         = context->Rip;
+    frame.AddrPC.Mode           = AddrModeFlat;
+    frame.AddrStack.Offset      = context->Rsp;
+    frame.AddrStack.Mode        = AddrModeFlat;
+    frame.AddrFrame.Offset      = context->Rsp;
+    frame.AddrFrame.Mode        = AddrModeFlat;
 
-    while (StackWalk(IMAGE_FILE_MACHINE_I386 ,
+#else
+#error "platform is not supported"
+#endif
+
+    while (StackWalk(machType,
                      GetCurrentProcess(),
                      GetCurrentThread(),
                      &frame,
@@ -170,7 +186,13 @@ int addr2line(char const * const program_name, void const * const addr)
     }
     else
     {
+#if _M_IX86
         addr2line(icky_global_program_name, (void*)ExceptionInfo->ContextRecord->Eip);
+#elif _M_X64
+        addr2line(icky_global_program_name, (void*)ExceptionInfo->ContextRecord->Rip);
+#else
+#warning "not implemented"
+#endif
     }
 
     return EXCEPTION_EXECUTE_HANDLER;
