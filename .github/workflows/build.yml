@@ -26,7 +26,7 @@ jobs:
   #  Do a clean build, test, and publish
   # -------------------------------------------------------------------------------
   build:
-    name: Build for Node-${{ matrix.node_ver }} ${{ matrix.config.target }}/${{ matrix.architecture }}
+    name: Build for Node-${{ matrix.node_ver }} ${{ matrix.config.target }}/${{ matrix.config.arch }}
     runs-on: ${{ matrix.config.os }}
 #    container: ${{ matrix.config.container }}
 
@@ -37,10 +37,11 @@ jobs:
     strategy:
       matrix:
         config:
-          # - { os: windows-latest, cc: "cl",    cxx: "cl", node: '16' }
-          - { os: ubuntu-20.04,   target: "linux", container: "openziti/ziti-builder:1.0.7" }
-          - { os: macos-latest,   target: "macos" }
-        architecture: [x64, arm64]
+          - { os: windows-latest, target: "windows", arch: "x64" }
+          - { os: ubuntu-20.04,   target: "linux", arch: "x64" }
+          - { os: ubuntu-20.04,   target: "linux", arch: "arm64" }
+          - { os: macos-latest,   target: "macos", arch: "x64" }
+          - { os: ubuntu-20.04,   target: "linux", arch: "arm64" }
         node_ver: [ 16, 18, 19, 20]
       fail-fast: false
 
@@ -54,10 +55,10 @@ jobs:
         # token: ${{ secrets.ZITI_CI_GH_TOKEN }}
 
     - name: Get crossbuild tools
-      if: matrix.config.target == 'linux' && matrix.architecture != 'x64'
+      if: matrix.config.target == 'linux' && matrix.config.arch != 'x64'
       run: |
         sudo apt update -y
-        sudo apt install -y crossbuild-essential-${{ matrix.architecture }}
+        sudo apt install -y crossbuild-essential-${{ matrix.config.arch }}
 
     - name: Node Version
       uses: actions/setup-node@v3
@@ -107,14 +108,14 @@ jobs:
     - name: Build NodeJS-SDK (Linux | Mac)
       run: |
         cd ${{ runner.workspace }}/${{ github.event.repository.name }}
-        npm install --build-from-source
+        npm install
       env:
-        PRESET: ci-${{ matrix.config.target }}-${{ matrix.architecture }}
-        TARGET_ARCH: ${{ matrix.architecture }}
+        PRESET: ci-${{ matrix.config.target }}-${{ matrix.config.arch }}
+        TARGET_ARCH: ${{ matrix.config.arch }}
         BUILD_DATE: ${{ steps.date.outputs.date }}
-      if: |
-        matrix.config.os == 'ubuntu-20.04' ||
-        matrix.config.os == 'macOS-latest'
+#      if: |
+#        matrix.config.os == 'ubuntu-20.04' ||
+#        matrix.config.os == 'macOS-latest'
 
 # disabled for now
 #    - name: Build NodeJS-SDK (Windows)
@@ -125,14 +126,14 @@ jobs:
 #        matrix.config.os == 'windows-latest'
 
     - name: Hello test
-      if: matrix.architecture == 'x64'
+      if: matrix.config.arch == 'x64'
       run: |
         node tests/hello.js
 
     - name: upload artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: ziti_nodejs_${{ matrix.config.target }}_${{ matrix.architecture }}_nodev${{ matrix.node_ver }}
+        name: ziti_nodejs_${{ matrix.config.target }}_${{ matrix.config.arch }}_nodev${{ matrix.node_ver }}
         path: |
           ./build/Release/ziti_sdk_nodejs.node
           if-no-files-found: error
@@ -150,7 +151,7 @@ jobs:
         ./node_modules/.bin/node-pre-gyp package unpublish publish
         sleep 5
       if: |
-        steps.extract_branch.outputs.branch == 'main' &&  !(matrix.config.os == 'ubuntu-20.04' && matrix.config.node == '16' && matrix.architecture == 'x64' && steps.extract_branch.outputs.branch == 'main')
+        steps.extract_branch.outputs.branch == 'main' &&  !(matrix.config.os == 'ubuntu-20.04' && matrix.config.node == '16' && matrix.config.arch == 'x64' && steps.extract_branch.outputs.branch == 'main')
 
     - name: Install Binary
       run: |
@@ -170,4 +171,4 @@ jobs:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
       if: |
-        matrix.config.os == 'ubuntu-20.04' && matrix.config.node == '16' && matrix.architecture == 'x64' && steps.extract_branch.outputs.branch == 'main'
+        matrix.config.os == 'ubuntu-20.04' && matrix.config.node == '16' && matrix.config.arch == 'x64' && steps.extract_branch.outputs.branch == 'main'

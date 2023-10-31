@@ -1,20 +1,18 @@
 {
   "name": "@openziti/ziti-sdk-nodejs",
   "description": "A NodeJS-based SDK for delivering secure applications over a Ziti Network",
-  "version": "0.13.3",
+  "version": "0.14.0-dev",
   "main": "./lib/ziti",
   "scripts": {
-    "build": "npm run build:init; npm install --build-from-source --clang=1",
+    "build": "npm run build:init && npm run build:configure && npm run build:make",
     "build:init": "git submodule update --init --recursive",
-    "build:nodejs": "cmake-js clean configure --debug build --debug -g --mmacosx-version-min=10.13",
-    "build:nodejsdbg": "npm install --build-from-source --debug -g",
+    "build:configure": "run-script-os",
+    "build:configure:windows": "configure",
+    "build:configure:linux:darwin": "./configure",
+    "build:make": "cmake-js build",
     "clean": "cmake-js clean",
     "test": "echo \"Error: no test specified\"",
-    "configure": "cmake-js configure",
-    "start": "node main.js ./config/identity.json chapel-hill",
-    "install:old": "node-pre-gyp install --fallback-to-build",
-    "install": "cmake-js configure -a \"${TARGET_ARCH:-}\" -- --preset=${PRESET:-base} && cmake-js build -- --target ziti_sdk_nodejs",
-    "install-dbg": "cmake-js -D configure && cmake-js build -- --target ziti_sdk_nodejs",
+    "install": "node-pre-gyp install || npm run build",
     "publish": "node-pre-gyp package publish",
     "docs": "jsdoc2md -t API_REFERENCE.hbs lib/*.js > API_REFERENCE.md"
   },
@@ -51,7 +49,8 @@
     "aws-sdk": "^2.1473.0",
     "docdash": "^1.2.0",
     "jsdoc": "^4.0.2",
-    "jsdoc-to-markdown": "^7.1.1"
+    "jsdoc-to-markdown": "^7.1.1",
+    "run-script-os": "^1.1.6"
   },
   "dependencies": {
     "@mapbox/node-pre-gyp": "^1.0.11",

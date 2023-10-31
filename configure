@@ -1,0 +1,14 @@
+basedir=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")
+
+case `uname` in
+    *CYGWIN*|*MINGW*|*MSYS*) basedir=`cygpath -w "$basedir"`;;
+esac
+
+preset=${PRESET:-base}
+if [ -z ${TARGET_ARCH+x} ]; then
+  arch_arg=
+else
+  arch_arg=-a ${TARGET_ARCH}
+fi
+
+${basedir}/node_modules/.bin/cmake-js configure ${arch_arg} -- --preset=${preset}
