@@ -41,7 +41,7 @@ jobs:
           - { os: ubuntu-20.04,   target: "linux", arch: "x64" }
           - { os: ubuntu-20.04,   target: "linux", arch: "arm64" }
           - { os: macos-latest,   target: "macos", arch: "x64" }
-          - { os: ubuntu-20.04,   target: "linux", arch: "arm64" }
+          - { os: macos-latest,   target: "macos", arch: "arm64" }
         node_ver: [ 16, 18, 19, 20]
       fail-fast: false
 
@@ -113,17 +113,6 @@ jobs:
         PRESET: ci-${{ matrix.config.target }}-${{ matrix.config.arch }}
         TARGET_ARCH: ${{ matrix.config.arch }}
         BUILD_DATE: ${{ steps.date.outputs.date }}
-#      if: |
-#        matrix.config.os == 'ubuntu-20.04' ||
-#        matrix.config.os == 'macOS-latest'
-
-# disabled for now
-#    - name: Build NodeJS-SDK (Windows)
-#      run: |
-#        cd ${{ runner.workspace }}/${{ github.event.repository.name }}
-#        npm install --build-from-source --cd=%CD%
-#      if: |
-#        matrix.config.os == 'windows-latest'
 
     - name: Hello test
       if: matrix.config.arch == 'x64'
@@ -155,7 +144,7 @@ jobs:
 
     - name: Install Binary
       run: |
-        npm install --fallback-to-build=false > /dev/null
+        npm install --fallback-to-build=false 
         sleep 5
       if: |
         steps.extract_branch.outputs.branch == 'main'
