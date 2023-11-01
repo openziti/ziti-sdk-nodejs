@@ -1,7 +1,7 @@
 {
   "name": "@openziti/ziti-sdk-nodejs",
   "description": "A NodeJS-based SDK for delivering secure applications over a Ziti Network",
-  "version": "0.14.0-dev",
+  "version": "0.14.0",
   "main": "./lib/ziti",
   "scripts": {
     "build": "npm run build:init && npm run build:configure && npm run build:make",
@@ -10,6 +10,7 @@
     "build:configure:windows": "configure",
     "build:configure:linux:darwin": "./configure",
     "build:make": "cmake-js build",
+    "build:package": "node-pre-gyp package",
     "clean": "cmake-js clean",
     "test": "echo \"Error: no test specified\"",
     "install": "node-pre-gyp install || npm run build",
