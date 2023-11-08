@@ -606,12 +606,14 @@ void on_resp(tlsuv_http_resp_t *resp, void *data) {
   }
 
   // Initiate the call into the JavaScript callback. The call into JavaScript will not have happened when this function returns, but it will be queued.
-  int rc = napi_call_threadsafe_function(
-      addon_data->tsfn_on_resp,
-      item,
-      napi_tsfn_blocking);
-  if (rc != napi_ok) {
-    napi_throw_error(addon_data->env, "EINVAL", "failure to invoke JS callback");
+  if (addon_data->tsfn_on_resp != NULL) {
+    int rc = napi_call_threadsafe_function(
+        addon_data->tsfn_on_resp,
+        item,
+        napi_tsfn_blocking);
+    if (rc != napi_ok) {
+      napi_throw_error(addon_data->env, "EINVAL", "failure to invoke JS callback");
+    }
   }
 
   if (UV_EOF != resp->code) {
@@ -711,12 +713,14 @@ void on_client(uv_work_t* req, int status) {
   }
 
   // Initiate the call into the JavaScript callback. The call into JavaScript will not have happened when this function returns, but it will be queued.
-  int rc = napi_call_threadsafe_function(
-      addon_data->tsfn_on_req,
-      addon_data,
-      napi_tsfn_blocking);
-  if (rc != napi_ok) {
-    napi_throw_error(addon_data->env, "EINVAL", "failure to invoke JS callback");
+  if (addon_data->tsfn_on_req != NULL) {
+    int rc = napi_call_threadsafe_function(
+        addon_data->tsfn_on_req,
+        addon_data,
+        napi_tsfn_blocking);
+    if (rc != napi_ok) {
+      napi_throw_error(addon_data->env, "EINVAL", "failure to invoke JS callback");
+    }
   }
 }
 
@@ -908,73 +912,89 @@ napi_value _Ziti_http_request(napi_env env, const napi_callback_info info) {
 
   ZITI_NODEJS_LOG(DEBUG, "path: %s", addon_data->path);
 
-  // Obtain ptr to JS on_req callback function
-  napi_value js_cb = args[5];
-  napi_value work_name;
-
-
   HttpsReq* httpsReq = calloc(1, sizeof(HttpsReq));
   addon_data->httpsReq = httpsReq;
   httpsReq->addon_data = addon_data;
 
-  // Create a string to describe this asynchronous operation.
-  rc = napi_create_string_utf8(env, "on_req", NAPI_AUTO_LENGTH, &work_name);
-  if (rc != napi_ok) {
-    napi_throw_error(env, "EINVAL", "Failed to create string");
-    return NULL;
-  }
+  // Obtain ptr to JS on_req callback function
+  napi_value js_cb = args[5];
+  napi_value work_name;
 
-  // Convert the callback retrieved from JavaScript into a thread-safe function (tsfn) 
-  // which we can call from a worker thread.
-  rc = napi_create_threadsafe_function(
-    env,
-    js_cb,
-    NULL,
-    work_name,
-    0,
-    1,
-    NULL,
-    NULL,
-    NULL,
-    CallJs_on_req,
-    &(addon_data->tsfn_on_req)
-  );
-  if (rc != napi_ok) {
-    napi_throw_error(env, "EINVAL", "Failed to create threadsafe_function");
-    return NULL;
+  status = napi_typeof(env, args[5], &valuetype);
+  if (valuetype != napi_undefined) {
+    ZITI_NODEJS_LOG(DEBUG, "on_req callback is specified");
+
+    // Create a string to describe this asynchronous operation.
+    rc = napi_create_string_utf8(env, "on_req", NAPI_AUTO_LENGTH, &work_name);
+    if (rc != napi_ok) {
+      napi_throw_error(env, "EINVAL", "Failed to create string");
+      return NULL;
+    }
+
+    // Convert the callback retrieved from JavaScript into a thread-safe function (tsfn) 
+    // which we can call from a worker thread.
+    rc = napi_create_threadsafe_function(
+      env,
+      js_cb,
+      NULL,
+      work_name,
+      0,
+      1,
+      NULL,
+      NULL,
+      NULL,
+      CallJs_on_req,
+      &(addon_data->tsfn_on_req)
+    );
+    ZITI_NODEJS_LOG(DEBUG, "2: %d", rc);
+    if (rc != napi_ok) {
+      napi_throw_error(env, "EINVAL", "Failed to create threadsafe_function");
+      return NULL;
+    }
+    ZITI_NODEJS_LOG(DEBUG, "napi_create_threadsafe_function addon_data->tsfn_on_req() : %p", addon_data->tsfn_on_req);
   }
-  ZITI_NODEJS_LOG(DEBUG, "napi_create_threadsafe_function addon_data->tsfn_on_req() : %p", addon_data->tsfn_on_req);
+  else {
+    ZITI_NODEJS_LOG(DEBUG, "on_req callback is NOT specified");
+  }
 
   // Obtain ptr to JS on_resp callback function
   napi_value js_cb2 = args[6];
 
-  // Create a string to describe this asynchronous operation.
-  rc = napi_create_string_utf8(env, "on_resp", NAPI_AUTO_LENGTH, &work_name);
-  if (rc != napi_ok) {
-    napi_throw_error(env, "EINVAL", "Failed to create string");
-    return NULL;
-  }
+  status = napi_typeof(env, args[6], &valuetype);
+  if (valuetype != napi_undefined) {
+    ZITI_NODEJS_LOG(DEBUG, "on_resp callback is specified");
 
-  // Convert the callback retrieved from JavaScript into a thread-safe function (tsfn) 
-  // which we can call from a worker thread.
-  rc = napi_create_threadsafe_function(
-    env,
-    js_cb2,
-    NULL,
-    work_name,
-    0,
-    1,
-    NULL,
-    NULL,
-    NULL,
-    CallJs_on_resp,
-    &(addon_data->tsfn_on_resp)
-  );
-  if (rc != napi_ok) {
-    napi_throw_error(env, "EINVAL", "Failed to create threadsafe_function");
-    return NULL;
+    // Create a string to describe this asynchronous operation.
+    rc = napi_create_string_utf8(env, "on_resp", NAPI_AUTO_LENGTH, &work_name);
+    if (rc != napi_ok) {
+      napi_throw_error(env, "EINVAL", "Failed to create string");
+      return NULL;
+    }
+
+    // Convert the callback retrieved from JavaScript into a thread-safe function (tsfn) 
+    // which we can call from a worker thread.
+    rc = napi_create_threadsafe_function(
+      env,
+      js_cb2,
+      NULL,
+      work_name,
+      0,
+      1,
+      NULL,
+      NULL,
+      NULL,
+      CallJs_on_resp,
+      &(addon_data->tsfn_on_resp)
+    );
+    if (rc != napi_ok) {
+      napi_throw_error(env, "EINVAL", "Failed to create threadsafe_function");
+      return NULL;
+    }
+    ZITI_NODEJS_LOG(DEBUG, "napi_create_threadsafe_function addon_data->tsfn_on_resp() : %p", addon_data->tsfn_on_resp);
   }
-  ZITI_NODEJS_LOG(DEBUG, "napi_create_threadsafe_function addon_data->tsfn_on_resp() : %p", addon_data->tsfn_on_resp);
+    else {
+    ZITI_NODEJS_LOG(DEBUG, "on_resp callback is NOT specified");
+  }
 
 
   // Obtain ptr to JS on_resp_data callback function

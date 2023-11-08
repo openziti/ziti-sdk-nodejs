@@ -323,6 +323,8 @@ napi_value _ziti_init(napi_env env, const napi_callback_info info) {
         napi_throw_error(env, NULL, "Failed to napi_create_threadsafe_function");
     }
 
+    ziti_log_init(thread_loop, ZITI_LOG_DEFAULT_LEVEL, NULL);
+
     ziti_config cfg = {0};
 
     int rc = ziti_load_config(&cfg, config_file_name);

@@ -57,15 +57,20 @@ For more context on this SDK, you may be interested in this
 # Supported platforms
 
 The `@openziti/ziti-sdk-nodejs` module works with the following Node.js versions:
-- v12.x
-- v13.x
-- v14.x
-- v15.x
 - v16.x
-- v17.x
 - v18.x
+- v19.x
+- v20.x
 
-Binaries for most Node versions and platforms are provided by default via [@mapbox/node-pre-gyp](https://github.com/mapbox/node-pre-gyp).
+The `@openziti/ziti-sdk-nodejs` module works with the following architectures:
+- amd64
+- arm64
+
+The `@openziti/ziti-sdk-nodejs` module works with the following Operating Systems:
+- macos
+- linux
+- windows
+
 
 # Installing
 
@@ -107,6 +112,7 @@ const on_resp_data = ( obj ) => {
 // Perform an HTTP GET request to a dark OpenZiti web service
 ziti.httpRequest(
   'myDarkWebService',            // OpenZiti Service name or HTTP origin part of the URL
+  undefined,                     // schemeHostPort parm is mutually-exclusive with serviceName parm
   'GET',
   '/',                           // path part of the URL including query params
   ['Accept: application/json' ], // headers
@@ -220,5 +226,19 @@ for tracking bugs and feature requests and have limited bandwidth to address the
 - Read the [docs](https://openziti.github.io/ziti/overview.html)
 - Participate in discussion on [Discourse](https://openziti.discourse.group/)
 
+
+# Building from source on MacOS
+
+``` js
+git clone https://github.com/microsoft/vcpkg.git
+./vcpkg/bootstrap-vcpkg.sh
+export VCPKG_ROOT=`pwd`/vcpkg
+brew install cmake
+brew install ninja
+brew install pkg-config
+git clone https://github.com/openziti/ziti-sdk-nodejs.git
+cd ziti-sdk-nodejs
+npm run build
+```
 
 Copyright&copy;  NetFoundry, Inc.
