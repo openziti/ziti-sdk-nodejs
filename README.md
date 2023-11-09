@@ -50,7 +50,7 @@ Please star us.
 
 # Associated Article(s)
 For more context on this SDK, you may be interested in this
-[article concerning how to secure NodeJS applications](https://openziti.io/securing-nodejs-applications)
+[article concerning how to secure NodeJS applications](https://blog.openziti.io/securing-nodejs-applications)
 
 
 
