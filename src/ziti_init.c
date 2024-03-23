@@ -31,6 +31,12 @@ static const char *ALL_CONFIG_TYPES[] = {
         NULL
 };
 
+#define ZROK_PROXY_CFG_V1 "zrok.proxy.v1"
+#define ZROK_PROXY_CFG_V1_MODEL(XX, ...) \
+XX(auth_scheme, string, none, auth_scheme, __VA_ARGS__) \
+XX(basic_auth, string, none, basic_auth, __VA_ARGS__) \
+XX(oauth, string, none, oauth, __VA_ARGS__)
+DECLARE_MODEL(zrok_proxy_cfg_v1, ZROK_PROXY_CFG_V1_MODEL)
 
 /**
  * This function is responsible for calling the JavaScript callback function 
@@ -136,18 +142,21 @@ static void on_ziti_event(ziti_context _ztx, const ziti_event_t *event) {
       if (event->event.service.removed != NULL) {
           for (ziti_service **sp = event->event.service.removed; *sp != NULL; sp++) {
               // service_check_cb(ztx, *sp, ZITI_SERVICE_UNAVAILABLE, app_ctx);
+              ZITI_NODEJS_LOG(INFO, "Service removed [%s]", (*sp)->name);
           }
       }
 
       if (event->event.service.added != NULL) {
           for (ziti_service **sp = event->event.service.added; *sp != NULL; sp++) {
               // service_check_cb(ztx, *sp, ZITI_OK, app_ctx);
+              ZITI_NODEJS_LOG(INFO, "Service added [%s]", (*sp)->name);
           }
       }
 
       if (event->event.service.changed != NULL) {
           for (ziti_service **sp = event->event.service.changed; *sp != NULL; sp++) {
               // service_check_cb(ztx, *sp, ZITI_OK, app_ctx);
+              ZITI_NODEJS_LOG(INFO, "Service changed [%s]", (*sp)->name);
           }
       }
 
@@ -159,6 +168,11 @@ static void on_ziti_event(ziti_context _ztx, const ziti_event_t *event) {
         ziti_client_cfg_v1 clt_cfg = {
           .hostname = {0},
           .port = 0
+        };
+        zrok_proxy_cfg_v1 zrok_cfg = {
+          .auth_scheme = "",
+          .basic_auth = "",
+          .oauth = ""
         };
 
         if (ziti_service_get_config(s, ZITI_INTERCEPT_CFG_V1, intercept, (int (*)(void *, const char *, size_t))parse_ziti_intercept_cfg_v1) == ZITI_OK) {
@@ -177,6 +191,9 @@ static void on_ziti_event(ziti_context _ztx, const ziti_event_t *event) {
 
         } else if (ziti_service_get_config(s, ZITI_CLIENT_CFG_V1, &clt_cfg, (int (*)(void *, const char *, unsigned long))parse_ziti_client_cfg_v1) == ZITI_OK) {
             track_service_to_hostname(s->name, clt_cfg.hostname.addr.hostname, clt_cfg.port);
+
+        } else if (ziti_service_get_config(s, ZROK_PROXY_CFG_V1, &zrok_cfg, (int (*)(void *, const char *, unsigned long))parse_ziti_client_cfg_v1) == ZITI_OK) {
+            track_service_to_hostname(s->name, s->name, 80);
         }
 
         free_ziti_intercept_cfg_v1(intercept);
