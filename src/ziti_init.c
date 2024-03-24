@@ -92,12 +92,6 @@ void on_ziti_init(ziti_context _ztx, int status, void* ctx) {
   // Set the global ztx context variable
   ztx = _ztx;
 
-  if (status == ZITI_OK) {
-
-    ziti_set_timeout(ztx, 5*1000);
-
-  }
-
   AddonData* addon_data = (AddonData*)ctx;
 
   // Initiate the call into the JavaScript callback. 
