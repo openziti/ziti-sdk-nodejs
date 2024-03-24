@@ -2,17 +2,33 @@
   "name": "ziti",
   "version-semver": "1.0.0",
   "dependencies": [
-    {
-      "name": "libuv",
-      "platform": "!windows",
-      "$comment": "on windows we link against node binary and Cmake.js provides libuv headers"
-    },
+    "libuv",
     "openssl",
     "zlib",
     "llhttp",
-    "libsodium"
+    "libsodium",
+    "json-c",
+    "protobuf-c"
   ],
   "features": {
+    "test": {
+      "description": "Dependencies for testing",
+      "dependencies": [
+        {
+          "version>=": "3.3.1",
+          "name": "catch2"
+        }
+      ]
+    },
+    "samples": {
+      "description": "Dependencies for samples",
+      "dependencies": [
+        {
+          "name": "getopt-win32",
+          "platform": "windows"
+        }
+      ]
+    }
   },
-  "builtin-baseline": "f14984af3738e69f197bf0e647a8dca12de92996"
+  "builtin-baseline": "c8696863d371ab7f46e213d8f5ca923c4aef2a00"
 }
