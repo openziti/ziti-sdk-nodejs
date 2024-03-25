@@ -10,7 +10,9 @@
     "openssl",
     "zlib",
     "llhttp",
-    "libsodium"
+    "libsodium",
+    "json-c",
+    "protobuf-c"
   ],
   "features": {
   },
