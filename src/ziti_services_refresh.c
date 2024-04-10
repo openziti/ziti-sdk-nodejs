@@ -30,7 +30,7 @@ napi_value _ziti_services_refresh(napi_env env, const napi_callback_info info) {
   ZITI_NODEJS_LOG(INFO, "ziti_services_refresh initiated");
 
   // Now, call the C-SDK to refresh the services list
-  ziti_services_refresh(ztx, TRUE);
+  ziti_services_refresh(ztx, true);
 
   status = napi_create_int32(env, 0 /* always succeed here */, &jsRetval);
   if (status != napi_ok) {
