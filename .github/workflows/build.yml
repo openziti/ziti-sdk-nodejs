@@ -57,6 +57,21 @@ jobs:
         submodules: 'recursive'
         # token: ${{ secrets.ZITI_CI_GH_TOKEN }}
 
+    - name: Setup PkgConfig (Windows)
+      if: matrix.config.target == 'windows'
+      env:
+        PKG_CONFIG_ZIP: "http://ftp.gnome.org/pub/gnome/binaries/win32/dependencies/pkg-config_0.26-1_win32.zip"
+        GETTEXT_RUNTIME_ZIP: "http://ftp.gnome.org/pub/gnome/binaries/win32/dependencies/gettext-runtime_0.18.1.1-2_win32.zip"
+        GLIB_ZIP: "http://ftp.gnome.org/pub/gnome/binaries/win32/glib/2.28/glib_2.28.8-1_win32.zip"
+      run: |
+        curl -LO "${{ env.PKG_CONFIG_ZIP }}"
+        7z x pkg-config_0.26-1_win32.zip -oC:\MinGW\bin pkg-config.exe
+        curl -LO "${{ env.GETTEXT_RUNTIME_ZIP }}"
+        7z x gettext-runtime_0.18.1.1-2_win32.zip -oC:\MinGW\bin intl.dll
+        curl -LO "${{ env.GLIB_ZIP }}"
+        7z x glib_2.28.8-1_win32.zip -oC:\MinGW\bin libglib-2.0-0.dll
+        echo "C:\MinGW\bin" >> $GITHUB_PATH
+
     - name: Get crossbuild tools
       if: matrix.config.target == 'linux' && matrix.config.arch != 'x64'
       run: |
