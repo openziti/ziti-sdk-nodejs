@@ -1,6 +1,6 @@
 {
   "name": "@openziti/ziti-sdk-nodejs",
-  "description": "A NodeJS-based SDK for delivering secure applications over a Ziti Network",
+  "description": "A NodeJS-based SDK for delivering secure applications over a Ziti Network ",
   "version": "0.15.0",
   "main": "./lib/ziti",
   "scripts": {
