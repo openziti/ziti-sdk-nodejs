@@ -57,6 +57,11 @@ jobs:
         submodules: 'recursive'
         # token: ${{ secrets.ZITI_CI_GH_TOKEN }}
 
+    - name: Setup PkgConfig (Windows)
+      if: matrix.config.target == 'windows'
+      run: |
+        choco install pkgconfiglite
+
     - name: Get crossbuild tools
       if: matrix.config.target == 'linux' && matrix.config.arch != 'x64'
       run: |

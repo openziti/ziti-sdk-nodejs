@@ -1,5 +1,5 @@
 /*
-Copyright NetFoundry, Inc.
+Copyright NetFoundry Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -207,6 +207,7 @@ extern void expose_ziti_sdk_version(napi_env env, napi_value exports);
 extern void expose_ziti_init(napi_env env, napi_value exports);
 extern void expose_ziti_listen(napi_env env, napi_value exports);
 extern void expose_ziti_service_available(napi_env env, napi_value exports);
+extern void expose_ziti_services_refresh(napi_env env, napi_value exports);
 extern void expose_ziti_set_log_level(napi_env env, napi_value exports);
 extern void expose_ziti_shutdown(napi_env env, napi_value exports);
 extern void expose_ziti_write(napi_env env, napi_value exports);
