@@ -88,13 +88,12 @@ jobs:
       run: echo "date=$(date)" >> $GITHUB_OUTPUT
 
     - name: Install CMake/Ninja
-      uses: lukka/get-cmake@latest
+      uses: lukka/get-cmake@v3.27.6
 
     - name: Run VCPKG
-      uses: lukka/run-vcpkg@v11
+      uses: lukka/run-vcpkg@v10
       with:
-        # tag: 2023.10.19
-        vcpkgGitCommitId: '8eb57355a4ffb410a2e94c07b4dca2dffbee8e50'
+        vcpkgGitCommitId: 'c8696863d371ab7f46e213d8f5ca923c4aef2a00'
 
     - name: gcc version
       run: |

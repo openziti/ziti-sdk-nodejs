@@ -18,6 +18,7 @@ limitations under the License.
 
 extern void set_signal_handler();
 
+uv_loop_t *thread_loop;
 
 napi_value Init(napi_env env, napi_value exports) {
 

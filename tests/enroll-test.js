@@ -1,24 +1,25 @@
+const bindings = require('bindings')('ziti_sdk_nodejs')
 
-var binary = require('@mapbox/node-pre-gyp');
-var path = require('path')
-var binding_path = binary.find(path.resolve(path.join(__dirname,'../package.json')), {debug: true});
-// var binding_path = binary.find(path.resolve(path.join(__dirname,'../package.json')));
-var ziti = require(binding_path);
+const result = bindings.ziti_sdk_version();
+const binary = require('@mapbox/node-pre-gyp');
+const path = require('path')
+const binding_path = binary.find(path.resolve(path.join(__dirname,'../package.json')));
+const ziti = require(binding_path);
+require('assert').notEqual(result,"");
 
 console.log("using ziti version: " + ziti.ziti_sdk_version())
-// require('assert').equal(ziti.ziti_sdk_version(),"ziti");
 
 
 
-const ziti_enroll = async (jwt_path) => {
+const ziti_Enroll = async (jwt_path) => {
+    console.log("JS ziti_Enroll() entered ")
     return new Promise((resolve, reject) => {
-        let rc = ziti.ziti_enroll(jwt_path, (data) => {
-            if (data.identity) {
-                resolve(data);
-            } else {
-                reject(data);
+        let rc = ziti.ziti_enroll(
+            jwt_path,
+            (data) => {
+              return resolve(data);
             }
-        });
+          );
     });
 };
 
@@ -27,8 +28,8 @@ const ziti_enroll = async (jwt_path) => {
 
     let jwt_path = process.argv[2];
 
-    let data = await ziti_enroll(jwt_path).catch((data) => {
-        console.log('ziti_enroll failed with error code (%o/%s)', data.status, data.err);
+    let data = await ziti_Enroll(jwt_path).catch((data) => {
+        console.log('JS ziti_enroll failed with error code (%o/%s)', data.status, data.err);
     });
 
     if (data && data.identity) {

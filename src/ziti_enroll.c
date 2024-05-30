@@ -16,18 +16,6 @@ limitations under the License.
 
 #include "ziti-nodejs.h"
 
-ziti_context nf;
-uv_loop_t *enroll_loop = NULL;
-
-uv_loop_t *thread_loop;
-uv_thread_t thread;
-uv_async_t async;
-
-
-typedef struct {
-  napi_async_work work;
-  napi_threadsafe_function tsfn;
-} AddonData;
 
 // An item that will be generated here and passed into the JavaScript enroll callback
 typedef struct EnrollItem {
@@ -44,6 +32,8 @@ typedef struct EnrollItem {
  * that was specified when the ziti_enroll(...) was called from JavaScript.
  */
 static void CallJs_on_enroll(napi_env env, napi_value js_cb, void* context, void* data) {
+
+  napi_status status;
 
   ZITI_NODEJS_LOG(DEBUG, "entered");
 
@@ -70,38 +60,44 @@ static void CallJs_on_enroll(napi_env env, napi_value js_cb, void* context, void
 
     // const obj = {}
     napi_value js_enroll_item, js_json_salvo, js_status, js_err;
-    assert(napi_create_object(env, &js_enroll_item) == napi_ok);
+    status = napi_create_object(env, &js_enroll_item);
+    if (status != napi_ok) {
+      napi_throw_error(env, NULL, "Unable to napi_create_object");
+    }
 
     // obj.identity = identity
     if (NULL != item->json_salvo) {
-      assert(napi_create_string_utf8(env, (const char*)item->json_salvo, NAPI_AUTO_LENGTH, &js_json_salvo) == napi_ok);
-      assert(napi_set_named_property(env, js_enroll_item, "identity", js_json_salvo) == napi_ok);
-    } else {
-      assert(napi_set_named_property(env, js_enroll_item, "identity", undefined) == napi_ok);
+      napi_create_string_utf8(env, (const char*)item->json_salvo, NAPI_AUTO_LENGTH, &js_json_salvo);
+      napi_set_named_property(env, js_enroll_item, "identity", js_json_salvo);
     }
 
     // obj.status = status
-    assert(napi_create_int64(env, (int64_t)item->status, &js_status) == napi_ok);
-    assert(napi_set_named_property(env, js_enroll_item, "status", js_status) == napi_ok);
+    napi_create_int64(env, (int64_t)item->status, &js_status);
+    napi_set_named_property(env, js_enroll_item, "status", js_status);
 
     // obj.err = err
     if (NULL != item->err) {
-      assert(napi_create_string_utf8(env, (const char*)item->err, NAPI_AUTO_LENGTH, &js_err) == napi_ok);
-      assert(napi_set_named_property(env, js_enroll_item, "err", js_err) == napi_ok);
-    } else {
-      assert(napi_set_named_property(env, js_enroll_item, "err", undefined) == napi_ok);
+      napi_create_string_utf8(env, (const char*)item->err, NAPI_AUTO_LENGTH, &js_err);
+      napi_set_named_property(env, js_enroll_item, "err", js_err);
     }
 
 
-    // Call the JavaScript function and pass it the WriteItem
-    assert(
-      napi_call_function(
-        env,
-        undefined,
-        js_cb,
-        1,
-        &js_enroll_item,
-        NULL) == napi_ok);
+    // Call the JavaScript function and pass it the EnrollItem
+    napi_value global;
+    status = napi_get_global(env, &global);
+
+    status = napi_call_function(
+      env,
+      global,
+      js_cb,
+      1,
+      &js_enroll_item,
+      NULL
+    );
+
+    if (status != napi_ok) {
+      napi_throw_error(env, "EINVAL", "failure to invoke JS callback");
+    }
 
   }
 }
@@ -110,11 +106,12 @@ static void CallJs_on_enroll(napi_env env, napi_value js_cb, void* context, void
 /**
  * 
  */
-void on_ziti_enroll(const ziti_config *cfg, int status, const char *err, void *ctx) {
+void on_ziti_enroll(ziti_config *cfg, int status, char *err, void *ctx) {
+  napi_status nstatus;
 
   ZITI_NODEJS_LOG(DEBUG, "\nstatus: %d, \nerr: %s,\nctx: %p", status, err, ctx);
 
-  AddonData* addon_data = (AddonData*)ctx;
+  EnrollAddonData* addon_data = (EnrollAddonData*)ctx;
 
   EnrollItem* item = memset(malloc(sizeof(*item)), 0, sizeof(*item));
 
@@ -137,23 +134,18 @@ void on_ziti_enroll(const ziti_config *cfg, int status, const char *err, void *c
   // Initiate the call into the JavaScript callback. 
   // The call into JavaScript will not have happened 
   // when this function returns, but it will be queued.
-  assert(
-    napi_call_threadsafe_function(
-      addon_data->tsfn,
+  nstatus = napi_call_threadsafe_function(
+      addon_data->tsfn_on_enroll,
       item,
-      napi_tsfn_blocking) == napi_ok);
+      napi_tsfn_blocking);
+  if (nstatus != napi_ok) {
+    ZITI_NODEJS_LOG(ERROR, "Unable to napi_call_threadsafe_function");
+  }
+
 }
 
 
 
-void child_thread(void *data){
-    uv_loop_t *thread_loop = (uv_loop_t *) data;
-
-    //Start this loop
-    uv_run(thread_loop, UV_RUN_DEFAULT);
-}
-
-static void consumer_notify(uv_async_t *handle, int status) { }
 
 /**
  * 
@@ -161,6 +153,9 @@ static void consumer_notify(uv_async_t *handle, int status) { }
 napi_value _ziti_enroll(napi_env env, const napi_callback_info info) {
   napi_status status;
   napi_value jsRetval;
+  napi_valuetype js_cb_type;
+
+  ziti_log_init(thread_loop, ZITI_LOG_DEFAULT_LEVEL, NULL);
 
   ZITI_NODEJS_LOG(DEBUG, "entered");
 
@@ -172,6 +167,7 @@ napi_value _ziti_enroll(napi_env env, const napi_callback_info info) {
   }
 
   if (argc < 2) {
+    ZITI_NODEJS_LOG(DEBUG, "Too few arguments");
     napi_throw_error(env, "EINVAL", "Too few arguments");
     return NULL;
   }
@@ -182,9 +178,16 @@ napi_value _ziti_enroll(napi_env env, const napi_callback_info info) {
   status = napi_get_value_string_utf8(env, args[0], JWTFileName, 256, &result);
 
   // Obtain ptr to JS callback function
-  napi_value js_cb = args[1];
+  // napi_value js_cb = args[1];
+  napi_typeof(env, args[1], &js_cb_type);
+  if (js_cb_type != napi_function) {
+    ZITI_NODEJS_LOG(DEBUG, "args[1] is NOT a napi_function");
+  } else {
+    ZITI_NODEJS_LOG(DEBUG, "args[1] IS a napi_function");
+  }
   napi_value work_name;
-  AddonData* addon_data = malloc(sizeof(AddonData));
+
+  EnrollAddonData* addon_data = memset(malloc(sizeof(*addon_data)), 0, sizeof(*addon_data));
 
   // Create a string to describe this asynchronous operation.
   assert(napi_create_string_utf8(
@@ -195,10 +198,9 @@ napi_value _ziti_enroll(napi_env env, const napi_callback_info info) {
 
   // Convert the callback retrieved from JavaScript into a thread-safe function (tsfn) 
   // which we can call from a worker thread.
-  assert(
-    napi_create_threadsafe_function(
+  status = napi_create_threadsafe_function(
       env,
-      js_cb,
+      args[1],
       NULL,
       work_name,
       0,
@@ -207,12 +209,11 @@ napi_value _ziti_enroll(napi_env env, const napi_callback_info info) {
       NULL,
       NULL,
       CallJs_on_enroll,
-      &(addon_data->tsfn)) == napi_ok);
+      &(addon_data->tsfn_on_enroll));
+  if (status != napi_ok) {
+    napi_throw_error(env, NULL, "Unable to napi_create_threadsafe_function");
+  }
 
-  // Create and set up the consumer thread
-  thread_loop = uv_loop_new();
-  uv_async_init(thread_loop, &async, (uv_async_cb)consumer_notify);
-  uv_thread_create(&thread, (uv_thread_cb)child_thread, thread_loop);
 
   // Initiate the enrollment
   ziti_enroll_opts opts = {0};
