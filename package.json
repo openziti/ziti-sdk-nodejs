@@ -56,6 +56,6 @@
   "dependencies": {
     "@mapbox/node-pre-gyp": "^1.0.11",
     "bindings": "^1.5.0",
-    "cmake-js": "^7.2.1"
+    "cmake-js": "^7.3.0"
   }
 }
