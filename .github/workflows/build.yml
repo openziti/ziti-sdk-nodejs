@@ -43,8 +43,8 @@ jobs:
           - { os: windows-latest, target: "windows", arch: "x64" }
           - { os: ubuntu-20.04,   target: "linux", arch: "x64" }
           - { os: ubuntu-20.04,   target: "linux", arch: "arm64" }
-          - { os: macos-latest,   target: "macos", arch: "x64" }
-          - { os: macos-latest,   target: "macos", arch: "arm64" }
+          - { os: macos-13,       target: "macos", arch: "x64" }
+          - { os: macos-13,       target: "macos", arch: "arm64" }
         node_ver: [ 16, 18, 19, 20, 21, 22, 23]
       fail-fast: false
 
