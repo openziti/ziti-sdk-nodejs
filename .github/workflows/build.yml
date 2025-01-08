@@ -57,6 +57,11 @@ jobs:
         submodules: 'recursive'
         # token: ${{ secrets.ZITI_CI_GH_TOKEN }}
 
+    - name: macOS tools
+      if: runner.os == 'macOS'
+      shell: bash
+      run: brew install autoconf autoconf-archive automake pkg-config
+
     - name: Setup PkgConfig (Windows)
       if: matrix.config.target == 'windows'
       run: |
