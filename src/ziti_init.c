@@ -33,9 +33,9 @@ static const char *ALL_CONFIG_TYPES[] = {
 
 #define ZROK_PROXY_CFG_V1 "zrok.proxy.v1"
 #define ZROK_PROXY_CFG_V1_MODEL(XX, ...) \
-XX(auth_scheme, string, none, auth_scheme, __VA_ARGS__) \
-XX(basic_auth, string, none, basic_auth, __VA_ARGS__) \
-XX(oauth, string, none, oauth, __VA_ARGS__)
+XX(auth_scheme, model_string, none, auth_scheme, __VA_ARGS__) \
+XX(basic_auth, model_string, none, basic_auth, __VA_ARGS__) \
+XX(oauth, model_string, none, oauth, __VA_ARGS__)
 DECLARE_MODEL(zrok_proxy_cfg_v1, ZROK_PROXY_CFG_V1_MODEL)
 
 /**
@@ -118,46 +118,46 @@ static void on_ziti_event(ziti_context _ztx, const ziti_event_t *event) {
   switch (event->type) {
 
     case ZitiContextEvent:
-      if (event->event.ctx.ctrl_status == ZITI_OK) {
+      if (event->ctx.ctrl_status == ZITI_OK) {
         const ziti_version *ctrl_ver = ziti_get_controller_version(_ztx);
         const ziti_identity *proxy_id = ziti_get_identity(_ztx);
         ZITI_NODEJS_LOG(INFO, "controller version = %s(%s)[%s]", ctrl_ver->version, ctrl_ver->revision, ctrl_ver->build_date);
         ZITI_NODEJS_LOG(INFO, "identity = <%s>[%s]@%s", proxy_id->name, proxy_id->id, ziti_get_controller(_ztx));
       }
       else {
-          ZITI_NODEJS_LOG(ERROR, "Failed to connect to controller: %s", event->event.ctx.err);
+          ZITI_NODEJS_LOG(ERROR, "Failed to connect to controller: %s", event->ctx.err);
       }
 
-      addon_data->zitiContextEventStatus = event->event.ctx.ctrl_status;
+      addon_data->zitiContextEventStatus = event->ctx.ctrl_status;
 
       break;
 
     case ZitiServiceEvent:
-      if (event->event.service.removed != NULL) {
-          for (ziti_service **sp = event->event.service.removed; *sp != NULL; sp++) {
+      if (event->service.removed != NULL) {
+          for (ziti_service **sp = event->service.removed; *sp != NULL; sp++) {
               // service_check_cb(ztx, *sp, ZITI_SERVICE_UNAVAILABLE, app_ctx);
               ZITI_NODEJS_LOG(INFO, "Service removed [%s]", (*sp)->name);
           }
       }
 
-      if (event->event.service.added != NULL) {
-          for (ziti_service **sp = event->event.service.added; *sp != NULL; sp++) {
+      if (event->service.added != NULL) {
+          for (ziti_service **sp = event->service.added; *sp != NULL; sp++) {
               // service_check_cb(ztx, *sp, ZITI_OK, app_ctx);
               ZITI_NODEJS_LOG(INFO, "Service added [%s]", (*sp)->name);
           }
       }
 
-      if (event->event.service.changed != NULL) {
-          for (ziti_service **sp = event->event.service.changed; *sp != NULL; sp++) {
+      if (event->service.changed != NULL) {
+          for (ziti_service **sp = event->service.changed; *sp != NULL; sp++) {
               // service_check_cb(ztx, *sp, ZITI_OK, app_ctx);
               ZITI_NODEJS_LOG(INFO, "Service changed [%s]", (*sp)->name);
           }
       }
 
       //
-      for (int i = 0; event->event.service.added && event->event.service.added[i] != NULL; i++) {
+      for (int i = 0; event->service.added && event->service.added[i] != NULL; i++) {
 
-        ziti_service *s = event->event.service.added[i];
+        ziti_service *s = event->service.added[i];
         ziti_intercept_cfg_v1 *intercept = alloc_ziti_intercept_cfg_v1();
         ziti_client_cfg_v1 clt_cfg = {
           .hostname = {0},
@@ -194,9 +194,9 @@ static void on_ziti_event(ziti_context _ztx, const ziti_event_t *event) {
         free(intercept);
       }
 
-      for (int i = 0; event->event.service.changed && event->event.service.changed[i] != NULL; i++) {
+      for (int i = 0; event->service.changed && event->service.changed[i] != NULL; i++) {
 
-        ziti_service *s = event->event.service.changed[i];
+        ziti_service *s = event->service.changed[i];
         ziti_intercept_cfg_v1 *intercept = alloc_ziti_intercept_cfg_v1();
         ziti_client_cfg_v1 clt_cfg = {
           .hostname = {0},
@@ -238,21 +238,21 @@ static void on_ziti_event(ziti_context _ztx, const ziti_event_t *event) {
       break;
 
     case ZitiRouterEvent:
-      switch (event->event.router.status){
+      switch (event->router.status){
         case EdgeRouterConnected:
-          ZITI_NODEJS_LOG(INFO, "ziti connected to edge router %s\nversion = %s", event->event.router.name, event->event.router.version);
+          ZITI_NODEJS_LOG(INFO, "ziti connected to edge router %s\nversion = %s", event->router.name, event->router.version);
           break;
         case EdgeRouterDisconnected:
-          ZITI_NODEJS_LOG(INFO, "ziti disconnected from edge router %s", event->event.router.name);
+          ZITI_NODEJS_LOG(INFO, "ziti disconnected from edge router %s", event->router.name);
           break;
         case EdgeRouterRemoved:
-          ZITI_NODEJS_LOG(INFO, "ziti removed edge router %s", event->event.router.name);
+          ZITI_NODEJS_LOG(INFO, "ziti removed edge router %s", event->router.name);
           break;
         case EdgeRouterUnavailable:
-          ZITI_NODEJS_LOG(INFO, "edge router %s is not available", event->event.router.name);
+          ZITI_NODEJS_LOG(INFO, "edge router %s is not available", event->router.name);
           break;
         case EdgeRouterAdded:
-          ZITI_NODEJS_LOG(INFO, "edge router %s was added", event->event.router.name);
+          ZITI_NODEJS_LOG(INFO, "edge router %s was added", event->router.name);
           break;
         }
 
