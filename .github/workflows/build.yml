@@ -91,7 +91,7 @@ jobs:
       uses: lukka/get-cmake@v3.30.1
 
     - name: Run VCPKG
-      uses: lukka/run-vcpkg@v11
+      uses: lukka/run-vcpkg@v10
 
     - name: gcc version
       run: |
