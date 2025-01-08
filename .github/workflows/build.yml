@@ -93,7 +93,7 @@ jobs:
     - name: Run VCPKG
       uses: lukka/run-vcpkg@v10
       with:
-        vcpkgGitCommitId: 'c8696863d371ab7f46e213d8f5ca923c4aef2a00'
+        vcpkgGitCommitId: 'b322364f06308bdd24823f9d8f03fe0cc86fd46f'
 
     - name: gcc version
       run: |
