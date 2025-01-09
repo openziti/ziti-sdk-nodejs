@@ -113,7 +113,8 @@ jobs:
         echo "npm:   $(npm --version)"
 
     - name: restore dependencies cache
-      uses: actions/cache@v4
+      uses: actions/cache/restore@v4
+      id: cache-restore
       with:
         key: deps-${{ matrix.config.target }}-${{ matrix.config.arch }}-${{ hashFiles('./vcpkg.json') }}
         path: './vcpkg/packages'
@@ -146,6 +147,15 @@ jobs:
       if: matrix.config.arch == 'x64'
       run: |
         node tests/hello.js
+
+    - name: save dependencies cache
+      uses: actions/cache/save@v4
+      id: cache-save
+      # save deps even build has failed
+      if: always()
+      with:
+        key: ${{ steps.cache-restore.outputs.cache-primary-key }}
+        path: './vcpkg/packages'
 
     - name: upload artifacts
       uses: actions/upload-artifact@v3
