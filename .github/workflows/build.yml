@@ -43,8 +43,8 @@ jobs:
           - { os: windows-latest, target: "windows", arch: "x64" }
           - { os: ubuntu-20.04,   target: "linux", arch: "x64" }
           - { os: ubuntu-20.04,   target: "linux", arch: "arm64" }
-          - { os: macos-13,       target: "macos", arch: "x64" } # x64 image
-          - { os: macos-14,       target: "macos", arch: "arm64" } # arm64 image
+          - { os: macos-13,       target: "macos", arch: "x64" }
+          - { os: macos-13,       target: "macos", arch: "arm64" }
         node_ver: [ 22 ] # scale down for now [ 16, 18, 19, 20, 21, 22, 23]
       fail-fast: false
 
@@ -111,6 +111,12 @@ jobs:
         echo "ninja: $(ninja --version)"
         echo "node:  $(node --version)"
         echo "npm:   $(npm --version)"
+
+    - name: restore dependencies cache
+      uses: actions/cache@v4
+      with:
+        key: deps-${{ matrix.config.target }}-${{ matrix.config.arch }}-${{ hashFiles('./vcpkg.json') }}
+        path: './vcpkg/packages'
 
     - name: Build NodeJS-SDK
       id: buildSDK
