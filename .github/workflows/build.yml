@@ -104,13 +104,16 @@ jobs:
 
     - name: show versions
       run: |
+        echo ===== gcc =====
         gcc --version
+        echo ===== cmake =====
         cmake --version
-        ninja --version
-        node --version
-        npm --version
+        echo "ninja: $(ninja --version)"
+        echo "node:  $(node --version)"
+        echo "npm:   $(npm --version)"
 
     - name: Build NodeJS-SDK
+      id: buildSDK
       run: |
         cd ${{ runner.workspace }}/${{ github.event.repository.name }}
         npm install
@@ -119,6 +122,15 @@ jobs:
         PRESET: ci-${{ matrix.config.target }}-${{ matrix.config.arch }}
         TARGET_ARCH: ${{ matrix.config.arch }}
         BUILD_DATE: ${{ steps.date.outputs.date }}
+
+    - name: debug build failure
+      if: always() && (steps.build.sdk.outcome == 'failure')
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-failures
+        path: |
+          ./vcpkg/buildtrees/**/*.log
+          ./build/**/*log
 
     - name: Hello test
       if: matrix.config.arch == 'x64'
