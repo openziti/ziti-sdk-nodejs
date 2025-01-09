@@ -44,7 +44,7 @@ jobs:
           - { os: ubuntu-20.04,   target: "linux", arch: "x64" }
           - { os: ubuntu-20.04,   target: "linux", arch: "arm64" }
           - { os: macos-13,       target: "macos", arch: "x64" }
-          - { os: macos-13,       target: "macos", arch: "arm64" }
+          - { os: macos-14,       target: "macos", arch: "arm64" }
         node_ver: [ 22 ] # scale down for now [ 16, 18, 19, 20, 21, 22, 23]
       fail-fast: false
 
@@ -60,7 +60,7 @@ jobs:
     - name: macOS tools
       if: runner.os == 'macOS'
       shell: bash
-      run: brew install autoconf autoconf-archive automake pkg-config
+      run: brew install autoconf autoconf-archive automake pkg-config libtool
 
     - name: Setup PkgConfig (Windows)
       if: matrix.config.target == 'windows'
@@ -134,7 +134,7 @@ jobs:
       run: echo build result ${{ steps.buildSDK.outcome }}
 
     - name: debug build failure
-      if: always()
+      if: always() && steps.buildSDK.outcome == 'failure'
       uses: actions/upload-artifact@v3
       with:
         name: build-logs-${{ matrix.config.target }}-${{ matrix.config.arch }}
