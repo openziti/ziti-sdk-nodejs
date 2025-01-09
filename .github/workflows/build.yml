@@ -124,7 +124,7 @@ jobs:
         BUILD_DATE: ${{ steps.date.outputs.date }}
 
     - name: debug build failure
-      if: always() && (steps.build.sdk.outcome == 'failure')
+      if: always()
       uses: actions/upload-artifact@v3
       with:
         name: build-failures
