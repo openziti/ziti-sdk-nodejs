@@ -123,11 +123,15 @@ jobs:
         TARGET_ARCH: ${{ matrix.config.arch }}
         BUILD_DATE: ${{ steps.date.outputs.date }}
 
+    - name: show build result
+      if: always()
+      run: echo build result ${{ steps.buildSDK.outcome }}
+
     - name: debug build failure
       if: always()
       uses: actions/upload-artifact@v3
       with:
-        name: build-failures
+        name: build-logs-${{ matrix.config.target }}-${{ matrix.config.arch }}
         path: |
           ./vcpkg/buildtrees/**/*.log
           ./build/**/*log
