@@ -45,7 +45,7 @@ jobs:
           - { os: ubuntu-20.04,   target: "linux", arch: "arm64" }
           - { os: macos-13,       target: "macos", arch: "x64" } # x64 image
           - { os: macos-14,       target: "macos", arch: "arm64" } # arm64 image
-        node_ver: 22 # scale down for now [ 16, 18, 19, 20, 21, 22, 23]
+        node_ver: [ 22 ] # scale down for now [ 16, 18, 19, 20, 21, 22, 23]
       fail-fast: false
 
     steps:
