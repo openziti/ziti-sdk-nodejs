@@ -1,4 +1,0 @@
-[submodule "deps/ziti-sdk-c"]
-	path = deps/ziti-sdk-c
-	url = https://github.com/openziti/ziti-sdk-c
-	branch = main
