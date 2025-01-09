@@ -98,6 +98,9 @@ jobs:
     - name: Run VCPKG
       uses: lukka/run-vcpkg@v11
       # will use baseline from vcpkg.json
+      with:
+        # get baseline from vcpkg
+        vcpkgJsonGlob: './vcpkg.json'
 
     - name: show versions
       run: |
