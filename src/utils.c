@@ -47,10 +47,10 @@ limitations under the License.
 
 const char* ziti_nodejs_get_version(int verbose) {
     if (verbose) {
-        return "\n\tVersion:\t" to_str(ZITI_VERSION)
+        return "\n\tVersion:\t" to_str(ZITI_NODEJS_VERSION)
                "\n\tBuild Date:\t" to_str(BUILD_DATE)
-               "\n\tGit Branch:\t" to_str(ZITI_BRANCH)
-               "\n\tGit SHA:\t" to_str(ZITI_COMMIT)
+               "\n\tGit Branch:\t" to_str(ZITI_NODEJS_BRANCH)
+               "\n\tGit SHA:\t" to_str(ZITI_NODEJS_COMMIT)
                "\n\tOS:     \t" to_str(ZITI_OS)
                "\n\tArch:   \t" to_str(ZITI_ARCH)
                "\n\t";

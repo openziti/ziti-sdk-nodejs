@@ -473,7 +473,7 @@ static void CallJs_on_listen_client(napi_env env, napi_value js_cb, void* contex
 /**
  * 
  */
-void on_listen_client(ziti_connection serv, ziti_connection client, int status, ziti_client_ctx *clt_ctx) {
+void on_listen_client(ziti_connection serv, ziti_connection client, int status, const ziti_client_ctx *clt_ctx) {
 
   ZITI_NODEJS_LOG(INFO, "on_listen_client: client: %p, status: %d, clt_ctx: %p", client, status, clt_ctx);
 

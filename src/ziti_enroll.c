@@ -106,7 +106,7 @@ static void CallJs_on_enroll(napi_env env, napi_value js_cb, void* context, void
 /**
  * 
  */
-void on_ziti_enroll(ziti_config *cfg, int status, char *err, void *ctx) {
+void on_ziti_enroll(const ziti_config *cfg, int status, const char *err, void *ctx) {
   napi_status nstatus;
 
   ZITI_NODEJS_LOG(DEBUG, "\nstatus: %d, \nerr: %s,\nctx: %p", status, err, ctx);
