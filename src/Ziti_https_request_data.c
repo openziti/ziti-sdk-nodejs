@@ -103,7 +103,7 @@ static void CallJs_on_req_body(napi_env env, napi_value js_cb, void* context, vo
 /**
  * 
  */
-void on_req_body(tlsuv_http_req_t *req, const char *body, ssize_t status) {
+void on_req_body(tlsuv_http_req_t *req, char *body, ssize_t status) {
 
   ZITI_NODEJS_LOG(DEBUG, "status: %zd, body: %p", status, body);
 

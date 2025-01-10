@@ -103,7 +103,7 @@ static void CallJs_on_service_available(napi_env env, napi_value js_cb, void* co
 /**
  * 
  */
-static void on_service_available(ziti_context nf_ctx, ziti_service* service, int status, void *ctx) {
+static void on_service_available(ziti_context nf_ctx, const ziti_service* service, int status, void *ctx) {
   napi_status nstatus;
 
   AddonData* addon_data = (AddonData*)ctx;

@@ -1,0 +1,43 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index f8a0c2f..a07ee13 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -84,21 +84,25 @@ endif()
+ include(FindPkgConfig)
+ find_package(PkgConfig)
+ 
+-find_package(libuv CONFIG QUIET)
+-if (libuv_FOUND)
+-    # newer libuv versions (via VCPKG) have proper namespacing
+-    if (TARGET libuv::uv_a)
+-        set(TLSUV_LIBUV_LIB libuv::uv_a)
+-    elseif (TARGET uv_a)
+-        set(TLSUV_LIBUV_LIB uv_a)
+-    elseif (TARGET libuv::uv)
+-        set(TLSUV_LIBUV_LIB libuv::uv)
++if (TARGET libuv::uv)
++    set(TLSUV_LIBUV_LIB libuv::uv)
++else ()
++    find_package(libuv CONFIG QUIET)
++    if (libuv_FOUND)
++        # newer libuv versions (via VCPKG) have proper namespacing
++        if (TARGET libuv::uv_a)
++            set(TLSUV_LIBUV_LIB libuv::uv_a)
++        elseif (TARGET uv_a)
++            set(TLSUV_LIBUV_LIB uv_a)
++        elseif (TARGET libuv::uv)
++            set(TLSUV_LIBUV_LIB libuv::uv)
++        else()
++            set(TLSUV_LIBUV_LIB uv)
++        endif()
+     else()
+-        set(TLSUV_LIBUV_LIB uv)
++        pkg_check_modules(libuv REQUIRED IMPORTED_TARGET libuv)
++        set(TLSUV_LIBUV_LIB PkgConfig::libuv)
+     endif()
+-else()
+-    pkg_check_modules(libuv REQUIRED IMPORTED_TARGET libuv)
+-    set(TLSUV_LIBUV_LIB PkgConfig::libuv)
+ endif()
+ 
+ add_library(tlsuv STATIC

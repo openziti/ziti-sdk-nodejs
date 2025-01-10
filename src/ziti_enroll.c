@@ -106,7 +106,7 @@ static void CallJs_on_enroll(napi_env env, napi_value js_cb, void* context, void
 /**
  * 
  */
-void on_ziti_enroll(ziti_config *cfg, int status, char *err, void *ctx) {
+void on_ziti_enroll(const ziti_config *cfg, int status, const char *err, void *ctx) {
   napi_status nstatus;
 
   ZITI_NODEJS_LOG(DEBUG, "\nstatus: %d, \nerr: %s,\nctx: %p", status, err, ctx);
@@ -217,7 +217,7 @@ napi_value _ziti_enroll(napi_env env, const napi_callback_info info) {
 
   // Initiate the enrollment
   ziti_enroll_opts opts = {0};
-  opts.jwt = JWTFileName;
+  opts.token = JWTFileName;
   int rc = ziti_enroll(&opts, thread_loop, on_ziti_enroll, addon_data);
 
   status = napi_create_int32(env, rc, &jsRetval);

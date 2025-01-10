@@ -54,7 +54,7 @@ struct ListMap* newListMap() {
 
 uv_mutex_t client_pool_lock;
 
-bool listMapInsert(struct ListMap* collection, char* key, void* value) {
+bool listMapInsert(struct ListMap* collection, const char* key, void* value) {
 
   if (collection->count == listMapCapacity) {
     ZITI_NODEJS_LOG(ERROR, "collection->count already at capacity [%d], insert FAIL", listMapCapacity);
@@ -214,7 +214,7 @@ static void allocate_client(uv_work_t* req) {
 }
 
 
-struct hostname_port* getHostnamePortForService(char* key) {
+struct hostname_port* getHostnamePortForService(const char* key) {
 
   ZITI_NODEJS_LOG(DEBUG, "getHostnamePortForService() entered, key: %s", key);
 
@@ -239,7 +239,7 @@ struct hostname_port* getHostnamePortForService(char* key) {
 /**
  * 
  */
-void track_service_to_hostname(char* service_name, char* hostname, int port) {
+void track_service_to_hostname(const char* service_name, char* hostname, int port) {
 
   ZITI_NODEJS_LOG(DEBUG, "track_service_to_hostname() entered, service_name: %s hostname: %s port: %d", service_name, hostname, port);
 
@@ -360,7 +360,7 @@ static void CallJs_on_resp_body(napi_env env, napi_value js_cb, void* context, v
 /**
  * 
  */
-void on_resp_body(tlsuv_http_req_t *req, const char *body, ssize_t len) {
+void on_resp_body(tlsuv_http_req_t *req, char *body, ssize_t len) {
 
   // ZITI_NODEJS_LOG(DEBUG, "len: %zd, body is: \n>>>>>%s<<<<<", len, body);
   ZITI_NODEJS_LOG(DEBUG, "body: %p", body);

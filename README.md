@@ -62,6 +62,8 @@ The `@openziti/ziti-sdk-nodejs` module works with the following Node.js versions
 - v19.x
 - v20.x
 - v21.x
+- v22.x
+- v23.x
 
 The `@openziti/ziti-sdk-nodejs` module works with the following architectures:
 - amd64
