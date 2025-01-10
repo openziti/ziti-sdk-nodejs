@@ -7,7 +7,6 @@
       "platform": "!windows",
       "$comment": "on windows we link against node binary and Cmake.js provides libuv headers"
     },
-    "libuv",
     "openssl",
     "zlib",
     "llhttp",

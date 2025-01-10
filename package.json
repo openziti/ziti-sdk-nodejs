@@ -4,8 +4,7 @@
   "version": "0.18.0",
   "main": "./lib/ziti",
   "scripts": {
-    "build": "npm run build:init && npm run build:configure && npm run build:make",
-    "build:init": "git submodule update --init --recursive",
+    "build": "npm run build:configure && npm run build:make",
     "build:configure": "run-script-os",
     "build:configure:windows": "configure",
     "build:configure:linux:darwin": "./configure",

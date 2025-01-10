@@ -23,7 +23,13 @@ endif (WIN32)
 file(GLOB SOURCE_FILES ./src/*.c ./src/.cpp)
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${CMAKE_JS_SRC})
-set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" SUFFIX ".node")
+set_target_properties(${PROJECT_NAME} PROPERTIES
+        PREFIX ""
+        SUFFIX ".node"
+        C_STANDARD 11
+        POSITION_INDEPENDENT_CODE ON
+)
+
 target_include_directories(${PROJECT_NAME}
         PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/include
         PRIVATE ${CMAKE_JS_INC}
@@ -31,16 +37,6 @@ target_include_directories(${PROJECT_NAME}
 
 if (WIN32)
   target_compile_definitions(${PROJECT_NAME} PRIVATE WIN32_LEAN_AND_MEAN)
-
-  #
-  # nodejs contains all needed libuv stuff
-  # trick TLSUV to link against it
-  add_library(libuv::uv SHARED IMPORTED)
-  set_target_properties(libuv::uv PROPERTIES
-          IMPORTED_LOCATION ${CMAKE_JS_LIB}
-          IMPORTED_IMPLIB ${CMAKE_JS_LIB}
-  )
-  set(TLSUV_LIBUV_LIB libuv::uv)
 endif (WIN32)
 
 
@@ -49,7 +45,7 @@ if(MSVC AND CMAKE_JS_NODELIB_DEF AND CMAKE_JS_NODELIB_TARGET)
   execute_process(COMMAND ${CMAKE_AR} /def:${CMAKE_JS_NODELIB_DEF} /out:${CMAKE_JS_NODELIB_TARGET} ${CMAKE_STATIC_LINKER_FLAGS})
 endif()
 
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/deps/ziti-sdk-c)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/deps)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE ziti ${CMAKE_JS_LIB})
 if (WIN32)

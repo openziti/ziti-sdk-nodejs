@@ -64,7 +64,7 @@ extern FILE *ziti_nodejs_debug_out;
 
 // TEMP: skip logging on windows
 #ifdef WIN32
-#define ZITI_NODEJS_LOG
+#define ZITI_NODEJS_LOG(...)
 #else
 #define ZITI_NODEJS_LOG(level, fmt, ...) do { \
 if (level <= ziti_nodejs_debug_level) {\
