@@ -46,15 +46,15 @@
     "url": "http://openziti.io"
   },
   "devDependencies": {
-    "aws-sdk": "^2.1473.0",
+    "aws-sdk": "^2.1692.0",
     "docdash": "^1.2.0",
-    "jsdoc": "^4.0.2",
+    "jsdoc": "^4.0.4",
     "jsdoc-to-markdown": "^7.1.1",
     "run-script-os": "^1.1.6"
   },
   "dependencies": {
     "@mapbox/node-pre-gyp": "^1.0.11",
     "bindings": "^1.5.0",
-    "cmake-js": "^7.2.1"
+    "cmake-js": "^7.3.0"
   }
 }
