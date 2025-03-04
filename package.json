@@ -1,7 +1,7 @@
 {
   "name": "@openziti/ziti-sdk-nodejs",
   "description": "A NodeJS-based SDK for delivering secure applications over a Ziti Network",
-  "version": "0.19.0",
+  "version": "0.20.0",
   "main": "./lib/ziti",
   "scripts": {
     "build": "npm run build:configure && npm run build:make",
@@ -46,15 +46,15 @@
     "url": "http://openziti.io"
   },
   "devDependencies": {
-    "aws-sdk": "^2.1473.0",
+    "aws-sdk": "^2.1692.0",
     "docdash": "^1.2.0",
-    "jsdoc": "^4.0.2",
+    "jsdoc": "^4.0.4",
     "jsdoc-to-markdown": "^7.1.1",
     "run-script-os": "^1.1.6"
   },
   "dependencies": {
     "@mapbox/node-pre-gyp": "^1.0.11",
     "bindings": "^1.5.0",
-    "cmake-js": "^7.2.1"
+    "cmake-js": "^7.3.0"
   }
 }

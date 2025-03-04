@@ -21,7 +21,7 @@ endif (WIN32)
 
 FetchContent_Declare(ziti
         GIT_REPOSITORY https://github.com/openziti/ziti-sdk-c.git
-        GIT_TAG 1.3.7
+        GIT_TAG 1.4.4
 )
 FetchContent_MakeAvailable(ziti)
 
