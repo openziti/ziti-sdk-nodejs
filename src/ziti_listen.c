@@ -75,7 +75,7 @@ static void CallJs_on_listen_client_data(napi_env env, napi_value js_cb, void* c
       if (rc != napi_ok) {
         napi_throw_error(env, "EINVAL", "failure to set named property status");
       }
-      ZITI_NODEJS_LOG(DEBUG, "js_arb_data: %lld", item->js_arb_data);
+      ZITI_NODEJS_LOG(DEBUG, "js_arb_data: %lld", (long long int)item->js_arb_data);
     } else {
       rc = napi_set_named_property(env, js_client_item, "js_arb_data", undefined);
     }
@@ -228,7 +228,7 @@ static void CallJs_on_listen_client_connect(napi_env env, napi_value js_cb, void
       if (rc != napi_ok) {
         napi_throw_error(env, "EINVAL", "failure to set named property status");
       }
-      ZITI_NODEJS_LOG(DEBUG, "js_arb_data: %lld", item->js_arb_data);
+      ZITI_NODEJS_LOG(DEBUG, "js_arb_data: %lld", (long long int)item->js_arb_data);
     } else {
       rc = napi_set_named_property(env, js_client_item, "js_arb_data", undefined);
     }
@@ -303,7 +303,7 @@ static void CallJs_on_listen(napi_env env, napi_value js_cb, void* context, void
   if (env != NULL) {
     napi_value undefined, js_rc;
 
-    ZITI_NODEJS_LOG(INFO, "CallJs_on_listen: data: %lld", (int64_t)data);
+    ZITI_NODEJS_LOG(INFO, "CallJs_on_listen: data: %lld", (long long)data);
 
     // Retrieve the rc created by the worker thread.
     int64_t rc = (int64_t)data;
@@ -401,7 +401,7 @@ static void CallJs_on_listen_client(napi_env env, napi_value js_cb, void* contex
       if (rc != napi_ok) {
         napi_throw_error(env, "EINVAL", "failure to set named property status");
       }
-      ZITI_NODEJS_LOG(DEBUG, "js_arb_data: %lld", item->js_arb_data);
+      ZITI_NODEJS_LOG(DEBUG, "js_arb_data: %lld", (long long)item->js_arb_data);
     } else {
       rc = napi_set_named_property(env, js_client_item, "js_arb_data", undefined);
     }
@@ -592,7 +592,7 @@ napi_value _ziti_listen(napi_env env, const napi_callback_info info) {
     napi_throw_error(env, NULL, "Failed to get js_arb_data");
   }
   addon_data->js_arb_data = js_arb_data;
-  ZITI_NODEJS_LOG(DEBUG, "js_arb_data: %lld", js_arb_data);
+  ZITI_NODEJS_LOG(DEBUG, "js_arb_data: %lld", (long long)js_arb_data);
 
   // Obtain ptr to JS 'on_listen' callback function
   napi_value js_on_listen = args[2];

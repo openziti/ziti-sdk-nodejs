@@ -42,7 +42,7 @@ napi_value _ziti_set_log_level(napi_env env, const napi_callback_info info) {
     napi_throw_error(env, NULL, "Failed to get logLevel");
   }
 
-  ZITI_NODEJS_LOG(DEBUG, "js_log_level: %lld", js_log_level);
+  ZITI_NODEJS_LOG(DEBUG, "js_log_level: %lld", (long long)js_log_level);
 
   ziti_nodejs_debug_level = js_log_level;
   ziti_log_set_level(js_log_level, NULL);

@@ -70,7 +70,7 @@ extern FILE *ziti_nodejs_debug_out;
 if (level <= ziti_nodejs_debug_level) {\
     long elapsed = get_nodejs_elapsed();\
     fprintf(ziti_nodejs_debug_out, "[%9ld.%03ld] " #level "\tziti-sdk-nodejs/%s:%d %s(): " fmt "\n",\
-        elapsed/1000, elapsed%1000, __FILENAME_NODEJS__, __LINE__, __func__, ##__VA_ARGS__);\
+        (long int)(elapsed/1000), (long int)(elapsed%1000), __FILENAME_NODEJS__, __LINE__, __func__, ##__VA_ARGS__);\
 }\
 } while(0)
 #endif
