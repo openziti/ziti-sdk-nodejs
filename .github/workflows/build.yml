@@ -41,8 +41,8 @@ jobs:
       matrix:
         config:
           - { os: windows-latest, target: "windows", arch: "x64" }
-          - { os: ubuntu-20.04,   target: "linux", arch: "x64" }
-          - { os: ubuntu-20.04,   target: "linux", arch: "arm64" }
+          - { os: ubuntu-22.04,   target: "linux", arch: "x64" }
+          - { os: ubuntu-22.04,   target: "linux", arch: "arm64" }
           - { os: macos-13,       target: "macos", arch: "x64" }
           - { os: macos-14,       target: "macos", arch: "arm64" }
         node_ver: [ 18, 20, 21, 22, 23 ]
@@ -203,4 +203,4 @@ jobs:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
       if: |
-        matrix.config.os == 'ubuntu-20.04' && matrix.node_ver == '20' && matrix.config.arch == 'x64' && startsWith(github.ref, 'refs/tags/')
+        matrix.config.os == 'ubuntu-22.04' && matrix.node_ver == '20' && matrix.config.arch == 'x64' && startsWith(github.ref, 'refs/tags/')
