@@ -45,7 +45,7 @@ jobs:
           - { os: ubuntu-20.04,   target: "linux", arch: "arm64" }
           - { os: macos-13,       target: "macos", arch: "x64" }
           - { os: macos-14,       target: "macos", arch: "arm64" }
-        node_ver: [ 18, 20, 21, 22, 23 ]
+        node_ver: [ 20, 22, 24, 25 ]
       fail-fast: false
 
     steps:
