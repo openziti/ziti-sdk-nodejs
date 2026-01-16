@@ -41,8 +41,8 @@ jobs:
       matrix:
         config:
           - { os: windows-latest, target: "windows", arch: "x64" }
-          - { os: ubuntu-20.04,   target: "linux", arch: "x64" }
-          - { os: ubuntu-20.04,   target: "linux", arch: "arm64" }
+          - { os: ubuntu-22.04,   target: "linux", arch: "x64" }
+          - { os: ubuntu-22.04,   target: "linux", arch: "arm64" }
           - { os: macos-15-intel, target: "macos", arch: "x64" }
           - { os: macos-15,       target: "macos", arch: "arm64" }
         node_ver: [ 20, 22, 24, 25 ]
