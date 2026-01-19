@@ -125,9 +125,8 @@ jobs:
           PRESET: ci-${{ matrix.config.target }}-${{ matrix.config.arch }}
           TARGET_ARCH: ${{ matrix.config.arch }}
 
-      - name: restore dependencies cache
+      - name: cache dependencies
         uses: actions/cache/save@v4
-        id: cache-restore
         with:
           path: ${{ env.CI_CACHE }}
           key: deps-${{ matrix.config.target }}-${{ matrix.config.arch }}-${{ hashFiles('./vcpkg.json') }}
