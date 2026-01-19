@@ -118,8 +118,8 @@ jobs:
       - name: Build Dependencies
         shell: bash
         run: |
-          cd ${{ runner.workspace }}/${{ github.event.repository.name }}
-          npm install
+          echo $PWD
+          npm install --dev cmake-js
           npm run build:configure -- --target_arch=${{ matrix.config.arch }}
         env:
           PRESET: ci-${{ matrix.config.target }}-${{ matrix.config.arch }}
