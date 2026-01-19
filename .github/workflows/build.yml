@@ -306,4 +306,4 @@ jobs:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
       if: |
-        matrix.config.os == 'ubuntu-20.04' && matrix.node_ver == '20' && matrix.config.arch == 'x64' && startsWith(github.ref, 'refs/tags/')
+        matrix.config.os == 'ubuntu-22.04' && matrix.node_ver == '24' && matrix.config.arch == 'x64' && startsWith(github.ref, 'refs/tags/')
