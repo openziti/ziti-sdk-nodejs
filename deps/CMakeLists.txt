@@ -9,6 +9,7 @@ if (WIN32)
             IMPORTED_IMPLIB ${CMAKE_JS_LIB}
     )
     set(TLSUV_LIBUV_LIB libuv::uv)
+    set(TLSUV_TLSLIB openssl)
 
     # make sure on WIN32 tlsuv uses our definition for libuv
     FetchContent_Declare(tlsuv
