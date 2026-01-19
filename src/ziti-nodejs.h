@@ -23,7 +23,6 @@ limitations under the License.
 #include <tlsuv/tlsuv.h>
 #include <tlsuv/http.h>
 #include <tlsuv/websocket.h>
-#include <tlsuv/tcp_src.h>
 
 #include <node_version.h>
 #define NAPI_EXPERIMENTAL
