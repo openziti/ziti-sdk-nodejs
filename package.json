@@ -1,7 +1,7 @@
 {
   "name": "@openziti/ziti-sdk-nodejs",
   "description": "A NodeJS-based SDK for delivering secure applications over a Ziti Network",
-  "version": "0.20.0",
+  "version": "0.21.0",
   "main": "./lib/ziti",
   "scripts": {
     "build": "npm run build:configure && npm run build:make",
@@ -11,7 +11,7 @@
     "build:make": "cmake-js build",
     "build:package": "node-pre-gyp package",
     "clean": "cmake-js clean",
-    "test": "echo \"Error: no test specified\"",
+    "test": "node tests/hello.js",
     "install": "node-pre-gyp install || npm run build",
     "publish": "node-pre-gyp package publish",
     "docs": "jsdoc2md -t API_REFERENCE.hbs lib/*.js > API_REFERENCE.md"
