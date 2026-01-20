@@ -86,7 +86,7 @@ jobs:
         run: echo "date=$(date)" >> $GITHUB_OUTPUT
 
       - name: Install CMake/Ninja
-        uses: lukka/get-cmake@v3.30.1
+        uses: lukka/get-cmake@v4.2.1
 
       - name: Run VCPKG
         uses: lukka/run-vcpkg@v11
@@ -106,7 +106,7 @@ jobs:
           echo "npm:   $(npm --version)"
 
       - name: restore dependencies cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         id: cache-restore
         with:
           path: ${{ env.CI_CACHE }}
@@ -126,7 +126,7 @@ jobs:
           TARGET_ARCH: ${{ matrix.config.arch }}
 
       - name: cache dependencies
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: ${{ env.CI_CACHE }}
           key: deps-${{ matrix.config.target }}-${{ matrix.config.arch }}-${{ hashFiles('./vcpkg.json') }}
@@ -208,7 +208,7 @@ jobs:
       run: echo "date=$(date)" >> $GITHUB_OUTPUT
 
     - name: Install CMake/Ninja
-      uses: lukka/get-cmake@v3.30.1
+      uses: lukka/get-cmake@v4.2.1
 
     - name: Run VCPKG
       uses: lukka/run-vcpkg@v11
@@ -228,7 +228,7 @@ jobs:
         echo "npm:   $(npm --version)"
 
     - name: restore dependencies cache
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@v5
       id: cache-restore
       with:
         path: ${{ env.CI_CACHE }}
@@ -279,7 +279,7 @@ jobs:
             ./build/stage/**/ziti_sdk_nodejs*.tar.gz
 
     - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v4
+      uses: aws-actions/configure-aws-credentials@v5
       if: env.AWS_KEY_ID != '' && startsWith(github.ref, 'refs/tags/')
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
