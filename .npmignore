@@ -106,3 +106,18 @@ dist
 
 .vscode/
 .DS_Store
+
+.github/
+.idea/
+
+# Cmake sources
+cmake/
+src/
+toolchains/
+
+# CMake build directory
+build/
+
+# vcpkg
+vcpkg/
+.ci.cache/
