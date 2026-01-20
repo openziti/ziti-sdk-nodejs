@@ -44,7 +44,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           submodules: 'recursive'
@@ -67,7 +67,7 @@ jobs:
           sudo apt install -y crossbuild-essential-${{ matrix.config.arch }}
 
       - name: Node Version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
           node-version: '24'
 
@@ -166,7 +166,7 @@ jobs:
     steps:
 
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         fetch-depth: 0
         submodules: 'recursive'
@@ -189,7 +189,7 @@ jobs:
         sudo apt install -y crossbuild-essential-${{ matrix.config.arch }}
 
     - name: Node Version
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v6
       with:
         node-version: ${{ matrix.node_ver }}
     
@@ -251,7 +251,7 @@ jobs:
 
     - name: debug build failure
       if: always() && steps.buildSDK.outcome == 'failure'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: build-logs-${{ matrix.config.target }}-${{ matrix.config.arch }}
         path: |
@@ -264,7 +264,7 @@ jobs:
         node tests/hello.js
 
     - name: upload artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: ziti_nodejs_${{ matrix.config.target }}_${{ matrix.config.arch }}_nodev${{ matrix.node_ver }}
         path: |
