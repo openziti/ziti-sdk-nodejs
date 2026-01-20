@@ -1,7 +1,7 @@
 {
   "name": "@openziti/ziti-sdk-nodejs",
   "description": "A NodeJS-based SDK for delivering secure applications over a Ziti Network",
-  "version": "0.21.1",
+  "version": "0.22.0",
   "main": "./lib/ziti",
   "scripts": {
     "build": "npm run build:configure && npm run build:make",
@@ -18,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/openziti/ziti-sdk-nodejs.git"
+    "url": "git+https://github.com/openziti/ziti-sdk-nodejs.git"
   },
   "binary": {
     "module_name": "ziti_sdk_nodejs",
