@@ -142,6 +142,7 @@ jobs:
     #    container: ${{ matrix.config.container }}
     permissions:
       id-token: write
+      contents: write
 
     env:
       BUILD_NUMBER: ${{ github.run_number }}
