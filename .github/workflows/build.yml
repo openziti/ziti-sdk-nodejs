@@ -304,6 +304,8 @@ jobs:
         ./node_modules/.bin/node-pre-gyp info
 
     - name: NPM Publish
-      run: npm publish --access public
+      run: |
+        ./node_modules/.bin/node-pre-gyp --target_arch=${{ matrix.config.arch }} unpublish
+        npm publish --access public
       if: |
         matrix.config.os == 'ubuntu-22.04' && matrix.node_ver == '24' && matrix.config.arch == 'x64' && startsWith(github.ref, 'refs/tags/')
