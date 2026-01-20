@@ -140,6 +140,8 @@ jobs:
     needs:
      - build-deps
     #    container: ${{ matrix.config.container }}
+    permissions:
+      id-token: write
 
     env:
       BUILD_NUMBER: ${{ github.run_number }}
@@ -301,9 +303,6 @@ jobs:
         ./node_modules/.bin/node-pre-gyp info
 
     - name: NPM Publish
-      uses: JS-DevTools/npm-publish@v3
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
+      run: npm publish --access public
       if: |
         matrix.config.os == 'ubuntu-22.04' && matrix.node_ver == '24' && matrix.config.arch == 'x64' && startsWith(github.ref, 'refs/tags/')
