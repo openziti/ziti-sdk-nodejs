@@ -23,9 +23,9 @@
   "binary": {
     "module_name": "ziti_sdk_nodejs",
     "module_path": "./build/{configuration}/",
-    "remote_path": "./{module_name}/v{version}/{configuration}/",
+    "remote_path": "./openziti/ziti-sdk-nodejs/releases/download/{version}/",
     "package_name": "{module_name}-v{version}-{node_abi}-{platform}-{arch}.tar.gz",
-    "host": "https://ziti-npm.s3.amazonaws.com"
+    "host": "https://github.com"
   },
   "license": "Apache-2.0",
   "licenses": [
