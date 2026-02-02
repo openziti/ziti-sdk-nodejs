@@ -271,41 +271,39 @@ jobs:
           ./build/Release/ziti_sdk_nodejs.node
           if-no-files-found: error
 
+  publish:
+    name: Publish Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref_type == 'tag'
+    steps:
+    - name: Node Version
+      uses: actions/setup-node@v6
+      with:
+        node-version: ${{ matrix.node_ver }}
+
+    - name: Checkout
+      uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+
+    - name: Download Artifacts
+      uses: actions/download-artifact@v6
+      with:
+        path: ./artifacts
+        pattern: ziti_nodejs_*
+
+    - name: list artifacts
+      run: |
+        ls -R ./artifacts
+
     - name: upload release bundle
       uses: softprops/action-gh-release@v2
-      if: github.ref_type == 'tag'
       with:
-         files: |
-            ./build/stage/**/ziti_sdk_nodejs*.tar.gz
-
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v5
-      if: env.AWS_KEY_ID != '' && startsWith(github.ref, 'refs/tags/')
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
-
-    - name: Publish Binary to S3 (for all OS's, Node versions, and architectures)
-      run: |
-        ./node_modules/.bin/node-pre-gyp --target_arch=${{ matrix.config.arch }} unpublish publish
-        sleep 5
-      if: startsWith(github.ref, 'refs/tags/')
-
-    - name: Install Binary
-      run: |
-        npm install --fallback-to-build=false 
-        sleep 5
-      if: github.ref_type == 'tag'
-
-    - name: Fetch Binary info
-      if: env.AWS_KEY_ID != '' && startsWith(github.ref, 'refs/tags/')
-      run: |
-        ./node_modules/.bin/node-pre-gyp info
+        fail_on_unmatched_files: true
+        files: |
+          ./artifacts/ziti_sdk_nodejs*.tar.gz
 
     - name: NPM Publish
       run: |
-        ./node_modules/.bin/node-pre-gyp --target_arch=${{ matrix.config.arch }} unpublish
         npm publish --access public
-      if: |
-        matrix.config.os == 'ubuntu-22.04' && matrix.node_ver == '24' && matrix.config.arch == 'x64' && startsWith(github.ref, 'refs/tags/')
