@@ -13,7 +13,6 @@
     "clean": "cmake-js clean",
     "test": "node tests/hello.js",
     "install": "node-pre-gyp install || npm run build",
-    "publish": "node-pre-gyp package publish",
     "docs": "jsdoc2md -t API_REFERENCE.hbs lib/*.js > API_REFERENCE.md"
   },
   "repository": {
@@ -46,7 +45,6 @@
     "url": "http://openziti.io"
   },
   "devDependencies": {
-    "aws-sdk": "^2.1692.0",
     "cmake-js": "^8.0.0",
     "docdash": "^1.2.0",
     "jsdoc": "^4.0.4",
