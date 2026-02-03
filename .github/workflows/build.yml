@@ -294,7 +294,7 @@ jobs:
 
     - name: list artifacts
       run: |
-        ls -R ./artifacts
+        find ./artifacts -type f -exec ls -l {} \;
 
     - name: upload release bundle
       uses: softprops/action-gh-release@v2
