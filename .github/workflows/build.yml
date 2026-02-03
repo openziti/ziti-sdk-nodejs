@@ -275,12 +275,11 @@ jobs:
     name: Publish Release
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref_type == 'tag'
     steps:
     - name: Node Version
       uses: actions/setup-node@v6
       with:
-        node-version: ${{ matrix.node_ver }}
+        node-version: lts/*
 
     - name: Checkout
       uses: actions/checkout@v6
@@ -299,11 +298,13 @@ jobs:
 
     - name: upload release bundle
       uses: softprops/action-gh-release@v2
+      if: github.ref_type == 'tag'
       with:
         fail_on_unmatched_files: true
         files: |
           ./artifacts/ziti_sdk_nodejs*.tar.gz
 
     - name: NPM Publish
+      if: github.ref_type == 'tag'
       run: |
         npm publish --access public
