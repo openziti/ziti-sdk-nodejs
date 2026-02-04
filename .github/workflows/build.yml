@@ -296,13 +296,13 @@ jobs:
       run: |
         find ./artifacts -type f -exec ls -l {} \;
 
-    - name: upload release bundle
+    - name: upload release binaries
       uses: softprops/action-gh-release@v2
       if: github.ref_type == 'tag'
       with:
         fail_on_unmatched_files: true
         files: |
-          ./artifacts/ziti_sdk_nodejs*.tar.gz
+          ./artifacts/**/ziti_sdk_nodejs*.tar.gz
 
     - name: NPM Publish
       if: github.ref_type == 'tag'
