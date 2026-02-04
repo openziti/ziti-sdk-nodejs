@@ -86,7 +86,7 @@ jobs:
         run: echo "date=$(date)" >> $GITHUB_OUTPUT
 
       - name: Install CMake/Ninja
-        uses: lukka/get-cmake@v4.2.2
+        uses: lukka/get-cmake@v4.2.3
 
       - name: Run VCPKG
         uses: lukka/run-vcpkg@v11
@@ -208,7 +208,7 @@ jobs:
       run: echo "date=$(date)" >> $GITHUB_OUTPUT
 
     - name: Install CMake/Ninja
-      uses: lukka/get-cmake@v4.2.2
+      uses: lukka/get-cmake@v4.2.3
 
     - name: Run VCPKG
       uses: lukka/run-vcpkg@v11
