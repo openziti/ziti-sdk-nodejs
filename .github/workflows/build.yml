@@ -275,6 +275,9 @@ jobs:
     name: Publish Release
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
     steps:
     - name: Node Version
       uses: actions/setup-node@v6
