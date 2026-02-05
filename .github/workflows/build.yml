@@ -307,4 +307,4 @@ jobs:
     - name: NPM Publish
       if: github.ref_type == 'tag'
       run: |
-        npm publish --access public
+        npm publish --access public --tag alpha
