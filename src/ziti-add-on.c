@@ -25,49 +25,30 @@ napi_value Init(napi_env env, napi_value exports) {
   if (uv_mutex_init(&client_pool_lock))
     abort();
 
+  napi_status status = napi_get_uv_event_loop(env, &thread_loop);
+  if (status != napi_ok) {
+    char errmsg[128];
+    size_t err_len = snprintf(errmsg, sizeof(errmsg), "napi_get_uv_event_loop failed, status: %d", status);
+    // this does not return
+    napi_fatal_error(__FILE__, __LINE__, errmsg, err_len);
+  }
+  init_nodejs_debug(thread_loop);
+
   // Install call-stack tracer
   // set_signal_handler();
 
-// TEMP: skip logging on windows
-#ifndef WIN32
-
-  init_nodejs_debug();
-
-#  ifdef NODE_MAJOR_VERSION
-#    if NODE_MAJOR_VERSION == 11
-  uv_timeval_t start_time;
-#    else
   uv_timeval64_t start_time;
-#    endif
-#  endif
-
   uv_gettimeofday(&start_time);
 
   struct tm *start_tm = gmtime((const time_t*)&start_time.tv_sec);
   char time_str[32];
   strftime(time_str, sizeof(time_str), "%FT%T", start_tm);
 
-#  ifdef NODE_MAJOR_VERSION
-#    if NODE_MAJOR_VERSION == 11
-  ZITI_NODEJS_LOG(INFO, "Ziti NodeJS SDK version %s@%s(%s) starting at (%s.%03ld)",
-        ziti_nodejs_get_version(true), ziti_nodejs_git_commit(), ziti_nodejs_git_branch(),
-        time_str,
-        start_time.tv_usec/1000);
-#    else
   ZITI_NODEJS_LOG(INFO, "Ziti NodeJS SDK version %s@%s(%s) starting at (%s.%03d)",
-        ziti_nodejs_get_version(true), ziti_nodejs_git_commit(), ziti_nodejs_git_branch(),
+        ziti_nodejs_get_version(false), ziti_nodejs_git_commit(), ziti_nodejs_git_branch(),
         time_str,
         start_time.tv_usec/1000);
-#    endif
-#  endif
-
-#endif
-
-  napi_status status = napi_get_uv_event_loop(env, &thread_loop);
-  if (status != napi_ok) {
-    ZITI_NODEJS_LOG(ERROR, "napi_get_uv_event_loop failed, status: %d", status);
-    abort();
-  }
+  ZITI_NODEJS_LOG(DEBUG, "%s", ziti_nodejs_get_version(true));
 
   // Expose some Ziti SDK functions to JavaScript
   expose_ziti_close(env, exports);
