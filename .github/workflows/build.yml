@@ -258,10 +258,10 @@ jobs:
           ./vcpkg/buildtrees/**/*.log
           ./build/**/*log
 
-    - name: Hello test
-      if: matrix.config.arch == 'x64'
-      run: |
-        node tests/hello.js
+    - name: Run tests
+      if: matrix.config.arch == runner.arch
+      shell: bash
+      run: npm test
 
     - name: upload artifacts
       uses: actions/upload-artifact@v6

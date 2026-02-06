@@ -41,10 +41,6 @@ limitations under the License.
 #define ZITI_COMMIT sha
 #endif
 
-// #define to_str(x) str(x)
-#define str(x) #x
-
-
 const char* ziti_nodejs_get_version(int verbose) {
     if (verbose) {
         return "\n\tVersion:\t" to_str(ZITI_NODEJS_VERSION)
@@ -56,7 +52,7 @@ const char* ziti_nodejs_get_version(int verbose) {
                "\n\t";
 
     }
-    return to_str(ZITI_VERSION);
+    return to_str(ZITI_NODEJS_VERSION);
 }
 
 const char* ziti_nodejs_git_branch() {
@@ -67,9 +63,6 @@ const char* ziti_nodejs_git_commit() {
     return to_str(ZITI_COMMIT);
 }
 
-int ziti_nodejs_debug_level = ZITI_LOG_DEFAULT_LEVEL;
-FILE *ziti_nodejs_debug_out;
-
 #if _WIN32
 LARGE_INTEGER frequency;
 LARGE_INTEGER start;
@@ -78,29 +71,19 @@ LARGE_INTEGER end;
 struct timespec starttime;
 #endif
 
-void init_nodejs_debug() {
+void init_nodejs_debug(uv_loop_t *loop) {
     char *level = getenv("ZITI_NODEJS_LOG");
     if (level != NULL) {
-        ziti_nodejs_debug_level = (int) strtol(level, NULL, 10);
+        int l = (int) strtol(level, NULL, 10);
+        ziti_log_set_level(l, ZITI_LOG_MODULE);
     }
-    ziti_nodejs_debug_out = stderr;
+    ziti_log_init(loop, ZITI_LOG_DEFAULT_LEVEL, NULL);
 
 #if _WIN32
 	QueryPerformanceFrequency(&frequency);
 	QueryPerformanceCounter(&start);
 #else
     clock_gettime(CLOCK_MONOTONIC, &starttime);
-#endif
-}
-
-long get_nodejs_elapsed() {
-#if _WIN32
-	QueryPerformanceCounter(&end);
-	return end.QuadPart - start.QuadPart;
-#else
-	struct timespec cur;
-	clock_gettime(CLOCK_MONOTONIC, &cur);
-	return (cur.tv_sec - starttime.tv_sec) * 1000 + ((cur.tv_nsec - starttime.tv_nsec) / ((long)1e6));
 #endif
 }
 

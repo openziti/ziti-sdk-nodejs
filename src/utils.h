@@ -28,55 +28,26 @@ extern "C" {
 extern const char *ziti_nodejs_get_version(int verbose); 
 extern const char *ziti_nodejs_git_branch();
 extern const char *ziti_nodejs_git_commit();
-extern void nodejs_hexDump(char *desc, void *addr, int len);
 
+extern void init_nodejs_debug(uv_loop_t *loop);
 
-typedef const char *(*fmt_error_t)(int);
-typedef int *(*cond_error_t)(int);
+#define ZITI_NODEJS_LOG(level, fmt, ...) ZITI_LOG(level, fmt, ##__VA_ARGS__)
 
-#define __FILENAME_NODEJS__ (__FILENAME__)
-
-
-extern void init_nodejs_debug();
-
-extern int ziti_nodejs_debug_level;
-extern FILE *ziti_nodejs_debug_out;
-
-
-/// for windows compilation NOGDI needs to be set:
-// #define DEBUG_LEVELS(XX) \
-//     XX(NONE) \
-//     XX(ERROR) /*WINDOWS - see comment above wrt NOGDI*/ \
-//     XX(WARN) \
-//     XX(INFO) \
-//     XX(DEBUG) \
-//     XX(VERBOSE) \
-//     XX(TRACE)
-
-
-// enum DebugLevel {
-// #define _level(n) n,
-//     DEBUG_LEVELS(_level)
-// #undef _level
-// };
-
-// #define container_of(ptr, type, member) ((type *) ((ptr) - offsetof(type, member)))
-
-// TEMP: skip logging on windows
-#ifdef WIN32
-#define ZITI_NODEJS_LOG(...)
-#else
-#define ZITI_NODEJS_LOG(level, fmt, ...) do { \
-if (level <= ziti_nodejs_debug_level) {\
-    long elapsed = get_nodejs_elapsed();\
-    fprintf(ziti_nodejs_debug_out, "[%9ld.%03ld] " #level "\tziti-sdk-nodejs/%s:%d %s(): " fmt "\n",\
-        (long int)(elapsed/1000), (long int)(elapsed%1000), __FILENAME_NODEJS__, __LINE__, __func__, ##__VA_ARGS__);\
-}\
+#define NAPI_CHECK(env, msg, op) do {             \
+  if ((op) != napi_ok)  napi_throw_error(env, NULL, "failed to " msg); \
 } while(0)
-#endif
 
-long get_nodejs_elapsed();
+#define NAPI_UNDEFINED(env, var) \
+napi_value var; NAPI_CHECK(env, "get undefined", napi_get_undefined(env, &var))
 
+#define NAPI_GLOBAL(env, var) \
+napi_value var; NAPI_CHECK(env, "get global", napi_get_global(env, &var))
+
+#define ZNODE_EXPOSE(name, f) void expose_##name(napi_env env, napi_value exports) { \
+napi_value fn; \
+NAPI_CHECK(env, "wrap native function" #f, napi_create_function(env, NULL, 0, f, NULL, &fn)); \
+NAPI_CHECK(env, "populate export property " #name, napi_set_named_property(env, exports, #name, fn)); \
+}
 
 #ifdef __cplusplus
 }
