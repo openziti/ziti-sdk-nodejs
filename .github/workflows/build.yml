@@ -258,8 +258,9 @@ jobs:
           ./vcpkg/buildtrees/**/*.log
           ./build/**/*log
 
-    - name: Hello test
+    - name: Run tests
       if: matrix.config.arch == runner.arch
+      shell: bash
       run: |
         node --test tests/*.test.{js,mjs}
 
