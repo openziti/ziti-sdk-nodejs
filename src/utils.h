@@ -28,12 +28,20 @@ extern "C" {
 extern const char *ziti_nodejs_get_version(int verbose); 
 extern const char *ziti_nodejs_git_branch();
 extern const char *ziti_nodejs_git_commit();
-extern void nodejs_hexDump(char *desc, void *addr, int len);
-
 
 extern void init_nodejs_debug(uv_loop_t *loop);
 
 #define ZITI_NODEJS_LOG(level, fmt, ...) ZITI_LOG(level, fmt, ##__VA_ARGS__)
+
+#define NAPI_CHECK(env, msg, op) do {             \
+  if ((op) != napi_ok)  napi_throw_error(env, NULL, "failed to " msg); \
+} while(0)
+
+#define NAPI_UNDEFINED(env, var) \
+napi_value var; NAPI_CHECK(env, "get undefined", napi_get_undefined(env, &var));
+
+#define NAPI_GLOBAL(env, var) \
+napi_value var; NAPI_CHECK(env, "get global", napi_get_global(env, &var));
 
 #ifdef __cplusplus
 }
