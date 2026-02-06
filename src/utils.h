@@ -38,10 +38,10 @@ extern void init_nodejs_debug(uv_loop_t *loop);
 } while(0)
 
 #define NAPI_UNDEFINED(env, var) \
-napi_value var; NAPI_CHECK(env, "get undefined", napi_get_undefined(env, &var));
+napi_value var; NAPI_CHECK(env, "get undefined", napi_get_undefined(env, &var))
 
 #define NAPI_GLOBAL(env, var) \
-napi_value var; NAPI_CHECK(env, "get global", napi_get_global(env, &var));
+napi_value var; NAPI_CHECK(env, "get global", napi_get_global(env, &var))
 
 #define ZNODE_EXPOSE(name, f) void expose_##name(napi_env env, napi_value exports) { \
 napi_value fn; \

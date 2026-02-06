@@ -60,9 +60,6 @@ static void js_logger_cb(napi_env env, napi_value js_cb, void* context, void* da
 
   if (env != NULL) {
     NAPI_UNDEFINED(env, undefined);
-    NAPI_GLOBAL(env, global);
-    napi_value proto;
-    NAPI_CHECK(env, "get prototype", napi_get_prototype(env, global, &proto));
 
     napi_value names[3];
     napi_value values[3];
