@@ -11,7 +11,7 @@
     "build:make": "cmake-js build",
     "build:package": "node-pre-gyp package",
     "clean": "cmake-js clean",
-    "test": "node tests/hello.js",
+    "test": "node --test tests/*.test.{js,mjs}",
     "install": "node-pre-gyp install || npm run build",
     "docs": "jsdoc2md -t API_REFERENCE.hbs lib/*.js > API_REFERENCE.md"
   },

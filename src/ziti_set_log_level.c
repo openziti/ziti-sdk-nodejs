@@ -78,7 +78,11 @@ static void js_logger_cb(napi_env env, napi_value js_cb, void* context, void* da
     // Prepare the argument for the JavaScript callback function.
     napi_value js_log_msg;
     NAPI_CHECK(env, "create log message",
-               napi_create_object_with_properties(env, proto, names, values, 3, &js_log_msg));
+               napi_create_object(env, &js_log_msg));
+    for (int i = 0; i < 3; i++) {
+      NAPI_CHECK(env, "set log message property",
+                 napi_set_property(env, js_log_msg, names[i], values[i]));
+    }
 
     // Call the JavaScript callback function.
     napi_value result;
