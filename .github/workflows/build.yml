@@ -261,8 +261,7 @@ jobs:
     - name: Run tests
       if: matrix.config.arch == runner.arch
       shell: bash
-      run: |
-        node --test tests/*.test.{js,mjs}
+      run: npm test
 
     - name: upload artifacts
       uses: actions/upload-artifact@v6
