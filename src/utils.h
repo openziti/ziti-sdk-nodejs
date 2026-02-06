@@ -43,6 +43,12 @@ napi_value var; NAPI_CHECK(env, "get undefined", napi_get_undefined(env, &var));
 #define NAPI_GLOBAL(env, var) \
 napi_value var; NAPI_CHECK(env, "get global", napi_get_global(env, &var));
 
+#define ZNODE_EXPOSE(name, f) void expose_##name(napi_env env, napi_value exports) { \
+napi_value fn; \
+NAPI_CHECK(env, "wrap native function" #f, napi_create_function(env, NULL, 0, f, NULL, &fn)); \
+NAPI_CHECK(env, "populate export property " #name, napi_set_named_property(env, exports, #name, fn)); \
+}
+
 #ifdef __cplusplus
 }
 #endif
