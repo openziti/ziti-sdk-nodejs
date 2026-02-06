@@ -216,6 +216,7 @@ extern void expose_ziti_listen(napi_env env, napi_value exports);
 extern void expose_ziti_service_available(napi_env env, napi_value exports);
 extern void expose_ziti_services_refresh(napi_env env, napi_value exports);
 extern void expose_ziti_set_log_level(napi_env env, napi_value exports);
+extern void expose_ziti_set_logger(napi_env env, napi_value exports);
 extern void expose_ziti_shutdown(napi_env env, napi_value exports);
 extern void expose_ziti_write(napi_env env, napi_value exports);
 extern void expose_ziti_https_request(napi_env env, napi_value exports);

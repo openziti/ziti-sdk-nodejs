@@ -70,6 +70,7 @@ napi_value Init(napi_env env, napi_value exports) {
   expose_ziti_websocket_write(env, exports);
 
   expose_ziti_set_log_level(env, exports);
+  expose_ziti_set_logger(env, exports);
 
   return exports;
 }
