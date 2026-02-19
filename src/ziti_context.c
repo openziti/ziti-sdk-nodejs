@@ -100,7 +100,9 @@ static void on_ziti_event(ziti_context _ztx, const ziti_event_t *event) {
                   ZITI_NODEJS_LOG(INFO, "identity = <%s>[%s]@%s", proxy_id->name, proxy_id->id,
                                   ziti_get_controller(_ztx));
           } else {
-              ZITI_NODEJS_LOG(ERROR, "Failed to connect to controller: %s", event->ctx.err);
+              if (event->ctx.ctrl_status != ZITI_DISABLED) {
+                  ZITI_NODEJS_LOG(ERROR, "Failed to connect to controller: %s", event->ctx.err);
+              }
               complete_init(addon_data, event->ctx.ctrl_status);
           }
 
