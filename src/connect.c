@@ -91,15 +91,32 @@ static napi_value z_connect(napi_env env, napi_callback_info info) {
 
     char *service_name = NULL;
     char *terminator = NULL;
+    char *dial_data = NULL;
+
     size_t service_name_len = 0;
     NAPI_CHECK(env, "get service name", napi_get_value_string_utf8(env, args[0], NULL, 0, &service_name_len));
     service_name = malloc(service_name_len + 1);
     NAPI_CHECK(env, "get service name", napi_get_value_string_utf8(env, args[0], service_name, service_name_len + 1, &service_name_len));
     if(argc > 2) {
-        size_t terminator_len = 0;
-        NAPI_CHECK(env, "get terminator", napi_get_value_string_utf8(env, args[1], NULL, 0, &terminator_len));
-        terminator = malloc(terminator_len + 1);
-        NAPI_CHECK(env, "get terminator", napi_get_value_string_utf8(env, args[1], terminator, terminator_len + 1, &terminator_len));
+        napi_valuetype arg_type;
+        napi_typeof(env, args[1], &arg_type);
+        if (arg_type == napi_string) {
+            size_t len = 0;
+            NAPI_CHECK(env, "get terminator", napi_get_value_string_utf8(env, args[1], NULL, 0, &len));
+            terminator = malloc(len + 1);
+            NAPI_CHECK(env, "get terminator", napi_get_value_string_utf8(env, args[1], terminator, len + 1, &len));
+        }
+    }
+
+    if (argc > 3) {
+        napi_valuetype arg_type;
+        napi_typeof(env, args[2], &arg_type);
+        if (arg_type == napi_string) {
+            size_t len = 0;
+            NAPI_CHECK(env, "get dial data", napi_get_value_string_utf8(env, args[2], NULL, 0, &len));
+            dial_data = malloc(len + 1);
+            NAPI_CHECK(env, "get dial data", napi_get_value_string_utf8(env, args[2], dial_data, len + 1, &len));
+        }
     }
 
     int rc = ziti_conn_init(ztx, &cd->conn, cd);
@@ -107,10 +124,13 @@ static napi_value z_connect(napi_env env, napi_callback_info info) {
         ziti_dial_opts opts = {
                 .identity = terminator,
                 .stream = true,
+                .app_data = dial_data,
+                .app_data_sz = dial_data ? strlen(dial_data) : 0,
         };
         rc = ziti_dial_with_options(cd->conn, service_name, &opts, on_z_connect, NULL);
     }
 
+    free(dial_data);
     free(service_name);
     free(terminator);
 
@@ -142,15 +162,31 @@ static napi_value z_get_service_for_addr(napi_env env, napi_callback_info info) 
     NAPI_CHECK(env, "get port", napi_get_value_int32(env, args[2], &port));
 
     ziti_protocol zitiProtocol = ziti_protocols.value_of(proto);
-    const ziti_service *srv = ziti_service_for_addr_str(ztx, zitiProtocol, host, port);
+
+    ziti_dial_opts dialOpts;
+    const ziti_service *srv = ziti_dial_opts_for_addr(&dialOpts, ztx, zitiProtocol, host, port, NULL, 0);
     if (srv == NULL) {
-        NAPI_UNDEFINED(env, undefined);
-        return undefined;
+        napi_throw_error(env, NULL, ziti_errorstr(ZITI_SERVICE_UNAVAILABLE));
+        return NULL;
     }
 
-    napi_value service_name;
-    NAPI_CHECK(env, "create service name", napi_create_string_utf8(env, srv->name, NAPI_AUTO_LENGTH, &service_name));
-    return service_name;
+    napi_value result;
+    napi_create_object(env, &result);
+
+    napi_value serviceName;
+    napi_value identity;
+    napi_value data;
+    NAPI_CHECK(env, "create service name", napi_create_string_utf8(env, srv->name, NAPI_AUTO_LENGTH, &serviceName));
+    napi_set_named_property(env, result, "service", serviceName);
+    NAPI_CHECK(env, "create identity", napi_create_string_utf8(env, dialOpts.identity, NAPI_AUTO_LENGTH, &identity));
+    napi_set_named_property(env, result, "identity", identity);
+    NAPI_CHECK(env, "create data", napi_create_string_utf8(env, dialOpts.app_data, dialOpts.app_data_sz, &data));
+    napi_set_named_property(env, result, "data", data);
+
+    free(dialOpts.app_data);
+    free((void*)dialOpts.identity);
+
+    return result;
 }
 
 ZNODE_EXPOSE(get_ziti_service, z_get_service_for_addr)
