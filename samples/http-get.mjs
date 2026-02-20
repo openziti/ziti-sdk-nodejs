@@ -1,4 +1,5 @@
 import ziti from '../ziti.js';
+import https from 'node:https';
 import http from 'node:http';
 
 // Usage node http-get.mjs <identity.json> <url>
@@ -15,8 +16,10 @@ console.log('Initializing...');
 await ziti.init(IDENTITY_FILE);
 console.log('Init done');
 
-http.get(URL,
-    { agent: ziti.httpAgent() },
+const client = URL.startsWith('https://') ? https : http;
+
+client.get(URL,
+    { agent: ziti.httpAgent(client) },
     (res) => {
         console.log(`HTTP status code: ${res.statusCode} ${res.statusMessage}`);
         for (const k in res.headers) {
