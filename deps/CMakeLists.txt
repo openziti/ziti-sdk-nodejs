@@ -17,7 +17,7 @@ if (ZITI_SDK_DIR)
 else (ZITI_SDK_DIR)
     FetchContent_Declare(ziti
             GIT_REPOSITORY https://github.com/openziti/ziti-sdk-c.git
-            GIT_TAG 1.11.0
+            GIT_TAG 1.11.1
     )
     FetchContent_MakeAvailable(ziti)
 endif ()
