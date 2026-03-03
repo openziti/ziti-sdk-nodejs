@@ -49,7 +49,6 @@ napi_value Init(napi_env env, napi_value exports) {
         time_str,
         start_time.tv_usec/1000);
   ZITI_NODEJS_LOG(DEBUG, "%s", ziti_nodejs_get_version(true));
-  ZITI_NODEJS_LOG(DEBUG, "---------Hi Curt! Welcome to the local Ziti NodeJS SDK.---------");
 
   // Expose some Ziti SDK functions to JavaScript
   expose_ziti_close(env, exports);
