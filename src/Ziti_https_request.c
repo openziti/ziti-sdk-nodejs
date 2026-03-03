@@ -18,29 +18,8 @@ limitations under the License.
 #include <ziti/ziti_src.h>
 
 
-/**
- *  Number of hosts we can have client pools for
- */
-enum { listMapCapacity = 50 };
-
-/**
- *  Number of simultaneous HTTP requests we can have active against a single host before queueing
- */
-enum { perKeyListMapCapacity = 25 };
-
 struct ListMap* HttpsClientListMap;
 struct ListMap* ServiceToHostnameListMap = NULL;
-
-struct key_value {
-    char* key;
-    void* value;
-};
-
-struct ListMap {
-  struct   key_value kvPairs[listMapCapacity];
-  size_t   count;
-  uv_sem_t sem;
-};
 
 struct hostname_port {
     char* hostname;
@@ -112,7 +91,7 @@ void freeListMap(struct ListMap* collection) {
 }
 
 /**
- * 
+ *
  */
 static int purge_and_replace_bad_clients(struct ListMap* clientListMap, HttpsAddonData* addon_data) {
   int numReplaced = 0;
@@ -120,11 +99,14 @@ static int purge_and_replace_bad_clients(struct ListMap* clientListMap, HttpsAdd
 
     HttpsClient* httpsClient = clientListMap->kvPairs[i].value;
 
-    if (httpsClient->purge) {
+    if (httpsClient != NULL && httpsClient->purge) {
 
       ZITI_NODEJS_LOG(DEBUG, "*********** purging client [%p] from slot [%d]", httpsClient, i);
 
-      // FIXME: find out why the following free causes things to eventually crash in the uv_loop
+      // NOTE: We intentionally leak the old client's memory here.
+      // Calling tlsuv_http_close causes crashes because the async close
+      // conflicts with pending internal operations in the SDK.
+      // TODO: Find a way to properly clean up clients when they're purged.
       // free(httpsClient->scheme_host_port);
       // free(httpsClient);
 
@@ -271,7 +253,74 @@ void track_service_to_hostname(const char* service_name, char* hostname, int por
 
 
 /**
- * This function is responsible for calling the JavaScript on_resp_body callback function 
+ * Helper function to free HttpsAddonData and release associated resources.
+ * Call this when the HTTP request is complete (EOF received or error occurred).
+ */
+static void free_https_addon_data(HttpsAddonData* addon_data) {
+  if (addon_data == NULL) {
+    return;
+  }
+
+  ZITI_NODEJS_LOG(DEBUG, "freeing HttpsAddonData: %p", addon_data);
+
+  // Release threadsafe functions
+  if (addon_data->tsfn_on_req != NULL) {
+    napi_release_threadsafe_function(addon_data->tsfn_on_req, napi_tsfn_release);
+  }
+  if (addon_data->tsfn_on_resp != NULL) {
+    napi_release_threadsafe_function(addon_data->tsfn_on_resp, napi_tsfn_release);
+  }
+  if (addon_data->tsfn_on_resp_body != NULL) {
+    napi_release_threadsafe_function(addon_data->tsfn_on_resp_body, napi_tsfn_release);
+  }
+  if (addon_data->tsfn_on_req_body != NULL) {
+    napi_release_threadsafe_function(addon_data->tsfn_on_req_body, napi_tsfn_release);
+  }
+
+  // Free allocated strings
+  if (addon_data->service != NULL) {
+    free(addon_data->service);
+  }
+  if (addon_data->scheme_host_port != NULL) {
+    free(addon_data->scheme_host_port);
+  }
+  if (addon_data->method != NULL) {
+    free(addon_data->method);
+  }
+  if (addon_data->path != NULL) {
+    free(addon_data->path);
+  }
+
+  // Free header strings
+  for (uint32_t i = 0; i < addon_data->headers_array_length; i++) {
+    if (addon_data->header_name[i] != NULL) {
+      free(addon_data->header_name[i]);
+    }
+    if (addon_data->header_value[i] != NULL) {
+      free(addon_data->header_value[i]);
+    }
+  }
+
+  // Free httpsReq
+  if (addon_data->httpsReq != NULL) {
+    free(addon_data->httpsReq);
+  }
+
+  // Free any pending write chunks that were tracked
+  for (uint32_t i = 0; i < addon_data->pending_chunk_count; i++) {
+    if (addon_data->pending_chunks[i] != NULL) {
+      ZITI_NODEJS_LOG(DEBUG, "freeing pending chunk %p at index %d", addon_data->pending_chunks[i], i);
+      free(addon_data->pending_chunks[i]);
+    }
+  }
+
+  // Free addon_data itself
+  free(addon_data);
+}
+
+
+/**
+ * This function is responsible for calling the JavaScript on_resp_body callback function
  * that was specified when the Ziti_https_request(...) was called from JavaScript.
  */
 static void CallJs_on_resp_body(napi_env env, napi_value js_cb, void* context, void* data) {
@@ -340,7 +389,7 @@ static void CallJs_on_resp_body(napi_env env, napi_value js_cb, void* context, v
       rc = napi_set_named_property(env, js_http_item, "body", undefined);
     }
 
-    // Call the JavaScript function and pass it the HttpsRespItem
+    // Call the JavaScript function and pass it the HttpsRespBodyItem
     rc = napi_call_function(
       env,
       undefined,
@@ -354,11 +403,19 @@ static void CallJs_on_resp_body(napi_env env, napi_value js_cb, void* context, v
     }
 
   }
+
+  // Free the HttpsRespBodyItem and its body (must happen even if env was NULL)
+  if (item != NULL) {
+    if (item->body != NULL) {
+      free((void*)item->body);
+    }
+    free(item);
+  }
 }
 
 
 /**
- * 
+ *
  */
 void on_resp_body(tlsuv_http_req_t *req, char *body, ssize_t len) {
 
@@ -385,20 +442,14 @@ void on_resp_body(tlsuv_http_req_t *req, char *body, ssize_t len) {
   }
   item->len = len;
 
-  if ((NULL == body) && (UV_EOF == len)) {
-    ZITI_NODEJS_LOG(DEBUG, "<--------- returning httpsClient [%p] back to pool", addon_data->httpsClient);
-    addon_data->httpsClient->active = false;
-
-    struct ListMap* clientListMap = getInnerListMapValueForKey(HttpsClientListMap, addon_data->scheme_host_port);
-
-    ZITI_NODEJS_LOG(DEBUG, "<-------- returning sem for client: [%p] ", addon_data->httpsClient);
-    uv_sem_post(&(clientListMap->sem));
-    ZITI_NODEJS_LOG(DEBUG, "          after returning sem for client: [%p] ", addon_data->httpsClient);
-  }
+  // Determine if this is the final callback (EOF) - we'll release client AFTER accessing addon_data
+  bool is_eof = (NULL == body) && (UV_EOF == len);
 
   ZITI_NODEJS_LOG(DEBUG, "calling tsfn_on_resp_body: %p", addon_data->tsfn_on_resp_body);
 
   // Initiate the call into the JavaScript callback.
+  // IMPORTANT: Do this BEFORE releasing the client back to the pool to avoid use-after-free
+  // if another thread grabs the client and overwrites addon_data fields.
   int rc = napi_call_threadsafe_function(
       addon_data->tsfn_on_resp_body,
       item,
@@ -407,11 +458,40 @@ void on_resp_body(tlsuv_http_req_t *req, char *body, ssize_t len) {
     napi_throw_error(addon_data->env, "EINVAL", "failure to invoke JS callback");
   }
 
+  // Handle response completion
+  if (is_eof) {
+    HttpsReq* httpsReq = addon_data->httpsReq;
+
+    // Mark response as complete
+    if (httpsReq != NULL) {
+      httpsReq->response_complete = true;
+      ZITI_NODEJS_LOG(DEBUG, "response_complete=true, pending_write_count=%d", httpsReq->pending_write_count);
+    }
+
+    // Only release client if all pending writes are also complete
+    // If writes are still pending, on_req_body will release the client when the last write completes
+    if (httpsReq == NULL || httpsReq->pending_write_count == 0) {
+      ZITI_NODEJS_LOG(DEBUG, "<--------- returning httpsClient [%p] back to pool", addon_data->httpsClient);
+      addon_data->httpsClient->active = false;
+
+      // NOTE: Do NOT mark client for purge on successful completion
+      // Purging is only for error cases - reusing healthy clients is fine
+
+      struct ListMap* clientListMap = getInnerListMapValueForKey(HttpsClientListMap, addon_data->scheme_host_port);
+
+      ZITI_NODEJS_LOG(DEBUG, "<-------- returning sem for client: [%p] ", addon_data->httpsClient);
+      uv_sem_post(&(clientListMap->sem));
+      ZITI_NODEJS_LOG(DEBUG, "          after returning sem for client: [%p] ", addon_data->httpsClient);
+    } else {
+      ZITI_NODEJS_LOG(DEBUG, "deferring client release - %d writes still pending", httpsReq->pending_write_count);
+    }
+  }
+
 }
 
 
 /**
- * This function is responsible for calling the JavaScript on_resp callback function 
+ * This function is responsible for calling the JavaScript on_resp callback function
  * that was specified when the Ziti_https_request(...) was called from JavaScript.
  */
 static void CallJs_on_resp(napi_env env, napi_value js_cb, void* context, void* data) {
@@ -543,11 +623,26 @@ static void CallJs_on_resp(napi_env env, napi_value js_cb, void* context, void* 
     }
 
   }
+
+  // Free the HttpsRespItem and its members (must happen even if env was NULL)
+  if (item != NULL) {
+    if (item->headers != NULL) {
+      for (tlsuv_http_hdr *hdr = item->headers; hdr->name != NULL; hdr++) {
+        free(hdr->name);
+        free(hdr->value);
+      }
+      free(item->headers);
+    }
+    if (item->status != NULL) {
+      free(item->status);
+    }
+    free(item);
+  }
 }
 
 
 /**
- * 
+ *
  */
 void on_resp(tlsuv_http_resp_t *resp, void *data) {
   ZITI_NODEJS_LOG(DEBUG, "resp: %p", resp);
@@ -590,19 +685,33 @@ void on_resp(tlsuv_http_resp_t *resp, void *data) {
   }
 
   if ((UV_EOF == resp->code) || (resp->code < 0)) {
-    ZITI_NODEJS_LOG(ERROR, "<--------- returning httpsClient [%p] back to pool due to error: [%d]", addon_data->httpsClient, resp->code);
-    addon_data->httpsClient->active = false;
+    HttpsReq* httpsReq = addon_data->httpsReq;
 
-    // Before we fully release this client (via semaphore post) let's indicate purge is needed, because after errs happen on a client, 
+    // Mark response as complete (even on error)
+    if (httpsReq != NULL) {
+      httpsReq->response_complete = true;
+      ZITI_NODEJS_LOG(DEBUG, "error case: response_complete=true, pending_write_count=%d",
+                      httpsReq->pending_write_count);
+    }
+
+    // Before we fully release this client (via semaphore post) let's indicate purge is needed, because after errs happen on a client,
     // subsequent requests using that client never get processed.
     ZITI_NODEJS_LOG(DEBUG, "*********** due to error, purge now necessary for client: [%p]", addon_data->httpsClient);
     addon_data->httpsClient->purge = true;
 
-    struct ListMap* clientListMap = getInnerListMapValueForKey(HttpsClientListMap, addon_data->scheme_host_port);
+    // Only release client if all pending writes are also complete
+    if (httpsReq == NULL || httpsReq->pending_write_count == 0) {
+      ZITI_NODEJS_LOG(ERROR, "<--------- returning httpsClient [%p] back to pool due to error: [%d]", addon_data->httpsClient, resp->code);
+      addon_data->httpsClient->active = false;
 
-    ZITI_NODEJS_LOG(DEBUG, "<-------- returning sem for client: [%p] ", addon_data->httpsClient);
-    uv_sem_post(&(clientListMap->sem));
-    ZITI_NODEJS_LOG(DEBUG, "          after returning sem for client: [%p] ", addon_data->httpsClient);
+      struct ListMap* clientListMap = getInnerListMapValueForKey(HttpsClientListMap, addon_data->scheme_host_port);
+
+      ZITI_NODEJS_LOG(DEBUG, "<-------- returning sem for client: [%p] ", addon_data->httpsClient);
+      uv_sem_post(&(clientListMap->sem));
+      ZITI_NODEJS_LOG(DEBUG, "          after returning sem for client: [%p] ", addon_data->httpsClient);
+    } else {
+      ZITI_NODEJS_LOG(DEBUG, "deferring client release - %d writes still pending", httpsReq->pending_write_count);
+    }
   }
 
   // Initiate the call into the JavaScript callback. The call into JavaScript will not have happened when this function returns, but it will be queued.
@@ -616,20 +725,26 @@ void on_resp(tlsuv_http_resp_t *resp, void *data) {
     }
   }
 
-  if (UV_EOF != resp->code) {
+  if (UV_EOF != resp->code && resp->code >= 0) {
     // We need body of the HTTP response, so wire up that callback now
+    // Note: Don't set body_cb if we already released the client due to an error (resp->code < 0)
+    // Otherwise on_resp_body could fire later and double-post the semaphore
     resp->body_cb = on_resp_body;
+  } else {
+    // TODO: Temporarily disabled to debug SEGV crash in link_write_cb
+    // Error case: body_cb won't be called, so free addon_data now
+    // free_https_addon_data(addon_data);
   }
 }
 
 
 /**
- * This function is responsible for calling the JavaScript on_resp callback function 
+ * This function is responsible for calling the JavaScript on_resp callback function
  * that was specified when the Ziti_https_request(...) was called from JavaScript.
  */
 static void CallJs_on_req(napi_env env, napi_value js_cb, void* context, void* data) {
 
-  ZITI_NODEJS_LOG(DEBUG, "entered");
+  ZITI_NODEJS_LOG(DEBUG, "CallJs_on_req entered");
 
   // This parameter is not used.
   (void) context;
@@ -703,7 +818,17 @@ void on_client(uv_work_t* req, int status) {
   );
 
   ZITI_NODEJS_LOG(DEBUG, "req: %p", r);
+
+  if (r == NULL) {
+    ZITI_NODEJS_LOG(ERROR, "tlsuv_http_req returned NULL - request failed to initialize");
+    return;
+  }
+
   addon_data->httpsReq->req = r;
+
+  // Explicitly set req->data so on_resp_body can reliably access addon_data
+  // (don't rely on tlsuv_http_req storing the data parameter in req->data)
+  r->data = addon_data;
 
   // Add headers to request
   for (int i = 0; i < (int)addon_data->headers_array_length; i++) {

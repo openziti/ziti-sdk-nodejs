@@ -12,3 +12,4 @@ else
 fi
 
 ${basedir}/node_modules/.bin/cmake-js configure ${arch_arg} -- --preset=${preset}
+# ${basedir}/node_modules/.bin/cmake-js configure ${arch_arg} -- --preset=${preset} -DZITI_SDK_DIR=/Users/curt/Repos/nf/github/ziti-sdk-c

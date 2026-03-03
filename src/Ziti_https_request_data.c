@@ -82,7 +82,7 @@ static void CallJs_on_req_body(napi_env env, napi_value js_cb, void* context, vo
       napi_throw_error(env, "EINVAL", "failure to set named property body");
     }
 
-    // Call the JavaScript function and pass it the HttpsRespItem
+    // Call the JavaScript function and pass it the HttpsReqBodyItem
     rc = napi_call_function(
       env,
       undefined,
@@ -96,12 +96,26 @@ static void CallJs_on_req_body(napi_env env, napi_value js_cb, void* context, vo
     }
 
   }
+
+  // Free the HttpsReqBodyItem (but NOT item->body / the chunk buffer)
+  // NOTE: We cannot free the chunk here because the C SDK may still be processing
+  // the data through internal buffers/flushes. The chunk will be leaked, but freeing
+  // it here causes use-after-free crashes in link_write_cb during timer-triggered flushes.
+  // TODO: Track chunks and free them when the entire request completes (on EOF/error)
+  if (item != NULL) {
+    // item->body (chunk) intentionally NOT freed - SDK may still reference it
+    free(item);
+  }
 }
 
 
 
+// Forward declaration for client release helper
+extern struct ListMap* HttpsClientListMap;
+extern struct ListMap* getInnerListMapValueForKey(struct ListMap* collection, char* key);
+
 /**
- * 
+ *
  */
 void on_req_body(tlsuv_http_req_t *req, char *body, ssize_t status) {
 
@@ -112,13 +126,36 @@ void on_req_body(tlsuv_http_req_t *req, char *body, ssize_t status) {
 
   HttpsReqBodyItem* item = calloc(1, sizeof(*item));
   ZITI_NODEJS_LOG(DEBUG, "new HttpsReqBodyItem is: %p", item);
-  
+
   //  Grab everything off the tlsuv_http_resp_t that we need to eventually pass on to the JS on_resp_body callback.
   //  If we wait until CallJs_on_resp_body is invoked to do that work, the tlsuv_http_resp_t may have already been free'd by the C-SDK
 
   item->req = req;
   item->body = (void*)body;
   item->status = status;
+
+  // Decrement pending write count - the write operation is complete
+  HttpsReq* httpsReq = addon_data->httpsReq;
+  if (httpsReq != NULL && httpsReq->pending_write_count > 0) {
+    httpsReq->pending_write_count--;
+    ZITI_NODEJS_LOG(DEBUG, "pending_write_count decremented to %d, response_complete=%d",
+                    httpsReq->pending_write_count, httpsReq->response_complete);
+
+    // If response is complete AND all writes are done, release the client
+    if (httpsReq->response_complete && httpsReq->pending_write_count == 0) {
+      ZITI_NODEJS_LOG(DEBUG, "<--------- releasing client [%p] after final write completed", addon_data->httpsClient);
+      addon_data->httpsClient->active = false;
+
+      // NOTE: Do NOT mark client for purge on successful completion
+      // Purging is only for error cases
+
+      struct ListMap* clientListMap = getInnerListMapValueForKey(HttpsClientListMap, addon_data->scheme_host_port);
+      if (clientListMap != NULL) {
+        ZITI_NODEJS_LOG(DEBUG, "<-------- returning sem for client: [%p]", addon_data->httpsClient);
+        uv_sem_post(&(clientListMap->sem));
+      }
+    }
+  }
 
   ZITI_NODEJS_LOG(DEBUG, "calling tsfn_on_req_body: %p", addon_data->tsfn_on_req_body);
 
@@ -158,15 +195,22 @@ napi_value _Ziti_http_request_data(napi_env env, const napi_callback_info info) 
     return NULL;
   }
 
+  ZITI_NODEJS_LOG(DEBUG, "_Ziti_http_request_data 1");
+
   // Obtain tlsuv_http_req_t
   int64_t js_req;
   status = napi_get_value_int64(env, args[0], &js_req);
   if (status != napi_ok) {
     napi_throw_error(env, NULL, "Failed to get Req");
   }
+  ZITI_NODEJS_LOG(DEBUG, "_Ziti_http_request_data 2");
+  ZITI_NODEJS_LOG(DEBUG, "js_req: %p", js_req);
   // tlsuv_http_req_t *r = (tlsuv_http_req_t*)js_req;
   HttpsReq* httpsReq = (HttpsReq*)js_req;
+  ZITI_NODEJS_LOG(DEBUG, "httpsReq: %p", httpsReq);
   tlsuv_http_req_t *r = httpsReq->req;
+
+  ZITI_NODEJS_LOG(DEBUG, "_Ziti_http_request_data 3");
 
   ZITI_NODEJS_LOG(DEBUG, "req: %p", r);
 
@@ -191,6 +235,15 @@ napi_value _Ziti_http_request_data(napi_env env, const napi_callback_info info) 
   // Since the underlying Buffer's lifetime is not guaranteed if it's managed by the VM, we will copy the chunk into our heap
   void* chunk = calloc(1, bufferLength + 1);
   memcpy(chunk, buffer, bufferLength);
+
+  // Track the chunk so it can be freed when the request completes
+  // (we can't free it in on_req_body because the C SDK may still be processing it)
+  if (addon_data->pending_chunk_count < MAX_PENDING_CHUNKS) {
+    addon_data->pending_chunks[addon_data->pending_chunk_count++] = chunk;
+    ZITI_NODEJS_LOG(DEBUG, "tracked chunk %p at index %d", chunk, addon_data->pending_chunk_count - 1);
+  } else {
+    ZITI_NODEJS_LOG(ERROR, "too many pending chunks, chunk %p will be leaked", chunk);
+  }
 
   // Obtain ptr to JS 'on_write' callback function
   napi_value js_write_cb = args[2];
@@ -225,6 +278,10 @@ napi_value _Ziti_http_request_data(napi_env env, const napi_callback_info info) 
     napi_throw_error(env, "EINVAL", "Failed to create threadsafe_function");
   }
   ZITI_NODEJS_LOG(DEBUG, "napi_create_threadsafe_function addon_data->tsfn_on_req_body() : %p", addon_data->tsfn_on_req_body);
+
+  // Track pending write to prevent client reuse while write is in progress
+  httpsReq->pending_write_count++;
+  ZITI_NODEJS_LOG(DEBUG, "pending_write_count incremented to %d", httpsReq->pending_write_count);
 
   // Now, call the C-SDK to actually write the data over to the service
   tlsuv_http_req_data(r, chunk, bufferLength, on_req_body );
