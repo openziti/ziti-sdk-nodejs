@@ -486,17 +486,24 @@ static napi_value ztx_shutdown(napi_env env, napi_callback_info info) {
     ZITI_NODEJS_LOG(DEBUG, "ztx: %p", ztx);
     NAPI_UNDEFINED(env, jsRetval);
     if (ztx) {
-        AddonData *addon_data = (AddonData*)ziti_app_ctx(ztx);
+        ziti_context local_ztx = ztx;
+        ztx = NULL;
+
+        AddonData *addon_data = (AddonData*)ziti_app_ctx(local_ztx);
         if (addon_data) {
             if (addon_data->tsfn) {
                 napi_release_threadsafe_function(addon_data->tsfn, napi_tsfn_release);
+                addon_data->tsfn = NULL;
             }
             if (addon_data->tsfn_on_auth_event) {
                 napi_release_threadsafe_function(addon_data->tsfn_on_auth_event, napi_tsfn_release);
+                addon_data->tsfn_on_auth_event = NULL;
             }
-            free(addon_data);
+            // Don't free addon_data here — ziti_shutdown() is async and
+            // its events still reference addon_data via ziti_app_ctx().
+            // The nulled-out tsfn pointers ensure the event handlers no-op safely.
         }
-        ziti_shutdown(ztx);
+        ziti_shutdown(local_ztx);
     }
     return jsRetval;
 }
