@@ -43,7 +43,7 @@ bool listMapInsert(struct ListMap* collection, const char* key, void* value) {
   collection->kvPairs[collection->count].key = strdup(key);
   collection->kvPairs[collection->count].value = value;
   collection->count++;
-  ZITI_NODEJS_LOG(DEBUG, "collection->count total is: [%zd]", collection->count);
+  ZITI_NODEJS_LOG(TRACE, "collection->count total is: [%zd]", collection->count);
 
   return true;
 }
@@ -198,7 +198,7 @@ static void allocate_client(uv_work_t* req) {
 
 struct hostname_port* getHostnamePortForService(const char* key) {
 
-  ZITI_NODEJS_LOG(DEBUG, "getHostnamePortForService() entered, key: %s", key);
+  ZITI_NODEJS_LOG(TRACE, "getHostnamePortForService() entered, key: %s", key);
 
   struct hostname_port* value = NULL;
 
@@ -207,12 +207,12 @@ struct hostname_port* getHostnamePortForService(const char* key) {
     for (size_t i = 0 ; i < ServiceToHostnameListMap->count && value == NULL ; ++i) {
       if (strcmp(ServiceToHostnameListMap->kvPairs[i].key, key) == 0) {
         value = ServiceToHostnameListMap->kvPairs[i].value;
-        ZITI_NODEJS_LOG(DEBUG, "getHostnamePortForService() found value->hostname is: [%s], port is: [%d]", value->hostname, value->port);
+        ZITI_NODEJS_LOG(TRACE, "getHostnamePortForService() found value->hostname is: [%s], port is: [%d]", value->hostname, value->port);
       }
     }
   }
 
-  ZITI_NODEJS_LOG(DEBUG, "getHostnamePortForService() returning value '%p'", value);
+  ZITI_NODEJS_LOG(TRACE, "getHostnamePortForService() returning value '%p'", value);
 
   return value;
 }
@@ -223,7 +223,7 @@ struct hostname_port* getHostnamePortForService(const char* key) {
  */
 void track_service_to_hostname(const char* service_name, char* hostname, int port) {
 
-  ZITI_NODEJS_LOG(DEBUG, "track_service_to_hostname() entered, service_name: %s hostname: %s port: %d", service_name, hostname, port);
+  ZITI_NODEJS_LOG(TRACE, "track_service_to_hostname() entered, service_name: %s hostname: %s port: %d", service_name, hostname, port);
 
   if (NULL == ServiceToHostnameListMap) {
     ServiceToHostnameListMap = newListMap();
@@ -239,14 +239,14 @@ void track_service_to_hostname(const char* service_name, char* hostname, int por
 
     listMapInsert(ServiceToHostnameListMap, service_name, (void*)value);
 
-    ZITI_NODEJS_LOG(DEBUG, "track_service_to_hostname() inserting service_name: %s hostname: %s port: %d", service_name, hostname, port);
+    ZITI_NODEJS_LOG(TRACE, "track_service_to_hostname() inserting service_name: %s hostname: %s port: %d", service_name, hostname, port);
 
   } else {
 
     value->hostname = strdup(hostname);
     value->port = port;
 
-    ZITI_NODEJS_LOG(DEBUG, "track_service_to_hostname() updating service_name: %s hostname: %s port: %d", service_name, hostname, port);
+    ZITI_NODEJS_LOG(TRACE, "track_service_to_hostname() updating service_name: %s hostname: %s port: %d", service_name, hostname, port);
 
   }
 }

@@ -174,14 +174,18 @@ static napi_value z_get_service_for_addr(napi_env env, napi_callback_info info) 
     napi_create_object(env, &result);
 
     napi_value serviceName;
-    napi_value identity;
-    napi_value data;
     NAPI_CHECK(env, "create service name", napi_create_string_utf8(env, srv->name, NAPI_AUTO_LENGTH, &serviceName));
     napi_set_named_property(env, result, "service", serviceName);
-    NAPI_CHECK(env, "create identity", napi_create_string_utf8(env, dialOpts.identity, NAPI_AUTO_LENGTH, &identity));
-    napi_set_named_property(env, result, "identity", identity);
-    NAPI_CHECK(env, "create data", napi_create_string_utf8(env, dialOpts.app_data, dialOpts.app_data_sz, &data));
-    napi_set_named_property(env, result, "data", data);
+    if (dialOpts.identity) {
+        napi_value identity;
+        NAPI_CHECK(env, "create identity", napi_create_string_utf8(env, dialOpts.identity, NAPI_AUTO_LENGTH, &identity));
+        napi_set_named_property(env, result, "identity", identity);
+    }
+    if (dialOpts.app_data) {
+        napi_value data;
+        NAPI_CHECK(env, "create data", napi_create_string_utf8(env, dialOpts.app_data, dialOpts.app_data_sz, &data));
+        napi_set_named_property(env, result, "data", data);
+    }
 
     free(dialOpts.app_data);
     free((void*)dialOpts.identity);
