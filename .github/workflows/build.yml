@@ -251,7 +251,7 @@ jobs:
 
     - name: debug build failure
       if: always() && steps.buildSDK.outcome == 'failure'
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: build-logs-${{ matrix.config.target }}-${{ matrix.config.arch }}
         path: |
@@ -268,7 +268,7 @@ jobs:
       run: npm test
 
     - name: upload artifacts
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: ziti_nodejs_${{ matrix.config.target }}_${{ matrix.config.arch }}_nodev${{ matrix.node_ver }}
         path: |
@@ -294,7 +294,7 @@ jobs:
         fetch-depth: 0
 
     - name: Download Artifacts
-      uses: actions/download-artifact@v7
+      uses: actions/download-artifact@v8
       with:
         path: ./artifacts
         pattern: ziti_nodejs_*
