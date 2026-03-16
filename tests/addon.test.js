@@ -8,6 +8,7 @@ suite("Ziti SDK Addon Tests", () => {
         assert(typeof ziti.ziti_sdk_version === "function", "ziti_sdk_version should be a function");
         assert(typeof ziti.enroll === "function", "ziti_enroll should be a function");
         assert(typeof ziti.setLogger === "function", "ziti_set_logger should be a function");
+        assert(typeof ziti.extAuthToken === "function", "ziti_ext_auth_token should be a function");
 
     })
     test("ziti_sdk_version test", () => {

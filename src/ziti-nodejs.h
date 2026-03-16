@@ -127,6 +127,21 @@ typedef struct {
 } WSAddonData;
 
 
+// Constants for client pool management
+enum { listMapCapacity = 50 };
+enum { perKeyListMapCapacity = 25 };
+
+struct key_value {
+    char* key;
+    void* value;
+};
+
+struct ListMap {
+  struct   key_value kvPairs[listMapCapacity];
+  size_t   count;
+  uv_sem_t sem;
+};
+
 // An item that will be passed into the JavaScript on_resp callback
 typedef struct HttpsRespItem {
   tlsuv_http_req_t *req;
@@ -157,6 +172,9 @@ typedef struct HttpsReq {
   bool on_resp_has_fired;
   int respCode;
   HttpsAddonData *addon_data;
+  // Track pending writes to prevent client reuse while writes are in progress
+  int pending_write_count;
+  bool response_complete;
 } HttpsReq;
 
 typedef struct {
@@ -166,6 +184,9 @@ typedef struct {
   bool active;
   bool purge;
 } HttpsClient;
+
+// Maximum number of pending write chunks per request
+#define MAX_PENDING_CHUNKS 64
 
 struct HttpsAddonData {
   napi_env env;
@@ -187,6 +208,9 @@ struct HttpsAddonData {
   char* header_name[100];
   char* header_value[100];
   HttpsClient* httpsClient;
+  // Track pending write chunks so they can be freed when request completes
+  void* pending_chunks[MAX_PENDING_CHUNKS];
+  uint32_t pending_chunk_count;
 } ;
 
 
@@ -206,6 +230,7 @@ extern void expose_ziti_dial(napi_env env, napi_value exports);
 extern void expose_ziti_enroll(napi_env env, napi_value exports);
 extern void expose_ziti_sdk_version(napi_env env, napi_value exports);
 extern void expose_ziti_init(napi_env env, napi_value exports);
+extern void expose_ziti_init_external_auth(napi_env env, napi_value exports);
 extern void expose_ziti_listen(napi_env env, napi_value exports);
 extern void expose_ziti_service_available(napi_env env, napi_value exports);
 extern void expose_ziti_services_refresh(napi_env env, napi_value exports);
@@ -220,6 +245,9 @@ extern void expose_ziti_https_request_data(napi_env env, napi_value exports);
 extern void expose_ziti_https_request_end(napi_env env, napi_value exports);
 extern void expose_ziti_websocket_connect(napi_env env, napi_value exports);
 extern void expose_ziti_websocket_write(napi_env env, napi_value exports);
+extern void expose_ziti_websocket_close(napi_env env, napi_value exports);
+extern void expose_ziti_websocket_ping(napi_env env, napi_value exports);
+extern void expose_ziti_ext_auth_token(napi_env env, napi_value exports);
 
 //
 extern int tlsuv_websocket_init_with_src (uv_loop_t *loop, tlsuv_websocket_t *ws, tlsuv_src_t *src);

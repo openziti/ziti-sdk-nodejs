@@ -56,6 +56,7 @@ napi_value Init(napi_env env, napi_value exports) {
   expose_ziti_enroll(env, exports);
   expose_ziti_sdk_version(env, exports);
   expose_ziti_init(env, exports);
+  expose_ziti_init_external_auth(env, exports);
   expose_ziti_listen(env, exports);
   expose_ziti_service_available(env, exports);
   expose_ziti_services_refresh(env, exports);
@@ -68,11 +69,15 @@ napi_value Init(napi_env env, napi_value exports) {
 
   expose_ziti_websocket_connect(env, exports);
   expose_ziti_websocket_write(env, exports);
+  expose_ziti_websocket_close(env, exports);
+  expose_ziti_websocket_ping(env, exports);
 
   expose_ziti_set_log_level(env, exports);
   expose_ziti_set_logger(env, exports);
   expose_ziti_connect(env, exports);
   expose_get_ziti_service(env, exports);
+
+  expose_ziti_ext_auth_token(env, exports);
 
   return exports;
 }
