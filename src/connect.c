@@ -52,17 +52,37 @@ static void on_z_connect(ziti_connection conn, int status) {
     if (status != ZITI_OK) {
         ziti_close(conn, NULL);
         ZITI_NODEJS_LOG(ERROR, "failed to connect: %d/%s", status, ziti_errorstr(status));
-    } else {
+    } else
+    {
+        int uv_rc;
         uv_os_sock_t pipe[2] = { -1, -1 };
-        int uv_rc = uv_socketpair(AF_UNIX, 0, pipe, UV_NONBLOCK_PIPE, UV_NONBLOCK_PIPE);
+#if _WIN32
+        uv_file p[2];
+        if ((uv_rc = uv_pipe(p,
+                    UV_NONBLOCK_PIPE | UV_READABLE_PIPE | UV_WRITABLE_PIPE,
+                    UV_NONBLOCK_PIPE | UV_READABLE_PIPE | UV_WRITABLE_PIPE)) != 0) {
+            ZITI_NODEJS_LOG(ERROR, "failed to create socket pair: %d/%s", uv_rc, uv_strerror(uv_rc));
+            ziti_close(conn, NULL);
+            cd->status = uv_rc;
+            return;
+
+        }
+
+        pipe[0] = (uv_os_sock_t)p[0];
+        pipe[1] = (uv_os_sock_t)p[1];
+#else
+        uv_rc = uv_socketpair(AF_UNIX, 0, pipe, UV_NONBLOCK_PIPE, UV_NONBLOCK_PIPE);
         if (uv_rc != 0) {
             ZITI_NODEJS_LOG(ERROR, "failed to create socket pair: %d/%s", uv_rc, uv_strerror(uv_rc));
             ziti_close(conn, NULL);
             cd->status = uv_rc;
             return;
         }
+#endif
+
         ziti_conn_bridge_fds(conn, pipe[1], pipe[1], NULL, NULL);
         cd->sock = pipe[0];
+        ZITI_NODEJS_LOG(ERROR, "socket = %ld", cd->sock);
     }
     napi_call_threadsafe_function(cd->on_connect, cd, napi_tsfn_blocking);
 }
