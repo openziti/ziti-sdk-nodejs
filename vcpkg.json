@@ -15,7 +15,15 @@
     "stc",
     "protobuf-c"
   ],
+  "overrides": [
+    {
+      "name": "libsodium",
+      "version": "1.0.20",
+      "port-version": 3,
+      "$comment": "1.0.21 breaks on linux-arm64 so we're sticking with 1.0.20 until fix released and available in vcpkg"
+    }
+  ],
   "features": {
   },
-  "builtin-baseline": "84bab45d415d22042bd0b9081aea57f362da3f35"
+  "builtin-baseline": "62159a45e18f3a9ac0548628dcaf74fcb60c6ff9"
 }
