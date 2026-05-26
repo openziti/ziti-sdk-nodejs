@@ -222,7 +222,7 @@ Getting Help
 Please use these community resources for getting help. We use GitHub [issues](https://github.com/openziti/ziti-sdk-nodejs/issues) 
 for tracking bugs and feature requests and have limited bandwidth to address them.
 
-- Read the [docs](https://netfoundry.io/docs/openziti/learn/introduction/)
+- Read the [docs](https://netfoundry.io/docs/openziti/intro/)
 - Participate in discussion on [Discourse](https://openziti.discourse.group/)
 
 
