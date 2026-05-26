@@ -14,7 +14,7 @@ Please star us.
 </p>
 
 <p align="center" width="100%">
-<a href="https://openziti.io"><img src="ziti.png" width="100"></a>
+<a href="https://netfoundry.io/docs/openziti"><img src="ziti.png" width="100"></a>
 </p>
 
 <p align="center">
@@ -23,17 +23,17 @@ Please star us.
     <br>
     <br>
     <b>
-    This repo hosts the OpenZiti SDK for NodeJS, and is designed to help you deliver secure applications over a <a href="https://openziti.io">OpenZiti Network</a>
+    This repo hosts the OpenZiti SDK for NodeJS, and is designed to help you deliver secure applications over a <a href="https://netfoundry.io/docs/openziti">OpenZiti Network</a>
     <br>
     <br>
-    <b>Part of the <a href="https://openziti.io/about">OpenZiti</a> ecosystem</b>
+    <b>Part of the <a href="https://netfoundry.io/docs/openziti/about">OpenZiti</a> ecosystem</b>
 </p>
 
 <p align="center">
     <br>
     <b>Are you interested in knowing how to easily embed programmable, high performance, zero trust networking into your NodeJS app, on any internet connection, without VPNs?
     <br>
-    Learn more about our <a href="https://openziti.io/about">OpenZiti</a> project.</b>
+    Learn more about our <a href="https://netfoundry.io/docs/openziti/about">OpenZiti</a> project.</b>
     <br>
     </p>
 
@@ -42,7 +42,6 @@ Please star us.
 [![Issues](https://img.shields.io/github/issues-raw/openziti/ziti-sdk-nodejs)]()
 [![npm version](https://badge.fury.io/js/@openziti%2Fziti-sdk-nodejs.svg)](https://badge.fury.io/js/@openziti%2Fziti-sdk-nodejs.svg)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![LOC](https://img.shields.io/tokei/lines/github/openziti/ziti-sdk-nodejs)]()
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=rounded)](CONTRIBUTING.md)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](CODE_OF_CONDUCT.md)
 
@@ -223,7 +222,7 @@ Getting Help
 Please use these community resources for getting help. We use GitHub [issues](https://github.com/openziti/ziti-sdk-nodejs/issues) 
 for tracking bugs and feature requests and have limited bandwidth to address them.
 
-- Read the [docs](https://openziti.github.io/ziti/overview.html)
+- Read the [docs](https://netfoundry.io/docs/openziti/learn/introduction/)
 - Participate in discussion on [Discourse](https://openziti.discourse.group/)
 
 
