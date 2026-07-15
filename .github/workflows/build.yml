@@ -44,7 +44,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           submodules: 'recursive'
@@ -67,7 +67,7 @@ jobs:
           sudo apt install -y crossbuild-essential-${{ matrix.config.arch }}
 
       - name: Node Version
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: '24'
 
@@ -86,7 +86,7 @@ jobs:
         run: echo "date=$(date)" >> $GITHUB_OUTPUT
 
       - name: Install CMake/Ninja
-        uses: lukka/get-cmake@v4.3.2
+        uses: lukka/get-cmake@v4.3.4
 
       - name: Run VCPKG
         uses: lukka/run-vcpkg@v11
@@ -106,7 +106,7 @@ jobs:
           echo "npm:   $(npm --version)"
 
       - name: restore dependencies cache
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         id: cache-restore
         with:
           path: ${{ env.CI_CACHE }}
@@ -126,7 +126,7 @@ jobs:
           TARGET_ARCH: ${{ matrix.config.arch }}
 
       - name: cache dependencies
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@v6
         with:
           path: ${{ env.CI_CACHE }}
           key: ${{ steps.cache-restore.outputs.cache-primary-key }}
@@ -166,7 +166,7 @@ jobs:
     steps:
 
     - name: Checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       with:
         fetch-depth: 0
         submodules: 'recursive'
@@ -189,7 +189,7 @@ jobs:
         sudo apt install -y crossbuild-essential-${{ matrix.config.arch }}
 
     - name: Node Version
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@v7
       with:
         node-version: ${{ matrix.node_ver }}
     
@@ -208,7 +208,7 @@ jobs:
       run: echo "date=$(date)" >> $GITHUB_OUTPUT
 
     - name: Install CMake/Ninja
-      uses: lukka/get-cmake@v4.3.2
+      uses: lukka/get-cmake@v4.3.4
 
     - name: Run VCPKG
       uses: lukka/run-vcpkg@v11
@@ -228,7 +228,7 @@ jobs:
         echo "npm:   $(npm --version)"
 
     - name: restore dependencies cache
-      uses: actions/cache/restore@v5
+      uses: actions/cache/restore@v6
       id: cache-restore
       with:
         path: ${{ env.CI_CACHE }}
@@ -284,12 +284,12 @@ jobs:
       contents: write
     steps:
     - name: Node Version
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@v7
       with:
         node-version: lts/*
 
     - name: Checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       with:
         fetch-depth: 0
 
